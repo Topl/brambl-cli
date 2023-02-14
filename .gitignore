@@ -1,0 +1,9 @@
+/.bsp/
+target/
+.metals/
+.bloop/
+keyfile.json
+.vscode/
+.bloop/
+target/
+*.json
