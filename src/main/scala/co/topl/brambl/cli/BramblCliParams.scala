@@ -8,7 +8,7 @@ final case class BramblCliParams(
     subcmd: String = "",
     somePassword: Option[String] = None,
     networkType: String = "",
-    networkUri: String = "",
+    someNetworkUri: Option[String] = None,
     someOutputFile: Option[String] = None,
     someApiKey: Option[String] = None,
     someKeyfile: Option[File] = None

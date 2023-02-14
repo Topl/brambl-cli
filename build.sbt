@@ -4,7 +4,7 @@ scalaVersion := "2.13.8"
 
 name := "brambl-cli"
 organization := "co.topl"
-version := "1.0.0"
+version := "1.0.0.beta-1"
 
 libraryDependencies += brambl
 libraryDependencies += bramblCommon

@@ -15,8 +15,8 @@ trait BramblCliParamsParserModule {
         .text(
           "the password for the keyfile"
         ),
-      opt[String]('u', "network-uri")
-        .action((x, c) => c.copy(networkUri = x))
+      opt[Option[String]]('u', "network-uri")
+        .action((x, c) => c.copy(someNetworkUri = x))
         .text(
           "the URI of the network"
         ),

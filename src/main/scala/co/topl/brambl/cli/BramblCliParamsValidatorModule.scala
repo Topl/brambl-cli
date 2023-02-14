@@ -37,7 +37,7 @@ trait BramblCliParamsValidatorModule {
         )
     }
   }
-  
+
   def validateSubCmd(
       mode: BramblCliMode.BramblCliMode,
       subcmd: String
@@ -144,7 +144,7 @@ trait BramblCliParamsValidatorModule {
         validateSubCmd(mode, paramConfig.subcmd).map((mode, _))
       ),
       (
-        validateToplNetworkUri(paramConfig.networkUri),
+        validateToplNetworkUri(paramConfig.someNetworkUri.getOrElse("http://127.0.0.1:9085")),
         validateNetworkType(paramConfig.networkType)
       ).mapN((uri, networkType) =>
         buildNetwork(
