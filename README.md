@@ -17,6 +17,14 @@ to run Java applications without any setup. It is very easy to install.
 To create a keyfile for the valhalla network, with password `test` and to store it in the file `the_new_keyfile.json`, run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:1.0.0 -- wallet create -n valhalla  -o the_new_keyfile.json -p test
+cs launch co.topl:brambl-cli_2.13:1.0.0.beta-1 -- wallet create -n valhalla  -o the_new_keyfile.json -p test
+```
+
+### Create an unsigned transaction
+
+To create a transaction from address `3NKUzcXsbZfZmCQnxMoMMTafDqhvCv3m8pYAFTiARSZdgBg6iohL` to address `3NKm1dopH5z9ECdpy2SuuKx6rrSdA9XpJ4EXA199MgcxFPvhEW96` for 100 polys, and 200 polys to `3NK75Pqk5uEWS17om3AQAsS6ctvNoFphx2QFzbPbPVm8YavaQN8g`, storing the rest of the funds in address `3NLNWXD7thdQbPxusw1otDeacUEa1gCB2GpWKRD8BARLYzr39HSA` for the valhalla network:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:1.0.0.beta-1 -- transaction create --token poly -n valhalla -f 3NKUzcXsbZfZmCQnxMoMMTafDqhvCv3m8pYAFTiARSZdgBg6iohL -t 3NKm1dopH5z9ECdpy2SuuKx6rrSdA9XpJ4EXA199MgcxFPvhEW96=100,3NK75Pqk5uEWS17om3AQAsS6ctvNoFphx2QFzbPbPVm8YavaQN8g=200 -c 3NLNWXD7thdQbPxusw1otDeacUEa1gCB2GpWKRD8BARLYzr39HSA -e 100 -u https://vertx.topl.services/valhalla/<projectId> -a <topl-api-key>
 ```
 

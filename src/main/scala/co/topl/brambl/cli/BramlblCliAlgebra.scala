@@ -32,16 +32,15 @@ case class RpcClientFailureException(failure: RpcClientFailure)
 object BramlblCli {
   trait BramblCliAlgebra[F[_]] {
 
-    def createWallet(password: String, outputFile: String): F[Unit]
+    def createWallet(password: String, someOutputFile: Option[String]): F[Unit]
 
     def createUnsignedPolyTransfer(
-          keyfile: String,
-          password: String,
-          fromAddresses: Seq[String],
-          toAddresses: Seq[(String, Int)],
-          changeAddress: String,
-          fee: Int
-    ): F[String]
+        someOutputFile: Option[String],
+        fromAddresses: Seq[String],
+        toAddresses: Seq[(String, Int)],
+        changeAddress: String,
+        fee: Int
+    ): F[Unit]
   }
 }
 
@@ -50,7 +49,10 @@ object BramblCliInterpreter {
   def makeIO(
       provider: Provider,
       keyRing: KeyRing[PrivateKeyCurve25519, KeyfileCurve25519]
-  )(implicit executionContext: ExecutionContext, system: ActorSystem): BramlblCli.BramblCliAlgebra[IO] =
+  )(implicit
+      executionContext: ExecutionContext,
+      system: ActorSystem
+  ): BramlblCli.BramblCliAlgebra[IO] =
     new BramlblCli.BramblCliAlgebra[IO] {
       import provider._
 
@@ -71,7 +73,10 @@ object BramblCliInterpreter {
           Source.fromFile(new File(fileName)).getLines().mkString("").mkString
         )
 
-      def createWallet(password: String, outputFile: String): IO[Unit] = {
+      def createWallet(
+          password: String,
+          someOutputFile: Option[String]
+      ): IO[Unit] = {
         import co.topl.attestation.keyManagement.Keyfile._
         import io.circe.syntax._
         for {
@@ -82,9 +87,14 @@ object BramblCliInterpreter {
               .left
               .map(x => new RuntimeException(x.toString))
           )
-          jsonString <-IO(keyfile.asJson.noSpacesSortKeys)
-            _ <- IO.blocking(Files.write(Paths.get(outputFile), jsonString.getBytes))
-            _ <- IO.println("Wallet created successfully")
+          jsonString <- IO(keyfile.asJson.noSpacesSortKeys)
+          _ <- someOutputFile
+            .map(outputFile =>
+              IO.blocking(
+                Files.write(Paths.get(outputFile), jsonString.getBytes)
+              )
+            )
+            .getOrElse(IO.println(jsonString))
         } yield ()
 
       }
@@ -142,24 +152,30 @@ object BramblCliInterpreter {
             )
           )
           rawTx <- IO.fromEither(
-            eitherTx.left.map(x => RpcClientFailureException(x))
+            eitherTx.left.map(x => { println(x); RpcClientFailureException(x)})
           )
         } yield rawTx.rawTx
 
       def createUnsignedPolyTransfer(
-          keyfile: String,
-          password: String,
+          someOutputFile: Option[String],
           fromAddresses: Seq[String],
           toAddresses: Seq[(String, Int)],
           changeAddress: String,
           fee: Int
-      ): IO[String] = for {
+      ): IO[Unit] = for {
         params <- createParamsM(fromAddresses, toAddresses, changeAddress, fee)
         rawTransaction <- createRawTxM(params)
         encodedTx <- IO {
           import io.circe.syntax._
           rawTransaction.asJson.noSpaces
         }
-      } yield encodedTx
+        _ <- someOutputFile
+          .map(outputFile =>
+            IO.blocking(
+              Files.write(Paths.get(outputFile), encodedTx.getBytes)
+            )
+          )
+          .getOrElse(IO.println(encodedTx))
+      } yield ()
     }
 }

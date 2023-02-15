@@ -2,8 +2,6 @@ package co.topl.brambl.cli
 
 import scopt.OParser
 
-import java.io.File
-
 trait BramblCliParamsParserModule {
   val builder = OParser.builder[BramblCliParams]
 
@@ -19,6 +17,51 @@ trait BramblCliParamsParserModule {
         .action((x, c) => c.copy(someNetworkUri = x))
         .text(
           "the URI of the network"
+        ),
+      opt[Option[String]]('a', "top-api-key")
+        .action((x, c) => c.copy(someApiKey = x))
+        .text(
+          "the API key for the Topl network"
+        ),
+      cmd("transaction")
+        .action((_, c) => c.copy(mode = "transaction"))
+        .text("Transaction mode")
+        .children(
+          cmd("create")
+            .action((_, c) => c.copy(subcmd = "create"))
+            .text("Create a new transaction")
+            .children(
+              opt[Option[String]]('o', "output-file")
+                .action((x, c) => c.copy(someOutputFile = x))
+                .text(
+                  "the output file"
+                ),
+              opt[Seq[String]]('f', "from-addresses")
+                .action((x, c) => c.copy(fromAddresses = x))
+                .text(
+                  "the address(es) to send from"
+                ),	
+              opt[Option[String]]("token")
+                .action((x, c) => c.copy(someToken = x))
+                .text(
+                  "the address(es) to send to"
+                ),
+              opt[Map[String, Int]]('t', "to-addresses")
+                .action((x, c) => c.copy(toAddresses = x))
+                .text(
+                  "the address(es) to send to"
+                ),
+              opt[String]('c', "change-address")
+                .action((x, c) => c.copy(changeAddress = x))
+                .text(
+                  "the address to send change to"
+                ),
+              opt[Int]('e', "fee")
+                .action((x, c) => c.copy(fee = x))
+                .text(
+                  "the fee to pay"
+                )
+            )
         ),
       cmd("wallet")
         .action((_, c) => c.copy(mode = "wallet"))
@@ -38,7 +81,7 @@ trait BramblCliParamsParserModule {
                 .text(
                   "the password for the keyfile"
                 ),
-              opt[Option[File]]('k', "keyfile")
+              opt[Option[String]]('k', "keyfile")
                 .action((x, c) => c.copy(someKeyfile = x))
                 .text(
                   "the file that contains the operator key, for example keyfile.json"
