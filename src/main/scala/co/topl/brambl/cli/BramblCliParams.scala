@@ -1,6 +1,5 @@
 package co.topl.brambl.cli
 
-import java.io.File
 import co.topl.client.Provider
 
 final case class BramblCliParams(
