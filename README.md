@@ -39,3 +39,19 @@ cs launch co.topl:brambl-cli_2.13:1.0.0.beta-1 -- wallet sign --token poly -n va
 ```
 
 The input is taken from stdin, and the output is written to stdout. You can pipe the output of the previous command to the input of this command. You can also use the `-i` flag to specify the input file and the `-o` flag to specify the output file.
+
+### Broadcast a poly transaction
+
+To broadcast the transaction created in the previous step, run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:1.0.0.beta-1 transaction broadcast --token poly -n private -u http://localhost:9085 -i test_transaction_signed.json
+```
+
+### Get the poly balance for a set of addresses
+
+To get the poly balance for a set of addresses, run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:1.0.0.beta-1 wallet balance -n private -f AUAFAWju3tDYw1jeGX7zbT4oUdUgHzim8E2dVxuGg3HLpPdohrGB
+```
