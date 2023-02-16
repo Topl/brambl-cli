@@ -19,12 +19,16 @@ import co.topl.utils.IdiomaticScalaTransition.implicits.toValidatedOps
 import co.topl.utils.Int128
 import co.topl.utils.StringDataTypes
 import io.circe.Json
+import io.circe.parser.parse
 
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import scala.concurrent.ExecutionContext
 import scala.io.Source
+import co.topl.modifier.transaction.PolyTransfer
+import co.topl.attestation.Address
+import co.topl.attestation.Proposition
 
 case class RpcClientFailureException(failure: RpcClientFailure)
     extends Throwable
@@ -41,6 +45,14 @@ object BramlblCli {
         changeAddress: String,
         fee: Int
     ): F[Unit]
+
+    def signTransferPoly(
+        keyFile: String,
+        password: String,
+        someOutputFile: Option[String],
+        someInputFile: Option[String]
+    ): F[Unit]
+
   }
 }
 
@@ -56,6 +68,67 @@ object BramblCliInterpreter {
     new BramlblCli.BramblCliAlgebra[IO] {
       import provider._
 
+      def readFromStdin() =
+        IO.blocking(
+          Source.stdin.getLines().mkString("").mkString
+        )
+
+      def parseTxPolyM(msg2Sign: Array[Byte]) = IO.fromEither {
+        import io.circe.parser._
+        import co.topl.modifier.transaction.PolyTransfer.jsonDecoder
+        parse(new String(msg2Sign)).flatMap(jsonDecoder.decodeJson)
+      }
+
+      def decodeTransactionM(tx: String) = IO(tx.getBytes())
+
+      def signTxM(rawTx: PolyTransfer[_ <: Proposition]) = IO {
+        val signFunc = (addr: Address) =>
+          keyRing.generateAttestation(addr)(rawTx.messageToSign)
+        val signatures = keyRing.addresses.map(signFunc).reduce(_ ++ _)
+        rawTx.copy(attestation = signatures)
+      }
+
+      def encodeTransferM(
+          assetTransfer: PolyTransfer[PublicKeyPropositionCurve25519]
+      ): IO[String] = for {
+        transferRequest <- IO {
+          import io.circe.syntax._
+          assetTransfer.asJson.noSpaces
+        }
+      } yield transferRequest
+
+      def signTransferPoly(
+          keyFile: String,
+          password: String,
+          someOutputFile: Option[String],
+          someInputFile: Option[String]
+      ): IO[Unit] = for {
+        keyfile <- readFileM(keyFile)
+        jsonKey <- IO.fromEither(parse(keyfile))
+        _ <- importKeyM(jsonKey, password, keyRing)
+        unsignedTx <- someInputFile match {
+          case Some(inputFile) =>
+            readFileM(inputFile)
+          case None =>
+            readFromStdin
+        }
+        msg2Sign <- decodeTransactionM(unsignedTx)
+        rawTx <- parseTxPolyM(msg2Sign)
+        signedTx <- signTxM(rawTx)
+        signedTxString <- encodeTransferM(signedTx)
+        _ <- someOutputFile match {
+          case Some(outputFile) =>
+            IO.blocking(
+              Files.write(
+                Paths.get(outputFile),
+                signedTxString.getBytes
+              )
+            )
+          case None =>
+            IO.println(signedTxString)
+        }
+      } yield ()
+
       def importKeyM(
           jsonKey: Json,
           password: String,
@@ -65,7 +138,7 @@ object BramblCliInterpreter {
           Brambl
             .importCurve25519JsonToKeyRing(jsonKey, password, keyRing)
             .left
-            .map(RpcClientFailureException(_))
+            .map(x => { println(x); RpcClientFailureException(x) })
         )
 
       def readFileM(fileName: String) =
@@ -152,7 +225,7 @@ object BramblCliInterpreter {
             )
           )
           rawTx <- IO.fromEither(
-            eitherTx.left.map(x => { println(x); RpcClientFailureException(x)})
+            eitherTx.left.map(x => { println(x); RpcClientFailureException(x) })
           )
         } yield rawTx.rawTx
 

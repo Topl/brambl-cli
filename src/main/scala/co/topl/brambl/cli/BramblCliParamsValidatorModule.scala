@@ -7,6 +7,8 @@ import co.topl.client.Provider
 import scala.util.Try
 import co.topl.utils.StringDataTypes
 import co.topl.utils.NetworkType
+import java.nio.file.Files
+import java.nio.file.Paths
 
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
@@ -19,7 +21,6 @@ object BramblCliSubCmd extends Enumeration {
 
   val create, sign, broadcast = Value
 }
-
 
 object TokenType extends Enumeration {
   type TokenType = Value
@@ -131,7 +132,7 @@ trait BramblCliParamsValidatorModule {
 
   def validateWalletCreate(paramConfig: BramblCliParams) = {
     (paramConfig.somePassword) match {
-      case Some(password)  =>
+      case Some(password) =>
         Validated.validNel(password)
       case None =>
         Validated.invalidNel(
@@ -140,26 +141,36 @@ trait BramblCliParamsValidatorModule {
     }
   }
 
-  // def validateKeyfileAndPassword(someKeyFile: Option[String], somePassword: Option[String]) = {
-  //   (someKeyFile, somePassword) match {
-  //     case (Some(keyFile), Some(password)) =>
-  //       Validated.validNel((keyFile, password))
-  //     case (Some(keyFile), None) =>
-  //       Validated.invalidNel(
-  //         "Password is required "
-  //       )
-  //     case (None, Some(password)) =>
-  //       Validated.invalidNel(
-  //         "Keyfile is required for wallet creation"
-  //       )
-  //     case (None, None) =>
-  //       Validated.invalidNel(
-  //         "Keyfile and password are required for wallet creation"
-  //       )
-  //   }
-  // }
+  def validateKeyfile(someKeyfile: Option[String]) = {
+    someKeyfile match {
+      case Some(keyfile) =>
+        Files.exists(Paths.get(keyfile)) match {
+          case true => Validated.validNel(keyfile)
+          case false =>
+            Validated.invalidNel(
+              "Keyfile does not exist"
+            )
+        }
+      case None =>
+        Validated.invalidNel(
+          "Keyfile is required"
+        )
+    }
+  }
 
-  def validateFromAddresses(fromAddresses: Seq[String])(implicit networkPrefix: NetworkType.NetworkPrefix) = {
+  def validatePassword(somePassword: Option[String]) = {
+    somePassword match {
+      case Some(password) => Validated.validNel(password)
+      case None =>
+        Validated.invalidNel(
+          "Password is required"
+        )
+    }
+  }
+
+  def validateFromAddresses(
+      fromAddresses: Seq[String]
+  )(implicit networkPrefix: NetworkType.NetworkPrefix) = {
     if (fromAddresses.isEmpty)
       Validated.invalidNel(
         "At least one from address is required"
@@ -170,23 +181,32 @@ trait BramblCliParamsValidatorModule {
     }
   }
 
-  def validateToAddresses(toAddresses: Map[String, Int])(implicit networkPrefix: NetworkType.NetworkPrefix) = {
+  def validateToAddresses(
+      toAddresses: Map[String, Int]
+  )(implicit networkPrefix: NetworkType.NetworkPrefix) = {
     if (toAddresses.isEmpty)
       Validated.invalidNel(
         "At least one to address is required"
       )
     else {
       import cats.implicits._
-      toAddresses.map(x => validateAddress(x._1).map(y => (y, x._2))).toList.sequence
+      toAddresses
+        .map(x => validateAddress(x._1).map(y => (y, x._2)))
+        .toList
+        .sequence
     }
   }
 
-  def validateAddress(address: String)(implicit networkPrefix: NetworkType.NetworkPrefix) = {
+  def validateAddress(
+      address: String
+  )(implicit networkPrefix: NetworkType.NetworkPrefix) = {
     import co.topl.attestation.AddressCodec.implicits._
     import co.topl.utils.IdiomaticScalaTransition.implicits.toValidatedOps
-    Try(StringDataTypes.Base58Data.unsafe(address).decodeAddress.getOrThrow()).toOption match {
+    Try(
+      StringDataTypes.Base58Data.unsafe(address).decodeAddress.getOrThrow()
+    ).toOption match {
       case Some(_) => Validated.validNel(address)
-      case None => Validated.invalidNel("Invalid address: " + address)
+      case None    => Validated.invalidNel("Invalid address: " + address)
     }
   }
 
@@ -209,15 +229,25 @@ trait BramblCliParamsValidatorModule {
     }
   }
 
-  def validatTransactionCreate(paramConfig: BramblCliParams)(implicit networkPrefix: NetworkType.NetworkPrefix) = {
-      (
-        validateToplNetworkUri(paramConfig.someNetworkUri.getOrElse("")),
-        validateTokenType(paramConfig.someToken.getOrElse("")),
-        validateFromAddresses(paramConfig.fromAddresses),
-        validateToAddresses(paramConfig.toAddresses),
-        validateAddress(paramConfig.changeAddress),
-        validateFee(paramConfig.fee)
-      )
+  def validatTransactionCreate(
+      paramConfig: BramblCliParams
+  )(implicit networkPrefix: NetworkType.NetworkPrefix) = {
+    (
+      validateToplNetworkUri(paramConfig.someNetworkUri.getOrElse("")),
+      validateTokenType(paramConfig.someToken.getOrElse("")),
+      validateFromAddresses(paramConfig.fromAddresses),
+      validateToAddresses(paramConfig.toAddresses),
+      validateAddress(paramConfig.changeAddress),
+      validateFee(paramConfig.fee)
+    )
+  }
+
+  def validateWalletSign(paramConfig: BramblCliParams) = {
+    (
+      validateKeyfile(paramConfig.someKeyfile),
+      validatePassword(paramConfig.somePassword),
+      validateTokenType(paramConfig.someToken.getOrElse(""))
+    )
   }
 
   def validateParams(
@@ -229,7 +259,9 @@ trait BramblCliParamsValidatorModule {
         validateSubCmd(mode, paramConfig.subcmd).map((mode, _))
       ),
       (
-        validateToplNetworkUri(paramConfig.someNetworkUri.getOrElse("http://127.0.0.1:9085")),
+        validateToplNetworkUri(
+          paramConfig.someNetworkUri.getOrElse("http://127.0.0.1:9085")
+        ),
         validateNetworkType(paramConfig.networkType)
       ).mapN((uri, networkType) =>
         buildNetwork(
@@ -240,24 +272,44 @@ trait BramblCliParamsValidatorModule {
       )
     ).mapN((modeAndSubCmd, provider) => {
       val (mode, subcmd) = modeAndSubCmd
-      implicit val networkPrefix: NetworkType.NetworkPrefix = provider.networkPrefix
+      implicit val networkPrefix: NetworkType.NetworkPrefix =
+        provider.networkPrefix
       modeAndSubCmd match {
         case (BramblCliMode.transaction, BramblCliSubCmd.create) =>
-          validatTransactionCreate(paramConfig).mapN((_, token, fromAddresses, toAddresses, changeAddress, fee) =>
-            BramblCliValidatedParams(
-              mode,
-              subcmd,
-              provider,
-              "",
-              Some(token),
-              paramConfig.someOutputFile,
-              None,
-              fromAddresses,
-              toAddresses,
-              changeAddress,
-              fee
-            )
+          validatTransactionCreate(paramConfig).mapN(
+            (_, token, fromAddresses, toAddresses, changeAddress, fee) =>
+              BramblCliValidatedParams(
+                mode,
+                subcmd,
+                provider,
+                "",
+                Some(token),
+                paramConfig.someOutputFile,
+                None,
+                None,
+                fromAddresses,
+                toAddresses,
+                changeAddress,
+                fee
+              )
           )
+        case (BramblCliMode.wallet, BramblCliSubCmd.sign) =>
+          validateWalletSign(paramConfig).mapN(
+            (_, password, tokenType) =>
+              BramblCliValidatedParams(
+                mode,
+                subcmd,
+                provider,
+                password,
+                Some(tokenType),
+                None,
+                paramConfig.someInputFile,
+                paramConfig.someKeyfile,
+                Nil,
+                Nil,
+                "",
+                0
+              ))
         case (BramblCliMode.wallet, BramblCliSubCmd.create) =>
           validateWalletCreate(paramConfig).map { password =>
             BramblCliValidatedParams(
@@ -265,6 +317,7 @@ trait BramblCliParamsValidatorModule {
               subcmd,
               provider,
               password,
+              None,
               None,
               paramConfig.someOutputFile,
               None,

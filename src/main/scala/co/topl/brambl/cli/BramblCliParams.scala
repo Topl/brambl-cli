@@ -16,6 +16,7 @@ final case class BramblCliParams(
     fromAddresses: Seq[String] = Nil,
     toAddresses: Map[String, Int] = Map(),
     changeAddress: String = "",
+    someInputFile: Option[String] = None,
     fee: Int = 0
 )
 final case class BramblCliValidatedParams(
@@ -24,8 +25,9 @@ final case class BramblCliValidatedParams(
     provider: Provider,
     password: String,
     someTokenType: Option[TokenType.Value],
-    outputFile: Option[String],
-    someKeyfile: Option[File],
+    someOutputFile: Option[String],
+    someInputFile: Option[String] = None,
+    someKeyfile: Option[String],
     fromAddresses: Seq[String],
     toAddresses: List[(String, Int)],
     changeAddress: String,

@@ -40,11 +40,11 @@ trait BramblCliParamsParserModule {
                 .action((x, c) => c.copy(fromAddresses = x))
                 .text(
                   "the address(es) to send from"
-                ),	
+                ),
               opt[Option[String]]("token")
                 .action((x, c) => c.copy(someToken = x))
                 .text(
-                  "the address(es) to send to"
+                  "the token that we are sending, possible values: poly"
                 ),
               opt[Map[String, Int]]('t', "to-addresses")
                 .action((x, c) => c.copy(toAddresses = x))
@@ -67,6 +67,36 @@ trait BramblCliParamsParserModule {
         .action((_, c) => c.copy(mode = "wallet"))
         .text("Wallet mode")
         .children(
+          cmd("sign")
+            .action((_, c) => c.copy(subcmd = "sign"))
+            .text("Sign transaction")
+            .children(
+              opt[Option[String]]("token")
+                .action((x, c) => c.copy(someToken = x))
+                .text(
+                  "the token that we are sending, possible values: poly"
+                ),
+              opt[Option[String]]('o', "output-file")
+                .action((x, c) => c.copy(someOutputFile = x))
+                .text(
+                  "the outputfile"
+                ),
+              opt[Option[String]]('i', "input-file")
+                .action((x, c) => c.copy(someInputFile = x))
+                .text(
+                  "the outputfile"
+                ),
+              opt[Option[String]]('p', "password")
+                .action((x, c) => c.copy(somePassword = x))
+                .text(
+                  "the password for the keyfile"
+                ),
+              opt[Option[String]]('k', "keyfile")
+                .action((x, c) => c.copy(someKeyfile = x))
+                .text(
+                  "the file that contains the operator key, for example keyfile.json"
+                )
+            ),
           cmd("create")
             .action((_, c) => c.copy(subcmd = "create"))
             .text("Create a new wallet")
