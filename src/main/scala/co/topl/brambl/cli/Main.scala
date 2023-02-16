@@ -45,6 +45,13 @@ object Main
                       validatedParams.someInputFile
                     )
                 }
+              case (BramblCliMode.transaction, BramblCliSubCmd.broadcast) =>
+                interpreter.broadcastPolyTransfer(validatedParams.someInputFile)
+              case (BramblCliMode.wallet, BramblCliSubCmd.balance) =>
+                interpreter.balancePolys(
+                  validatedParams.fromAddresses,
+                  validatedParams.someOutputFile
+                )
               case (BramblCliMode.wallet, BramblCliSubCmd.create) =>
                 interpreter.createWallet(
                   validatedParams.password,

@@ -19,7 +19,7 @@ object BramblCliMode extends Enumeration {
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
-  val create, sign, broadcast = Value
+  val create, sign, broadcast, balance = Value
 }
 
 object TokenType extends Enumeration {
@@ -57,7 +57,7 @@ trait BramblCliParamsValidatorModule {
         Try(BramblCliSubCmd.withName(subcmd)).toOption match {
           case Some(subcmd) =>
             val validSubCmds =
-              List(BramblCliSubCmd.create, BramblCliSubCmd.sign)
+              List(BramblCliSubCmd.create, BramblCliSubCmd.sign, BramblCliSubCmd.balance)
             if (validSubCmds.contains(subcmd))
               Validated.validNel(subcmd)
             else
@@ -76,7 +76,7 @@ trait BramblCliParamsValidatorModule {
         Try(BramblCliSubCmd.withName(subcmd)).toOption match {
           case Some(subcmd) =>
             val validSubCmds =
-              List(BramblCliSubCmd.create, BramblCliSubCmd.sign)
+              List(BramblCliSubCmd.create, BramblCliSubCmd.broadcast)
             if (validSubCmds.contains(subcmd))
               Validated.validNel(subcmd)
             else
@@ -144,16 +144,20 @@ trait BramblCliParamsValidatorModule {
   def validateKeyfile(someKeyfile: Option[String]) = {
     someKeyfile match {
       case Some(keyfile) =>
-        Files.exists(Paths.get(keyfile)) match {
-          case true => Validated.validNel(keyfile)
-          case false =>
-            Validated.invalidNel(
-              "Keyfile does not exist"
-            )
-        }
+        validateFileExists("Keyfile", keyfile)
       case None =>
         Validated.invalidNel(
           "Keyfile is required"
+        )
+    }
+  }
+
+  def validateFileExists(fileTag: String, fileName: String) = {
+    Files.exists(Paths.get(fileName)) match {
+      case true => Validated.validNel(fileName)
+      case false =>
+        Validated.invalidNel(
+          s"$fileTag does not exist"
         )
     }
   }
@@ -250,6 +254,18 @@ trait BramblCliParamsValidatorModule {
     )
   }
 
+  def validateTransactionBroadcast(paramConfig: BramblCliParams) = {
+    import cats.implicits._
+    (
+      paramConfig.someInputFile.map(validateFileExists("input file", _)).sequence
+    )
+  }
+  def validateWalletBalance(paramConfig: BramblCliParams)(implicit networkPrefix: NetworkType.NetworkPrefix) = {
+    (
+      validateFromAddresses(paramConfig.fromAddresses)
+    )
+  }
+
   def validateParams(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliValidatedParams] = {
@@ -293,7 +309,42 @@ trait BramblCliParamsValidatorModule {
                 fee
               )
           )
+        case (BramblCliMode.transaction, BramblCliSubCmd.broadcast) =>
+          validateTransactionBroadcast(paramConfig).map { someInputFile =>
+            BramblCliValidatedParams(
+              mode,
+              subcmd,
+              provider,
+              "",
+              None,
+              None,
+              someInputFile,
+              None,
+              Nil,
+              Nil,
+              "",
+              0
+            )
+          }
+        case (BramblCliMode.wallet, BramblCliSubCmd.balance) =>
+          validateWalletBalance(paramConfig).map { fromAddresses =>
+            BramblCliValidatedParams(
+              mode,
+              subcmd,
+              provider,
+              "",
+              None,
+              None,
+              None,
+              None,
+              fromAddresses,
+              Nil,
+              "",
+              0
+            )
+          }
         case (BramblCliMode.wallet, BramblCliSubCmd.sign) =>
+
           validateWalletSign(paramConfig).mapN(
             (_, password, tokenType) =>
               BramblCliValidatedParams(
