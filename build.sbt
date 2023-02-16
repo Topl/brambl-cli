@@ -8,11 +8,11 @@ version := "1.0.0.beta-1"
 
 libraryDependencies += brambl
 libraryDependencies += bramblCommon
-libraryDependencies += slf4j
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core
 libraryDependencies += fs2IO
+libraryDependencies += logback
 
 scalacOptions += "-Ymacro-annotations"
 
