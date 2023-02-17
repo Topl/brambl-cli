@@ -2,7 +2,7 @@ package co.topl.brambl.cli
 
 import scopt.OParser
 
-trait BramblCliParamsParserModule {
+object BramblCliParamsParserModule {
   val builder = OParser.builder[BramblCliParams]
 
   val paramParser = {

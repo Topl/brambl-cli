@@ -11,11 +11,14 @@ import co.topl.attestation.keyManagement.KeyfileCurve25519Companion
 import co.topl.attestation.keyManagement.PrivateKeyCurve25519
 import scopt.OParser
 import com.typesafe.config.ConfigFactory
+import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
 
 object Main
-    extends IOApp
-    with BramblCliParamsParserModule
-    with BramblCliParamsValidatorModule {
+    extends IOApp {
+
+  import BramblCliParamsValidatorModule._
+
+  import BramblCliParamsParserModule._
 
   override def run(args: List[String]): IO[ExitCode] = {
     val conf = ConfigFactory.load()

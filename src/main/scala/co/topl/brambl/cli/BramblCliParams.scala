@@ -2,6 +2,30 @@ package co.topl.brambl.cli
 
 import co.topl.client.Provider
 
+object NetworkParamName extends Enumeration {
+  type NetworkParamName = Value
+
+  val main, valhalla, `private` = Value
+}
+
+object BramblCliMode extends Enumeration {
+  type BramblCliMode = Value
+
+  val wallet, transaction = Value
+}
+
+object BramblCliSubCmd extends Enumeration {
+  type BramblCliSubCmd = Value
+
+  val create, sign, broadcast, balance = Value
+}
+
+object TokenType extends Enumeration {
+  type TokenType = Value
+
+  val poly = Value
+}
+
 final case class BramblCliParams(
     mode: String = "",
     subcmd: String = "",
@@ -31,4 +55,4 @@ final case class BramblCliValidatedParams(
     toAddresses: List[(String, Int)],
     changeAddress: String,
     fee: Int = 0
-) 
+)
