@@ -141,6 +141,51 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
     assertEquals(validateParams(params2).isValid, true)
   }
 
+  test("Test valid wallet balance") {
+    val args0 = List(
+      "wallet",
+      "balance",
+      "-n",
+      "private",
+      "-u",
+      "http://localhost:8065",
+      "-f",
+      "AUAFAWju3tDYw1jeGX7zbT4oUdUgHzim8E2dVxuGg3HLpPdohrGB",
+      "--token",
+      "poly"
+    )
+    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
+    assertEquals(validateParams(params0).isValid, true)
+    val args1 = List(
+      "wallet",
+      "balance",
+      "-n",
+      "valhalla",
+      "-u",
+      "http://localhost:8065",
+      "-f",
+      "3NLiSix8R4zKDYHL8bTSrVe1Y6E4sg6W7L89VpPY4Zdvz2KJRK3z",
+      "--token",
+      "poly"
+    )
+    val params1 = OParser.parse(paramParser, args1, BramblCliParams()).get
+    assertEquals(validateParams(params1).isValid, true)
+    val args2 = List(
+      "wallet",
+      "balance",
+      "-n",
+      "main",
+      "-u",
+      "http://localhost:8065",
+      "-f",
+      "9dC1pQbrZP8jNLmWkWz9WvX6KmTfthpk51P2xf5165KEGYitjL5",
+      "--token",
+      "poly"
+    )
+    val params2 = OParser.parse(paramParser, args2, BramblCliParams()).get
+    assertEquals(validateParams(params2).isValid, true)
+  }
+
   test("Test valid transaction broadcast") {
     val args0 = List(
       "transaction",
