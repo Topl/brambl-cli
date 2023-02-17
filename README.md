@@ -12,6 +12,55 @@ to run Java applications without any setup. It is very easy to install.
 
 ## Using the CLI
 
+```
+Usage:  [transaction|wallet] [options]
+
+  -n, --network <value>    the password for the keyfile
+  -u, --network-uri <value>
+                           the URI of the network
+  -a, --top-api-key <value>
+                           the API key for the Topl network
+Command: transaction [broadcast|create] [options]
+Transaction mode
+Command: transaction broadcast
+Broadcast a transaction
+  -i, --input-file <value>
+                           the input file
+Command: transaction create
+Create a new transaction
+  -o, --output-file <value>
+                           the output file
+  -f, --from-addresses <value>
+                           the address(es) to send from
+  --token <value>          the token that we are sending, possible values: poly
+  -t, --to-addresses <value>
+                           the address(es) to send to
+  -c, --change-address <value>
+                           the address to send change to
+  -e, --fee <value>        the fee to pay
+Command: wallet [sign|create|balance] [options]
+Wallet mode
+Command: wallet sign
+Sign transaction
+  --token <value>          the token that we are sending, possible values: poly
+  -o, --output-file <value>
+                           the outputfile
+  -i, --input-file <value>
+                           the outputfile
+  -p, --password <value>   the password for the keyfile
+  -k, --keyfile <value>    the file that contains the operator key, for example keyfile.json
+Command: wallet create
+Create a new wallet
+  -o, --output-file <value>
+                           the outputfile
+  -p, --password <value>   the password for the keyfile
+  -k, --keyfile <value>    the file that contains the operator key, for example keyfile.json
+Command: wallet balance
+Check balance of a wallet
+  -f, --from-addresses <value>
+                           the address(es) from which we get the balances
+```
+
 ### Create a keyfile
 
 To create a keyfile for the valhalla network, with password `test` and to store it in the file `the_new_keyfile.json`, run the following command:
