@@ -94,7 +94,7 @@ object BramblCliParamsParserModule {
               opt[Option[String]]('i', "input-file")
                 .action((x, c) => c.copy(someInputFile = x))
                 .text(
-                  "the outputfile"
+                  "the input file"
                 ),
               opt[Option[String]]('p', "password")
                 .action((x, c) => c.copy(somePassword = x))
