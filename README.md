@@ -15,7 +15,7 @@ to run Java applications without any setup. It is very easy to install.
 ```
 Usage:  [transaction|wallet] [options]
 
-  -n, --network <value>    the password for the keyfile
+  -n, --network <value>    the Topl network to connect to, one of: main, valhalla, and private
   -u, --network-uri <value>
                            the URI of the network
   -a, --top-api-key <value>
