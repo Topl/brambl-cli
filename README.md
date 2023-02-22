@@ -18,7 +18,7 @@ Usage:  [transaction|wallet] [options]
   -n, --network <value>    the Topl network to connect to, one of: main, valhalla, and private
   -u, --network-uri <value>
                            the URI of the network
-  -a, --top-api-key <value>
+  -a, --topl-api-key <value>
                            the API key for the Topl network
 Command: transaction [broadcast|create] [options]
 Transaction mode
