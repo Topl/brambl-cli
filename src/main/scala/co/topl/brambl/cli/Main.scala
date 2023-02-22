@@ -26,7 +26,7 @@ object Main
           case Validated.Valid(validatedParams) =>
             implicit val ec = actorSystem.dispatcher
             val keyRing: KeyRing[PrivateKeyCurve25519, KeyfileCurve25519] =
-              KeyRing.empty[PrivateKeyCurve25519, KeyfileCurve25519]()( 
+              KeyRing.empty[PrivateKeyCurve25519, KeyfileCurve25519]()(
                 validatedParams.provider.networkPrefix,
                 PrivateKeyCurve25519.secretGenerator,
                 KeyfileCurve25519Companion
@@ -34,14 +34,25 @@ object Main
             val interpreter =
               BramblCliInterpreter.makeIO(validatedParams.provider, keyRing)
             (validatedParams.mode, validatedParams.subcmd) match {
+              case (BramblCliMode.wallet, BramblCliSubCmd.sign) =>
+                // after validation, we know that someTokenType is defined
+                validatedParams.someTokenType.get match {
+                  case TokenType.poly =>
+                    interpreter.signTransferPoly(
+                      validatedParams.someKeyfile.get,
+                      validatedParams.password,
+                      validatedParams.someOutputFile,
+                      validatedParams.someInputFile
+                    )
+                }
               case (BramblCliMode.wallet, BramblCliSubCmd.create) =>
                 interpreter.createWallet(
                   validatedParams.password,
-                  validatedParams.outputFile
+                  validatedParams.someOutputFile
                 )
               case (BramblCliMode.transaction, BramblCliSubCmd.create) =>
                 interpreter.createUnsignedPolyTransfer(
-                  validatedParams.outputFile,
+                  validatedParams.someOutputFile,
                   validatedParams.fromAddresses,
                   validatedParams.toAddresses,
                   validatedParams.changeAddress,
