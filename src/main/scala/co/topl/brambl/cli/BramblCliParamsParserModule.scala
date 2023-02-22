@@ -2,7 +2,7 @@ package co.topl.brambl.cli
 
 import scopt.OParser
 
-trait BramblCliParamsParserModule {
+object BramblCliParamsParserModule {
   val builder = OParser.builder[BramblCliParams]
 
   val paramParser = {
@@ -18,7 +18,7 @@ trait BramblCliParamsParserModule {
         .text(
           "the URI of the network"
         ),
-      opt[Option[String]]('a', "top-api-key")
+      opt[Option[String]]('a', "topl-api-key")
         .action((x, c) => c.copy(someApiKey = x))
         .text(
           "the API key for the Topl network"
@@ -27,6 +27,16 @@ trait BramblCliParamsParserModule {
         .action((_, c) => c.copy(mode = "transaction"))
         .text("Transaction mode")
         .children(
+          cmd("broadcast")
+            .action((_, c) => c.copy(subcmd = "broadcast"))
+            .text("Broadcast a transaction")
+            .children(
+              opt[Option[String]]('i', "input-file")
+                .action((x, c) => c.copy(someInputFile = x))
+                .text(
+                  "the input file"
+                )
+            ),
           cmd("create")
             .action((_, c) => c.copy(subcmd = "create"))
             .text("Create a new transaction")
@@ -84,7 +94,7 @@ trait BramblCliParamsParserModule {
               opt[Option[String]]('i', "input-file")
                 .action((x, c) => c.copy(someInputFile = x))
                 .text(
-                  "the outputfile"
+                  "the input file"
                 ),
               opt[Option[String]]('p', "password")
                 .action((x, c) => c.copy(somePassword = x))
@@ -115,6 +125,16 @@ trait BramblCliParamsParserModule {
                 .action((x, c) => c.copy(someKeyfile = x))
                 .text(
                   "the file that contains the operator key, for example keyfile.json"
+                )
+            ),
+          cmd("balance")
+            .action((_, c) => c.copy(subcmd = "balance"))
+            .text("Check balance of a wallet")
+            .children(
+              opt[Seq[String]]('f', "from-addresses")
+                .action((x, c) => c.copy(fromAddresses = x))
+                .text(
+                  "the address(es) from which we get the balances"
                 )
             )
         )

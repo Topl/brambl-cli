@@ -53,6 +53,15 @@ object BramlblCli {
         someInputFile: Option[String]
     ): F[Unit]
 
+    def broadcastPolyTransfer(
+        someInputFile: Option[String]
+    ): F[Unit]
+
+    def balancePolys(
+        addresses: Seq[String],
+        someOutputFile: Option[String]
+    ): F[Unit]
+
   }
 }
 
@@ -67,6 +76,79 @@ object BramblCliInterpreter {
   ): BramlblCli.BramblCliAlgebra[IO] =
     new BramlblCli.BramblCliAlgebra[IO] {
       import provider._
+
+      def decodeAddressM(address: String) = IO(
+        StringDataTypes.Base58Data.unsafe(address).decodeAddress.getOrThrow()
+      )
+
+      def getBalanceM(param: ToplRpc.NodeView.Balances.Params) = for {
+        eitherBalances <- IO.fromFuture(
+          IO(
+            ToplRpc.NodeView.Balances
+              .rpc(param)
+              .leftMap(f => RpcClientFailureException(f))
+              .value
+          )
+        )
+        balance <- IO.fromEither(eitherBalances)
+      } yield balance
+
+      def getParamsM(address: Seq[Address]) = IO(
+        ToplRpc.NodeView.Balances
+          .Params(
+            address.toList
+          )
+      )
+
+      def balancePolys(addresses: Seq[String], someOutputFile: Option[String]): IO[Unit] = {
+        import cats.implicits._
+        for {
+          decodedAddresses <- addresses.map(decodeAddressM(_)).sequence
+          params <- getParamsM(decodedAddresses)
+          balance <- getBalanceM(params)
+          polyAmount = decodedAddresses.map{address => balance
+          .get(address)
+          .map(
+            _.Boxes.PolyBox
+              .map(_.value.quantity)
+              .fold(Int128(0))(_ + _)
+          )
+          .getOrElse(Int128(0))}
+          _ <- IO.println("Available polys: " + polyAmount.fold(Int128(0))(_ + _))
+        } yield ()
+      }
+      def broadcastTransactionM(
+          signedTx: PolyTransfer[_ <: Proposition]
+      ) = for {
+        eitherBroadcast <- IO.fromFuture(
+          IO(
+            ToplRpc.Transaction.BroadcastTx
+              .rpc(ToplRpc.Transaction.BroadcastTx.Params(signedTx))
+              .leftMap(failure =>
+                RpcClientFailureException(
+                  failure
+                )
+              )
+              .value
+          )
+        )
+        broadcast <- IO.fromEither(eitherBroadcast)
+      } yield broadcast
+
+      def broadcastPolyTransfer(someInputFile: Option[String]): IO[Unit] = for {
+        signedTx <- someInputFile match {
+          case Some(inputFile) =>
+            readFileM(inputFile)
+          case None =>
+            readFromStdin
+        }
+        transactionAsBytes <- decodeTransactionM(signedTx)
+        signedTx <- parseTxPolyM(transactionAsBytes)
+        success <- broadcastTransactionM(signedTx)
+      } yield {
+        import io.circe.syntax._
+        success.asJson.noSpaces
+      }
 
       def readFromStdin() =
         IO.blocking(
