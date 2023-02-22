@@ -18,7 +18,7 @@ object BramblCliParamsParserModule {
         .text(
           "the URI of the network"
         ),
-      opt[Option[String]]('a', "top-api-key")
+      opt[Option[String]]('a', "topl-api-key")
         .action((x, c) => c.copy(someApiKey = x))
         .text(
           "the API key for the Topl network"
