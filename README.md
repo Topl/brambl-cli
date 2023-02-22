@@ -46,7 +46,7 @@ Sign transaction
   -o, --output-file <value>
                            the outputfile
   -i, --input-file <value>
-                           the outputfile
+                           the input file
   -p, --password <value>   the password for the keyfile
   -k, --keyfile <value>    the file that contains the operator key, for example keyfile.json
 Command: wallet create
