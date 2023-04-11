@@ -18,8 +18,8 @@ object Main
     OParser.parse(paramParser, args, BramblCliParams()) match {
       case Some(params) =>
         val op = validateParams(params) match {
-          case Validated.Valid(validatedParams) =>
-            IO.unit
+          case Validated.Valid(_) =>
+            IO.println("Valid params")
           case Validated.Invalid(errors) =>
             IO.println("Invalid params") *> IO.println(
               errors.toList.mkString(", ")

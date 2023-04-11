@@ -6,9 +6,11 @@ import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.BramblCliMode
 import co.topl.brambl.cli.BramblCliSubCmd
 
+import co.topl.brambl.cli.validation.KeyValidationModule
+
 object BramblCliParamsValidatorModule
     extends CommonValidationModule
-    with WalletValidationModule {
+    with KeyValidationModule {
 
   def validateParams(
       paramConfig: BramblCliParams
@@ -23,7 +25,10 @@ object BramblCliParamsValidatorModule
       .map((modeAndSubCmd) => {
         modeAndSubCmd match {
           case (BramblCliMode.key, BramblCliSubCmd.generate) =>
-            ???
+            BramblCliValidatedParams(
+              mode = BramblCliMode.key,
+              subcmd = BramblCliSubCmd.generate
+            ).validNel
         }
       })
       .andThen(x => x)

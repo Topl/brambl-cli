@@ -8,7 +8,6 @@ import co.topl.brambl.cli.BramblCliSubCmd
 
 trait CommonValidationModule {
 
-  
   def validateMode(mode: String) = {
     Try(BramblCliMode.withName(mode)).toOption match {
       case Some(mode) => Validated.validNel(mode)
@@ -27,10 +26,17 @@ trait CommonValidationModule {
   ): ValidatedNel[String, BramblCliSubCmd.Value] = {
     mode match {
       case BramblCliMode.key =>
-          ???
+        Try(BramblCliSubCmd.withName(subcmd)).toOption match {
+          case Some(subcmd) => Validated.validNel(subcmd)
+          case None =>
+            Validated.invalidNel(
+              "Invalid subcmd. Valid values are " + BramblCliSubCmd.values
+                .mkString(
+                  ", "
+                )
+            )
+        }
     }
   }
-
-
 
 }
