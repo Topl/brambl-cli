@@ -23,4 +23,11 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
     assertEquals(validateParams(params2).isValid, true)
   }
 
+  test("Test invalid key create") {
+    val args0 = List("key", "generate")
+    assertEquals(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty, true)
+    val args1 = List("key", "invalidCommand", "-p", "test")
+    assertEquals(OParser.parse(paramParser, args1, BramblCliParams()).isEmpty, true)
+  }
+
 }
