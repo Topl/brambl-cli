@@ -21,9 +21,15 @@ object TokenType extends Enumeration {
 
 final case class BramblCliParams(
     mode: String = "",
-    subcmd: String = ""
+    subcmd: String = "",
+    password: String = "",
+    somePassphrase: Option[String] = None,
+    someOutputFile: Option[String] = None
 )
 final case class BramblCliValidatedParams(
     mode: BramblCliMode.Value,
-    subcmd: BramblCliSubCmd.Value
+    subcmd: BramblCliSubCmd.Value,
+    password: String,
+    somePassphrase: Option[String],
+    someOutputFile: Option[String]
 )

@@ -39,4 +39,42 @@ trait CommonValidationModule {
     }
   }
 
+  def validatePassword(password: String) = {
+    if (password.trim().length >= 0) {
+      Validated.validNel(password)
+    } else {
+      Validated.invalidNel(
+        "Password must not be empty"
+      )
+    }
+  }
+
+  def validateOutputfile(someOutputFile: Option[String]): ValidatedNel[String, Option[String]] = {
+    someOutputFile match {
+      case Some(outputFile) =>
+        if (outputFile.trim().length >= 0) {
+          Validated.validNel(Some(outputFile))
+        } else {
+          Validated.invalidNel(
+            "Output file must not be empty"
+          )
+        }
+      case None => Validated.validNel(None)
+    }
+  }
+
+  def validatePassphrase(somePassphrase: Option[String]): ValidatedNel[String, Option[String]] = {
+    somePassphrase match {
+      case Some(passphrase) =>
+        if (passphrase.trim().length >= 0) {
+          Validated.validNel(Some(passphrase))
+        } else {
+          Validated.invalidNel(
+            "Passphrase must not be empty"
+          )
+        }
+      case None => Validated.validNel(None)
+    }
+  }
+
 }

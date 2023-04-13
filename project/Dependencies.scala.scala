@@ -6,7 +6,7 @@ object Dependencies {
   lazy val toplOrg = "com.github.Topl"
 
 
-  lazy val bramblVersion = "5eca7c6"
+  lazy val bramblVersion = "b1f5ec8"
   val bramblSc = "com.github.Topl"  % "BramblSc" % bramblVersion
   lazy val catEffects = "org.typelevel" %% "cats-effect" % "3.3.12"
   lazy val scopt = "com.github.scopt" %% "scopt" % "4.0.1"

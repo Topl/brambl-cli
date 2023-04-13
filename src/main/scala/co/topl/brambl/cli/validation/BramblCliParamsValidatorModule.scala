@@ -20,14 +20,20 @@ object BramblCliParamsValidatorModule
       validateMode(paramConfig.mode)
         .andThen(mode =>
           validateSubCmd(mode, paramConfig.subcmd).map((mode, _))
-        )
-      )
-      .map((modeAndSubCmd) => {
+        ),
+      validatePassword(paramConfig.password),
+      validatePassphrase(paramConfig.somePassphrase),
+      validateOutputfile(paramConfig.someOutputFile)
+    )
+      .mapN((modeAndSubCmd, password, somePassphrase, someOutputFile) => {
         modeAndSubCmd match {
           case (BramblCliMode.key, BramblCliSubCmd.generate) =>
             BramblCliValidatedParams(
               mode = BramblCliMode.key,
-              subcmd = BramblCliSubCmd.generate
+              subcmd = BramblCliSubCmd.generate,
+              password = password,
+              somePassphrase = somePassphrase,
+              someOutputFile = someOutputFile
             ).validNel
         }
       })
