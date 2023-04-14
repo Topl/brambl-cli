@@ -23,20 +23,40 @@ object BramblCliParamsValidatorModule
         ),
       validatePassword(paramConfig.password),
       validatePassphrase(paramConfig.somePassphrase),
-      validateOutputfile(paramConfig.someOutputFile)
+      validateOutputfile(paramConfig.someOutputFile),
+      validateInputFile(paramConfig.someInputFile)
     )
-      .mapN((modeAndSubCmd, password, somePassphrase, someOutputFile) => {
-        modeAndSubCmd match {
-          case (BramblCliMode.key, BramblCliSubCmd.generate) =>
-            BramblCliValidatedParams(
-              mode = BramblCliMode.key,
-              subcmd = BramblCliSubCmd.generate,
-              password = password,
-              somePassphrase = somePassphrase,
-              someOutputFile = someOutputFile
-            ).validNel
+      .mapN(
+        (
+            modeAndSubCmd,
+            password,
+            somePassphrase,
+            someOutputFile,
+            someInputFile
+        ) => {
+          modeAndSubCmd match {
+            case (BramblCliMode.key, BramblCliSubCmd.generate) =>
+              BramblCliValidatedParams(
+                mode = BramblCliMode.key,
+                subcmd = BramblCliSubCmd.generate,
+                password = password,
+                somePassphrase = somePassphrase,
+                someOutputFile = someOutputFile,
+                someInputFile = someInputFile
+              ).validNel
+            case (BramblCliMode.key, BramblCliSubCmd.derive) =>
+              BramblCliValidatedParams(
+                mode = BramblCliMode.key,
+                subcmd = BramblCliSubCmd.derive,
+                password = password,
+                coordinates = paramConfig.coordinates,
+                somePassphrase = somePassphrase,
+                someOutputFile = someOutputFile,
+                someInputFile = someInputFile
+              ).validNel
+          }
         }
-      })
+      )
       .andThen(x => x)
   }
 

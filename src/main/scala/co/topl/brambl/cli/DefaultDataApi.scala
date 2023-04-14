@@ -13,9 +13,13 @@ import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.box.Lock
 import cats.effect.kernel.Resource
 import java.io.PrintWriter
+import scala.io.Source
 
 
 case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
+
+  case class DecodeVaultStoreException(msg: String, t: Throwable) extends DataApi.DataApiException(msg, t)
+
 
   override def getIndicesByTxoAddress(
       address: TransactionOutputAddress
@@ -50,6 +54,16 @@ case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
 
   override def getMainKeyVaultStore(
       name: String
-  ): F[Either[DataApi.DataApiException, VaultStore[F]]] = ???
+  ): F[Either[DataApi.DataApiException, VaultStore[F]]] = Resource.make(Sync[F].delay(Source.fromFile(name))) { file =>
+    Sync[F].delay(file.close())
+  }.use { file =>
+    import co.topl.crypto.encryption.VaultStore.Codecs._
+    import io.circe.parser.decode
+    import cats.implicits._
+    for {
+      inputString <- Sync[F].blocking(file.getLines().mkString("\n"))
+      res <- Sync[F].delay(decode[VaultStore[F]](inputString).leftMap(e => DecodeVaultStoreException("Invalid JSON", e)))
+    } yield res
+  }
 
 }
