@@ -30,4 +30,16 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
     assertEquals(OParser.parse(paramParser, args1, BramblCliParams()).isEmpty, true)
   }
 
+  test("Test valid key derive") {
+    val args0 = List("key", "derive", "-p", "test", "-i", "src/test/resources/keyfile.json", "-o", "unencrypted.json", "-C", "44,0,0")
+    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
+    assertEquals(validateParams(params0).fold(_.toList, _ =>List[String]()), Nil)
+    assertEquals(validateParams(params0).isValid, true)
+  }
+  test("Test invalid key derive") {
+    val args0 = List("key", "derive", "-P", "passphrase", "-p", "test", "-i", "src/test/resources/keyfile.json", "-o", "unencrypted.json", "-C", "44,0,0")
+    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
+    assertEquals(validateParams(params0).isValid, false)
+  }
+
 }

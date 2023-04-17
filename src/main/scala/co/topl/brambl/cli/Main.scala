@@ -11,6 +11,8 @@ import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore.Codecs._
 import io.circe.syntax._
 import scopt.OParser
+import java.io.FileOutputStream
+import cats.effect.kernel.Resource
 
 object Main extends IOApp {
 
@@ -46,7 +48,6 @@ object Main extends IOApp {
         }
     } yield ()).value
   }
-
 
   def readInputFile(someInputFile: Option[String]) = {
     someInputFile match {
@@ -84,6 +85,11 @@ object Main extends IOApp {
             params.coordinates(2).toInt
           )
         )
+      _ <- Resource
+        .make(IO(new FileOutputStream(params.someOutputFile.get)))(fos =>
+          IO(fos.close())
+        )
+        .use(fos => IO(derivedKeyPair.writeTo(fos)))
     } yield derivedKeyPair
   }
 
