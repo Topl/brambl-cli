@@ -5,8 +5,14 @@ scalaVersion := "2.13.8"
 name := "brambl-cli"
 organization := "co.topl"
 
-libraryDependencies += brambl
-libraryDependencies += bramblCommon
+  resolvers ++= Seq(
+    "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/",
+    "Sonatype Staging" at "https://s01.oss.sonatype.org/content/repositories/staging",
+    "Sonatype Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/",
+    "Bintray" at "https://jcenter.bintray.com/",
+    "jitpack" at "https://jitpack.io")
+
+libraryDependencies += bramblSc
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core
