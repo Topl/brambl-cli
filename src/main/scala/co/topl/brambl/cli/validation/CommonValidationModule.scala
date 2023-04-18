@@ -40,7 +40,7 @@ trait CommonValidationModule {
   }
 
   def validatePassword(password: String) = {
-    if (password.trim().length >= 0) {
+    if (password.trim().length > 0) {
       Validated.validNel(password)
     } else {
       Validated.invalidNel(

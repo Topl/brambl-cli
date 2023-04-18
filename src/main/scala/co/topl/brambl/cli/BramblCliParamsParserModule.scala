@@ -10,10 +10,11 @@ object BramblCliParamsParserModule {
     OParser.sequence(
       opt[String]('o', "output")
         .action((x, c) => c.copy(someOutputFile = Some(x)))
-        .text("The output file."),
+        .text("The output file. (optional)"),
       opt[String]('p', "password")
         .action((x, c) => c.copy(password = x))
-        .text("Password for the encrypted key."),
+        .text("Password for the encrypted key. (mandatory)"),
+
       cmd("key")
         .action((_, c) => c.copy(mode = "key"))
         .text("Key mode")
@@ -22,13 +23,9 @@ object BramblCliParamsParserModule {
             .action((_, c) => c.copy(subcmd = "generate"))
             .text("Generate ")
             .children(
-              opt[String]('p', "password")
-                .action((x, c) => c.copy(password = x))
-                .text("Password for the encrypted key.")
-                .required(),
               opt[String]('P', "passphrase")
                 .action((x, c) => c.copy(somePassphrase = Some(x)))
-                .text("Passphrase for the encrypted key.")
+                .text("Passphrase for the encrypted key. (optional))")
             ),
           cmd("derive")
             .action((_, c) => c.copy(subcmd = "derive"))
@@ -36,10 +33,10 @@ object BramblCliParamsParserModule {
             .children(
               opt[Seq[String]]('C', "coordinates")
                 .action((x, c) => c.copy(coordinates = x))
-                .text("Coordinates for the derivation."),
+                .text("Coordinates for the derivation. (mandatory)"),
               opt[String]('i', "input")
                 .action((x, c) => c.copy(someInputFile = Some(x)))
-                .text("The output file.")
+                .text("The input file. (mandatory)")
             )
         )
     )
