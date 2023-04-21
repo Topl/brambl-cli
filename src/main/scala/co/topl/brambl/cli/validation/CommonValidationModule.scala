@@ -40,7 +40,7 @@ trait CommonValidationModule {
   }
 
   def validatePassword(password: String) = {
-    if (password.trim().length >= 0) {
+    if (password.trim().length > 0) {
       Validated.validNel(password)
     } else {
       Validated.invalidNel(
@@ -49,7 +49,9 @@ trait CommonValidationModule {
     }
   }
 
-  def validateOutputfile(someOutputFile: Option[String]): ValidatedNel[String, Option[String]] = {
+  def validateOutputfile(
+      someOutputFile: Option[String]
+  ): ValidatedNel[String, Option[String]] = {
     someOutputFile match {
       case Some(outputFile) =>
         if (outputFile.trim().length >= 0) {
@@ -63,7 +65,41 @@ trait CommonValidationModule {
     }
   }
 
-  def validatePassphrase(somePassphrase: Option[String]): ValidatedNel[String, Option[String]] = {
+  def validateInputFile(
+      someInputFile: Option[String]
+  ): ValidatedNel[String, Option[String]] = {
+    someInputFile match {
+      case Some(inputFile) =>
+        if (inputFile.trim().length >= 0) {
+          // check if the file exists
+          if (new java.io.File(inputFile).exists) {
+            Validated.validNel(Some(inputFile))
+          } else {
+            Validated.invalidNel(
+              "Input file does not exist"
+            )
+          }
+        } else {
+          Validated.invalidNel(
+            "Input file must not be empty"
+          )
+        }
+      case None => Validated.validNel(None)
+    }
+  }
+
+  def validateNoPassphrase(somePassphrase: Option[String]) = 
+    somePassphrase match {
+      case Some(_) =>
+        Validated.invalidNel(
+          "Passphrase must not be specified"
+        )
+      case None => Validated.validNel(None)
+    }
+
+  def validatePassphrase(
+      somePassphrase: Option[String]
+  ): ValidatedNel[String, Option[String]] = {
     somePassphrase match {
       case Some(passphrase) =>
         if (passphrase.trim().length >= 0) {
