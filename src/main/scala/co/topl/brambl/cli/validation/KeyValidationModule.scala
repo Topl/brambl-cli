@@ -12,20 +12,22 @@ trait KeyValidationModule {
 
   def validateCoordinates(paramConfig: BramblCliParams) = {
     import cats.implicits._
-    if (paramConfig.coordinates.length == 3) paramConfig.coordinates.validNel
-    else {
+    if (paramConfig.coordinates.length == 3)
       paramConfig.coordinates
         .map({ x =>
           Try(x.toInt).toOption match {
             case Some(_) => Validated.validNel(x)
             case None =>
               Validated.invalidNel(
-                s"Invalid coordinate: $x. Coordinates must be integers"
+                s"Invalid coordinate: $x. Coordinates must be integers."
               )
           }
         })
         .sequence
-    }
+    else
+      Validated.invalidNel(
+        s"Invalid coordinates. Three coordinates are necessary."
+      )
   }
 
   def validateKeyDeriveParams(
