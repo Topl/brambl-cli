@@ -14,14 +14,21 @@ object BramblCliParamsParserModule {
       opt[String]('p', "password")
         .action((x, c) => c.copy(password = x))
         .text("Password for the encrypted key. (mandatory)"),
-
-      cmd("key")
-        .action((_, c) => c.copy(mode = "key"))
-        .text("Key mode")
+      cmd("utxo")
+        .action((_, c) => c.copy(mode = "utxo"))
+        .text("UTXO mode")
         .children(
-          cmd("generate")
-            .action((_, c) => c.copy(subcmd = "generate"))
-            .text("Generate ")
+          cmd("query")
+            .action((_, c) => c.copy(subcmd = "query"))
+            .text("Query UTXOs")
+        ),
+      cmd("wallet")
+        .action((_, c) => c.copy(mode = "wallet"))
+        .text("Wallet mode")
+        .children(
+          cmd("init")
+            .action((_, c) => c.copy(subcmd = "init"))
+            .text("Initialize wallet")
             .children(
               opt[String]('P', "passphrase")
                 .action((x, c) => c.copy(somePassphrase = Some(x)))

@@ -5,11 +5,11 @@ import co.topl.brambl.cli.BramblCliMode
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.cli.validation.KeyValidationModule
+import co.topl.brambl.cli.validation.WalletValidationModule
 
 object BramblCliParamsValidatorModule
     extends CommonValidationModule
-    with KeyValidationModule {
+    with WalletValidationModule {
 
   def validateSpecificParams(
       mode: BramblCliMode.Value,
@@ -17,10 +17,11 @@ object BramblCliParamsValidatorModule
       paramConfig: BramblCliParams
   ) = {
     (mode, subcmd) match {
-      case (BramblCliMode.key, BramblCliSubCmd.generate) =>
+      case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.key, BramblCliSubCmd.derive) =>
-        validateKeyDeriveParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.utxo, BramblCliSubCmd.query) =>
+        import cats.implicits._
+        (mode, subcmd).validNel
     }
   }
 

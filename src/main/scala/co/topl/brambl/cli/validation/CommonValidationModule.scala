@@ -20,22 +20,45 @@ trait CommonValidationModule {
     }
   }
 
+  def checkValidSubCmd(
+      mode: BramblCliMode.BramblCliMode,
+      subcmd: String,
+      validSubCmds: Set[BramblCliSubCmd.Value]
+  ) = {
+    Try(BramblCliSubCmd.withName(subcmd)).toOption match {
+      case Some(subcmd) =>
+        if (validSubCmds.contains(subcmd)) {
+          Validated.validNel(subcmd)
+        } else {
+          Validated.invalidNel(
+            s"Invalid $mode for utxo mode. Valid values are " + validSubCmds
+              .mkString(
+                ", "
+              )
+          )
+        }
+      case None =>
+        Validated.invalidNel(
+          "Invalid subcmd. Valid values are " + BramblCliSubCmd.values.mkString(
+            ", "
+          )
+        )
+    }
+  }
+
   def validateSubCmd(
       mode: BramblCliMode.BramblCliMode,
       subcmd: String
   ): ValidatedNel[String, BramblCliSubCmd.Value] = {
     mode match {
-      case BramblCliMode.key =>
-        Try(BramblCliSubCmd.withName(subcmd)).toOption match {
-          case Some(subcmd) => Validated.validNel(subcmd)
-          case None =>
-            Validated.invalidNel(
-              "Invalid subcmd. Valid values are " + BramblCliSubCmd.values
-                .mkString(
-                  ", "
-                )
-            )
-        }
+      case BramblCliMode.utxo =>
+        checkValidSubCmd(mode, subcmd, Set(BramblCliSubCmd.query))
+      case BramblCliMode.wallet =>
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(BramblCliSubCmd.init)
+        )
     }
   }
 
@@ -88,7 +111,7 @@ trait CommonValidationModule {
     }
   }
 
-  def validateNoPassphrase(somePassphrase: Option[String]) = 
+  def validateNoPassphrase(somePassphrase: Option[String]) =
     somePassphrase match {
       case Some(_) =>
         Validated.invalidNel(

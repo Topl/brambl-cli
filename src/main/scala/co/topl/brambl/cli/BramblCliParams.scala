@@ -4,13 +4,13 @@ package co.topl.brambl.cli
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val key = Value
+  val wallet, utxo = Value
 }
 
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
-  val generate, derive = Value
+  val init, query = Value
 }
 
 object TokenType extends Enumeration {

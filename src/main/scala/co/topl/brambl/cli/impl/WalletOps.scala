@@ -9,37 +9,41 @@ import cats.effect.kernel.Resource
 import java.io.FileOutputStream
 import cats.data.EitherT
 
-trait KeyOps {
+trait WalletOps {
 
   val dataApi: DataApi[IO]
 
   val walletApi: WalletApi[IO]
 
+  val walletStateApi: WalletStateApi[IO]
+
+  def liftF[A, B <: Throwable](io: IO[Either[B, A]]) = EitherT(io)
+
   def createWalletFromParams(params: BramblCliValidatedParams) = {
     import io.circe.syntax._
     import co.topl.crypto.encryption.VaultStore.Codecs._
-    (for {
-      wallet <- EitherT(
+    for {
+      walletEither <-
         walletApi.createNewWallet(
           params.password.getBytes(),
           params.somePassphrase
         )
-      )
+      wallet <- IO.fromEither(walletEither)
       _ <- params.someOutputFile
         .map { outputFile =>
-          EitherT(
-            walletApi.saveWallet(
+          for {
+            saveEither <- walletApi.saveWallet(
               wallet.mainKeyVaultStore,
               outputFile
             )
-          )
+            _ <- IO.fromEither(saveEither)
+          } yield ()
         }
         .getOrElse {
-          EitherT.liftF(
-            IO.println(new String(wallet.mainKeyVaultStore.asJson.noSpaces))
-          )
+          IO.println(new String(wallet.mainKeyVaultStore.asJson.noSpaces))
         }
-    } yield ()).value
+      _ <- walletStateApi.initWalletState()
+    } yield ()
   }
 
   def readInputFile(someInputFile: Option[String]) = {
