@@ -13,8 +13,23 @@ import quivr.models.Preimage
 
 import java.io.PrintWriter
 import scala.io.Source
+import quivr.models.Proposition
 
 case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
+
+  override def getLockByLockAddress(address: LockAddress): F[Either[DataApi.DataApiException,Lock]] = ???
+
+
+  override def getUtxoByTxoAddress(address: TransactionOutputAddress): F[Either[DataApi.DataApiException,UnspentTransactionOutput]] = ???
+
+
+  override def getPreimage(
+      digestProposition: Proposition.Digest
+  ): F[Either[DataApi.DataApiException, Preimage]] = ???
+
+  override def getIndices(
+      signatureProposition: Proposition.DigitalSignature
+  ): F[Either[DataApi.DataApiException, Indices]] = ???
 
   override def updateMainKeyVaultStore(
       mainKeyVaultStore: VaultStore[F],
@@ -27,20 +42,6 @@ case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
 
   case class DecodeVaultStoreException(msg: String, t: Throwable)
       extends DataApi.DataApiException(msg, t)
-
-  override def getIndicesByTxoAddress(
-      address: TransactionOutputAddress
-  ): Option[Indices] = {
-    ???
-  }
-
-  override def getUtxoByTxoAddress(
-      address: TransactionOutputAddress
-  ): Option[UnspentTransactionOutput] = ???
-
-  override def getLockByLockAddress(address: LockAddress): Option[Lock] = ???
-
-  override def getPreimage(idx: Indices): Option[Preimage] = ???
 
   override def saveMainKeyVaultStore(
       mainKeyVaultStore: VaultStore[F],

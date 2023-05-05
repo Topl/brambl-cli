@@ -1,93 +1,94 @@
 package co.topl.brambl.cli.impl
 
+import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
-import cats.effect.IO
-import co.topl.brambl.dataApi.DataApi
 import co.topl.brambl.wallet.WalletApi
+import quivr.models.KeyPair
 import co.topl.brambl.models.Indices
-import cats.effect.kernel.Resource
-import java.io.FileOutputStream
-import cats.data.EitherT
+import co.topl.crypto.encryption.VaultStore
 
-trait WalletOps {
+trait WalletOps[F[_]] {
 
-  val dataApi: DataApi[IO]
+  def createWalletFromParams(params: BramblCliValidatedParams): F[Unit]
 
-  val walletApi: WalletApi[IO]
+}
 
-  val walletStateApi: WalletStateApi[IO]
+object WalletOps {
+  def make[F[_]: Sync](
+      walletApi: WalletApi[F],
+      walletStateApi: WalletStateApi[F]
+  ) = new WalletOps[F] {
+    import cats.implicits._
 
-  def liftF[A, B <: Throwable](io: IO[Either[B, A]]) = EitherT(io)
+    private def createNewWallet(params: BramblCliValidatedParams) = walletApi
+      .createNewWallet(
+        params.password.getBytes(),
+        params.somePassphrase
+      )
+      .map(_.fold(throw _, identity))
 
-  def createWalletFromParams(params: BramblCliValidatedParams) = {
-    import io.circe.syntax._
-    import co.topl.crypto.encryption.VaultStore.Codecs._
-    for {
-      walletEither <-
-        walletApi.createNewWallet(
-          params.password.getBytes(),
-          params.somePassphrase
+    private def extractMainKey(
+        wallet: VaultStore[F],
+        password: String
+    ): F[KeyPair] =
+      walletApi
+        .extractMainKey(
+          wallet,
+          password.getBytes()
         )
-      wallet <- IO.fromEither(walletEither)
-      _ <- params.someOutputFile
-        .map { outputFile =>
-          for {
-            saveEither <- walletApi.saveWallet(
+        .flatMap(
+          _.fold(
+            _ =>
+              Sync[F].raiseError[KeyPair](
+                new Throwable("No input file (should not happen)")
+              ),
+            Sync[F].point(_)
+          )
+        )
+
+    private def saveWallet(
+        wallet: VaultStore[F],
+        outputFile: String
+    ) = {
+      walletApi
+        .saveWallet(
+          wallet,
+          outputFile
+        )
+        .map(_.fold(throw _, identity))
+    }
+
+    def createWalletFromParams(params: BramblCliValidatedParams) = {
+      import io.circe.syntax._
+      import co.topl.crypto.encryption.VaultStore.Codecs._
+
+      for {
+        wallet <- createNewWallet(params)
+        keyPair <- extractMainKey(wallet.mainKeyVaultStore, params.password)
+        _ <- params.someOutputFile
+          .map { outputFile =>
+            saveWallet(
               wallet.mainKeyVaultStore,
               outputFile
             )
-            _ <- IO.fromEither(saveEither)
-          } yield ()
-        }
-        .getOrElse {
-          IO.println(new String(wallet.mainKeyVaultStore.asJson.noSpaces))
-        }
-      _ <- walletStateApi.initWalletState()
-    } yield ()
-  }
-
-  def readInputFile(someInputFile: Option[String]) = {
-    someInputFile match {
-      case Some(inputFile) =>
-        dataApi.getMainKeyVaultStore(inputFile).map(_.left.map(_.getCause()))
-      case None =>
-        IO.raiseError(new Throwable("No input file (should not happen)"))
-    }
-  }
-
-  def loadKeysFromParam(params: BramblCliValidatedParams) = {
-    for {
-      walletEither <- readInputFile(params.someInputFile)
-      wallet <- IO.fromEither(walletEither)
-      keyPair <- walletApi
-        .extractMainKey(wallet, params.password.getBytes())
-        .map(
-          _.left.map(_ => new Throwable("No input file (should not happen)"))
-        )
-    } yield keyPair
-  }
-
-  def deriveChildKeyFromParams(
-      params: BramblCliValidatedParams
-  ) = {
-    for {
-      kpEither <- loadKeysFromParam(params)
-      kp <- IO.fromEither(kpEither)
-      derivedKeyPair <-
-        walletApi.deriveChildKeys(
-          kp,
+          }
+          .getOrElse {
+            Sync[F].delay(
+              println(new String(wallet.mainKeyVaultStore.asJson.noSpaces))
+            )
+          }
+        derivedKey <- walletApi.deriveChildKeys(
+          keyPair,
           new Indices(
-            params.coordinates(0).toInt,
-            params.coordinates(1).toInt,
-            params.coordinates(2).toInt
+            1,
+            1,
+            1
           )
         )
-      _ <- Resource
-        .make(IO(new FileOutputStream(params.someOutputFile.get)))(fos =>
-          IO(fos.close())
-        )
-        .use(fos => IO(derivedKeyPair.writeTo(fos)))
-    } yield derivedKeyPair
+        _ <- walletStateApi.initWalletState(derivedKey.vk)
+      } yield ()
+
+    }
   }
 
 }

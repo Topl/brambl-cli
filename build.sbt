@@ -15,7 +15,7 @@ organization := "co.topl"
     )
 
 libraryDependencies += bramblSdk
-libraryDependencies += bramblCrypto
+// libraryDependencies += bramblCrypto
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core

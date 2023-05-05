@@ -5,6 +5,7 @@ import cats.data.Validated
 import cats.data.ValidatedNel
 import co.topl.brambl.cli.BramblCliMode
 import co.topl.brambl.cli.BramblCliSubCmd
+import co.topl.brambl.cli.NetworkIdentifiers
 
 trait CommonValidationModule {
 
@@ -17,6 +18,36 @@ trait CommonValidationModule {
             ", "
           )
         )
+    }
+  }
+  def validateNetwork(network: String) = {
+    NetworkIdentifiers.fromString(network) match {
+      case Some(mode) => Validated.validNel(mode)
+      case None =>
+        Validated.invalidNel(
+          "Invalid network. Valid values are " + NetworkIdentifiers.values
+            .mkString(
+              ", "
+            )
+        )
+    }
+  }
+
+  def validatePort(port: Int) = {
+    import cats.implicits._
+    if (port > 0 && port < 65536) {
+      port.validNel
+    } else {
+      "Port must be between 0 and 65536".invalidNel
+    }
+  }
+
+  def validateHost(host: String) = {
+    import cats.implicits._
+    if (host.nonEmpty) {
+      host.validNel
+    } else {
+      "Host must be non-empty".invalidNel
     }
   }
 
@@ -51,6 +82,8 @@ trait CommonValidationModule {
       subcmd: String
   ): ValidatedNel[String, BramblCliSubCmd.Value] = {
     mode match {
+      case BramblCliMode.simpletransaction =>
+        checkValidSubCmd(mode, subcmd, Set(BramblCliSubCmd.create))
       case BramblCliMode.utxo =>
         checkValidSubCmd(mode, subcmd, Set(BramblCliSubCmd.query))
       case BramblCliMode.wallet =>
@@ -73,7 +106,8 @@ trait CommonValidationModule {
   }
 
   def validateOutputfile(
-      someOutputFile: Option[String]
+      someOutputFile: Option[String],
+      required: Boolean
   ): ValidatedNel[String, Option[String]] = {
     someOutputFile match {
       case Some(outputFile) =>
@@ -84,12 +118,15 @@ trait CommonValidationModule {
             "Output file must not be empty"
           )
         }
-      case None => Validated.validNel(None)
+      case None =>
+        if (required) Validated.invalidNel("Output file is required")
+        else Validated.validNel(None)
     }
   }
 
   def validateInputFile(
-      someInputFile: Option[String]
+      someInputFile: Option[String],
+      required: Boolean
   ): ValidatedNel[String, Option[String]] = {
     someInputFile match {
       case Some(inputFile) =>
@@ -107,7 +144,9 @@ trait CommonValidationModule {
             "Input file must not be empty"
           )
         }
-      case None => Validated.validNel(None)
+      case None =>
+        if (required) Validated.invalidNel("Input file is required")
+        else Validated.validNel(None)
     }
   }
 
@@ -118,6 +157,15 @@ trait CommonValidationModule {
           "Passphrase must not be specified"
         )
       case None => Validated.validNel(None)
+    }
+
+  def validateNoPassword(password: String) =
+    if (password.trim().length > 0) {
+      Validated.invalidNel(
+        "Password must not be specified"
+      )
+    } else {
+      Validated.validNel(password)
     }
 
   def validatePassphrase(

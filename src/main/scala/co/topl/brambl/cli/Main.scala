@@ -4,9 +4,12 @@ import cats.data.Validated
 import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
+import co.topl.brambl.cli.impl.SimpleTransactionOps
+import co.topl.brambl.cli.impl.TransactionBuilderApi
 import co.topl.brambl.cli.impl.WalletOps
+import co.topl.brambl.cli.impl.WalletStateApi
 import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
-import co.topl.brambl.models.transaction.IoTransaction
+import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.node.services.FetchBlockBodyReq
@@ -15,9 +18,8 @@ import co.topl.node.services.FetchTransactionReq
 import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannelBuilder
 import scopt.OParser
-import co.topl.brambl.cli.impl.WalletStateApi
 
-object Main extends IOApp with WalletOps {
+object Main extends IOApp {
 
   import BramblCliParamsValidatorModule._
 
@@ -27,8 +29,6 @@ object Main extends IOApp with WalletOps {
 
   val walletApi = WalletApi.make(dataApi)
 
-  lazy val walletStateApi = WalletStateApi.makeIO
-
   override def run(args: List[String]): IO[ExitCode] = {
     OParser.parse(paramParser, args, BramblCliParams()) match {
       case Some(params) =>
@@ -36,7 +36,34 @@ object Main extends IOApp with WalletOps {
           case Validated.Valid(validateParams) =>
             (validateParams.mode, validateParams.subcmd) match {
               case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
-                createWalletFromParams(validateParams)
+                val transactionBuilderApi = TransactionBuilderApi.make[IO](
+                  validateParams.network.networkId,
+                  NetworkConstants.MAIN_LEDGER_ID
+                )
+                WalletOps
+                  .make[IO](
+                    Main.this.walletApi,
+                    WalletStateApi.make[IO](transactionBuilderApi)
+                  )
+                  .createWalletFromParams(validateParams)
+              case (
+                    BramblCliMode.simpletransaction,
+                    BramblCliSubCmd.create
+                  ) =>
+                val transactionBuilderApi = TransactionBuilderApi.make[IO](
+                  validateParams.network.networkId,
+                  NetworkConstants.MAIN_LEDGER_ID
+                )
+                SimpleTransactionOps
+                  .make[IO](
+                    Main.this.dataApi,
+                    Main.this.walletApi,
+                    WalletStateApi.make[IO](transactionBuilderApi),
+                    transactionBuilderApi
+                  )
+                  .createSimpleTransactionFromParams(
+                    validateParams
+                  )
               case (BramblCliMode.utxo, BramblCliSubCmd.query) =>
                 val channel = ManagedChannelBuilder
                   .forAddress("localhost", 9084)
@@ -54,7 +81,6 @@ object Main extends IOApp with WalletOps {
                     responseBlockBody.body.get.transactionIds.head
                   )
                 )
-                IoTransaction
 
                 IO(
                   println(
