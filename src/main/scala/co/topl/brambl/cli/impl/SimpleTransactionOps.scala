@@ -97,6 +97,7 @@ object SimpleTransactionOps {
       ) = {
         import cats.implicits._
         for {
+          // FIXME when WS is ready
           // blockingStub <- Sync[F].point(
           //   TransactionServiceGrpc.blockingStub(channel)
           // )
@@ -133,6 +134,7 @@ object SimpleTransactionOps {
             )
           )
         } yield {
+          // FIXME when WS is ready
           // response.txos
           mockReturnValue
         }
@@ -178,7 +180,7 @@ object SimpleTransactionOps {
               nextIndices
             )
             _ <- Resource
-              .make(Sync[F].delay(new FileOutputStream("transaction.pbuf")))(
+              .make(Sync[F].delay(new FileOutputStream(params.someOutputFile.get)))(
                 fos => Sync[F].delay(fos.close())
               )
               .use(fos => Sync[F].delay(ioTransaction.writeTo(fos)))

@@ -136,7 +136,7 @@ trait CommonValidationModule {
           )
         }
       case None =>
-        Validated.invalidNel("Output file is required")
+        Validated.invalidNel("Wallet file is mandatory")
     }
   }
 

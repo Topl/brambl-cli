@@ -9,4 +9,4 @@ target/
 *.json
 wallet.db
 derivedkey.txt
-transaction.pbuf
+*.pbuf
