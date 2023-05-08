@@ -64,6 +64,8 @@ final case class BramblCliParams(
     someWalletFile: Option[String] = None,
     toAddress: Option[String] = None,
     amount: Long = 0L,
+    someFromParty: Option[String] = None,
+    someFromContract: Option[String] = None,
     somePassphrase: Option[String] = None,
     someInputFile: Option[String] = None,
     someOutputFile: Option[String] = None
@@ -76,6 +78,8 @@ final case class BramblCliValidatedParams(
     port: Int = 0,
     walletFile: String = "",
     password: String,
+    fromParty: String,
+    fromContract: String,
     toAddress: Option[LockAddress],
     amount: Long,
     somePassphrase: Option[String],

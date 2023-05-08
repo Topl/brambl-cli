@@ -3,20 +3,18 @@ package co.topl.brambl.cli.impl
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.dataApi.DataApi
-import co.topl.brambl.models.TransactionId
-import co.topl.brambl.models.TransactionOutputAddress
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
-import co.topl.genus.services.Txo
-import com.google.protobuf.ByteString
+import co.topl.genus.services.QueryByAddressRequest
+import co.topl.genus.services.TransactionServiceGrpc
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
-import quivr.models.Int128
 import quivr.models.KeyPair
+
 import java.io.FileOutputStream
+import co.topl.brambl.models.LockAddress
 
 trait SimpleTransactionOps[F[_]] {
 
@@ -92,51 +90,22 @@ object SimpleTransactionOps {
       }
 
       def getTxos(
-          params: BramblCliValidatedParams,
+          fromAddress: LockAddress,
           channel: ManagedChannel
       ) = {
         import cats.implicits._
         for {
-          // FIXME when WS is ready
-          // blockingStub <- Sync[F].point(
-          //   TransactionServiceGrpc.blockingStub(channel)
-          // )
-          // response <- Sync[F].blocking(
-          //   blockingStub
-          //     .getTxosByAddress(
-          //       QueryByAddressRequest(params.toAddress.get, None)
-          //     )
-          // )
-          keyPair <- loadKeysFromParam(params)
-          currentIndices <- walletStateApi.getCurrentIndicesForDefaultFunds()
-          vkOfFundsToUnlock <- walletApi
-            .deriveChildKeys(keyPair, currentIndices)
-            .map(_.vk)
-          lockPredicate <- transactionBuilderApi.lockPredicate(
-            vkOfFundsToUnlock
+          blockingStub <- Sync[F].point(
+            TransactionServiceGrpc.blockingStub(channel)
           )
-          output <- transactionBuilderApi.lvlOuput(
-            lockPredicate,
-            Int128(ByteString.copyFrom(BigInt(params.amount).toByteArray))
-          )
-          mockReturnValue <- Sync[F].point(
-            Seq(
-              Txo(
-                output,
-                co.topl.genus.services.TxoState.SPENT,
-                TransactionOutputAddress(
-                  NetworkConstants.MAIN_NETWORK_ID,
-                  NetworkConstants.MAIN_LEDGER_ID,
-                  0,
-                  TransactionId(ByteString.copyFrom(Array.fill(32)(0.toByte)))
-                )
+          response <- Sync[F].blocking(
+            blockingStub
+              .getTxosByAddress(
+                QueryByAddressRequest(fromAddress, None)
               )
-            )
           )
         } yield {
-          // FIXME when WS is ready
-          // response.txos
-          mockReturnValue
+          response.txos
         }
       }
 
@@ -149,40 +118,67 @@ object SimpleTransactionOps {
         } yield (channel)).use { case (channel) =>
           import cats.implicits._
           for {
-            response <- getTxos(params, channel)
+            keyPair <- loadKeysFromParam(params)
+            someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
+              params.fromParty,
+              params.fromContract
+            )
+            predicateFundsToUnlock <- someCurrentIndices
+              .map(currentIndices =>
+                walletApi
+                  .deriveChildKeys(keyPair, currentIndices)
+                  .map(_.vk)
+                  .map(x => transactionBuilderApi.lockPredicateSignature(x))
+              )
+              .sequence
+              .flatMap(
+                _.getOrElse(
+                  transactionBuilderApi.lockPredicateHeight(1, Long.MaxValue)
+                )
+              )
+            someNextIndices <- walletStateApi.getNextIndicesForFunds(
+              "self", // default party to send funds to
+              "default" // default contract to send funds to
+            )
+            lockPredicateForChange <- someNextIndices
+              .map(nextIndices =>
+                walletApi
+                  .deriveChildKeys(keyPair, nextIndices)
+                  .map(_.vk)
+                  .flatMap(x => transactionBuilderApi.lockPredicateSignature(x))
+              )
+              .sequence
+              .map(
+                _.get
+              ) // the deault party to send funds to should always be present
+            fromAddress <- transactionBuilderApi.lockAddress(
+              predicateFundsToUnlock
+            )
+            response <- getTxos(fromAddress, channel)
             lvlTxos = response.filter(
               _.transactionOutput.value.value.isLvl
             )
             _ <- Sync[F].raiseWhen(lvlTxos.isEmpty)(
               new Throwable("No LVL txos found")
             )
-            keyPair <- loadKeysFromParam(params)
-            currentIndices <- walletStateApi.getCurrentIndicesForDefaultFunds()
-            vkOfFundsToUnlock <- walletApi
-              .deriveChildKeys(keyPair, currentIndices)
-              .map(_.vk)
-            nextIndices <- walletStateApi.getNextIndicesForDefaultFunds()
-            vkFundsToLock <- walletApi
-              .deriveChildKeys(keyPair, nextIndices)
-              .map(_.vk)
             lockAddress <- transactionBuilderApi.lockAddress(
-              vkFundsToLock
+              lockPredicateForChange
             )
             ioTransaction <- transactionBuilderApi.buildSimpleLvlTransaction(
               lvlTxos,
-              vkOfFundsToUnlock,
-              vkFundsToLock,
+              predicateFundsToUnlock,
+              lockPredicateForChange,
               params.toAddress.get,
               params.amount
             )
             _ <- walletStateApi.updateWalletState(
               lockAddress.toBase58(),
-              nextIndices
+              someNextIndices.get
             )
             _ <- Resource
-              .make(Sync[F].delay(new FileOutputStream(params.someOutputFile.get)))(
-                fos => Sync[F].delay(fos.close())
-              )
+              .make(
+                Sync[F].delay(new FileOutputStream(params.someOutputFile.get))
+              )(fos => Sync[F].delay(fos.close()))
               .use(fos => Sync[F].delay(ioTransaction.writeTo(fos)))
           } yield ioTransaction
         }

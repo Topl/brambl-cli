@@ -20,9 +20,15 @@ trait WalletStateApi[F[_]] {
       indices: Indices
   ): F[Unit]
 
-  def getCurrentIndicesForDefaultFunds(): F[Indices]
+  def getCurrentIndicesForFunds(
+      party: String,
+      contract: String
+  ): F[Option[Indices]]
 
-  def getNextIndicesForDefaultFunds(): F[Indices]
+  def getNextIndicesForFunds(
+      party: String,
+      contract: String
+  ): F[Option[Indices]]
 
 }
 
@@ -52,37 +58,59 @@ object WalletStateApi {
         }
       }
 
-      override def getNextIndicesForDefaultFunds(): F[Indices] = {
+      override def getNextIndicesForFunds(
+          party: String,
+          contract: String
+      ): F[Option[Indices]] = {
         connection().use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
-                "SELECT x_party, y_contract, MAX(z_state) as z_index FROM cartesian WHERE x_party = 1 AND y_contract = 1"
+                s"SELECT x_party, party FROM parties WHERE party = '${party}'"
               )
             )
             x <- Sync[F].delay(rs.getInt("x_party"))
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
+              )
+            )
+            y <- Sync[F].delay(rs.getInt("y_contract"))
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT x_party, y_contract, MAX(z_state) as z_index FROM cartesian WHERE x_party = ${x} AND y_contract = 1"
+              )
+            )
             y <- Sync[F].delay(rs.getInt("y_contract"))
             z <- Sync[F].delay(rs.getInt("z_index"))
-          } yield Indices(x, y, z + 1)
+          } yield if (x == 0) None else Some(Indices(x, y, z + 1))
         }
       }
 
-      override def getCurrentIndicesForDefaultFunds(): F[Indices] = {
+      override def getCurrentIndicesForFunds(
+          party: String,
+          contract: String
+      ): F[Option[Indices]] = {
         connection().use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
-                "SELECT x_party, y_contract, MAX(z_state) as z_index FROM cartesian WHERE x_party = 1 AND y_contract = 1"
+                s"SELECT x_party, party FROM parties WHERE party = '${party}'"
               )
             )
             x <- Sync[F].delay(rs.getInt("x_party"))
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT x_party, y_contract, MAX(z_state) as z_index FROM cartesian WHERE x_party = ${x} AND y_contract = 1"
+              )
+            )
             y <- Sync[F].delay(rs.getInt("y_contract"))
             z <- Sync[F].delay(rs.getInt("z_index"))
-          } yield Indices(x, y, z)
+          } yield if (x == 0) None else Some(Indices(x, y, z))
         }
       }
 
@@ -118,17 +146,53 @@ object WalletStateApi {
             )
             _ <- Sync[F].delay(
               stmnt.execute(
+                "CREATE TABLE IF NOT EXISTS parties (party TEXT PRIMARY KEY," +
+                  " x_party INTEGER NOT NULL)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.execute(
+                "CREATE TABLE IF NOT EXISTS contracts (contract TEXT PRIMARY KEY," +
+                  " y_contract INTEGER NOT NULL, prover TEXT NOT NULL)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.execute(
                 "CREATE INDEX IF NOT EXISTS cartesian_coordinates ON cartesian (x_party, y_contract, z_state)"
               )
             )
+            predicate <- transactionBuilderApi
+              .lockPredicateSignature(
+                vk
+              )
             lockAddress <- transactionBuilderApi
               .lockAddress(
-                vk
+                predicate
               )
             _ <- Sync[F].delay(
               stmnt.executeUpdate(
                 "INSERT INTO cartesian (x_party, y_contract, z_state, address) VALUES (1, 1, 1, '" +
                   lockAddress.toBase58 + "')"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.executeUpdate(
+                "INSERT INTO parties (party, x_party) VALUES ('noparty', 0)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.executeUpdate(
+                "INSERT INTO parties (party, x_party) VALUES ('self', 1)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.executeUpdate(
+                "INSERT INTO contracts (contract, y_contract, prover) VALUES ('default', 1, 'signatureProver')"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.executeUpdate(
+                "INSERT INTO contracts (contract, y_contract, prover) VALUES ('genesis', 2, 'heightProver')"
               )
             )
             _ <- Sync[F].delay(stmnt.close())

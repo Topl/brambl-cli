@@ -67,6 +67,8 @@ object BramblCliParamsValidatorModule
                 .toOption
                 .get
             ), // this was validated before
+            fromParty = paramConfig.someFromParty.getOrElse("noparty"),
+            fromContract = paramConfig.someFromContract.getOrElse("genesis"),
             port = paramConfig.port,
             host = paramConfig.host,
             amount = paramConfig.amount,
