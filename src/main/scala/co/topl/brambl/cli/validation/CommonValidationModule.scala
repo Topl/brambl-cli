@@ -84,8 +84,6 @@ trait CommonValidationModule {
     mode match {
       case BramblCliMode.simpletransaction =>
         checkValidSubCmd(mode, subcmd, Set(BramblCliSubCmd.create))
-      case BramblCliMode.utxo =>
-        checkValidSubCmd(mode, subcmd, Set(BramblCliSubCmd.query))
       case BramblCliMode.wallet =>
         checkValidSubCmd(
           mode,

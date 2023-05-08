@@ -31,14 +31,6 @@ object BramblCliParamsParserModule {
         .text(
           "Network name: Possible values: mainnet, testnet, private. (mandatory)"
         ),
-      cmd("utxo")
-        .action((_, c) => c.copy(mode = "utxo"))
-        .text("UTXO mode")
-        .children(
-          cmd("query")
-            .action((_, c) => c.copy(subcmd = "query"))
-            .text("Query UTXOs")
-        ),
       cmd("wallet")
         .action((_, c) => c.copy(mode = "wallet"))
         .text("Wallet mode")

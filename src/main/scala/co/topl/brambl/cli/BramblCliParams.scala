@@ -6,7 +6,7 @@ import co.topl.brambl.constants.NetworkConstants
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val wallet, utxo, simpletransaction = Value
+  val wallet, simpletransaction = Value
 }
 
 object BramblCliSubCmd extends Enumeration {
