@@ -2,10 +2,8 @@ package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import quivr.models.VerificationKey
-
-import java.sql.DriverManager
 import co.topl.brambl.models.Indices
+import quivr.models.VerificationKey
 
 abstract class WalletStateApiFailure extends RuntimeException
 
@@ -31,6 +29,7 @@ trait WalletStateApi[F[_]] {
 object WalletStateApi {
 
   def make[F[_]: Sync](
+      connection: () => Resource[F, java.sql.Connection],
       transactionBuilderApi: TransactionBuilderApi[F]
   ): WalletStateApi[F] =
     new WalletStateApi[F] {
@@ -43,15 +42,13 @@ object WalletStateApi {
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
-            inserted <- Sync[F].blocking(
+            _ <- Sync[F].blocking(
               stmnt.executeUpdate(
                 s"INSERT INTO cartesian (x_party, y_contract, z_state, address) VALUES (${indices.x}, ${indices.y}, ${indices.z}, '" +
                   address + "')"
               )
             )
-          } yield {
-            println("Inserted into cartesian table: " + inserted)
-          }
+          } yield ()
         }
       }
 
@@ -88,11 +85,6 @@ object WalletStateApi {
           } yield Indices(x, y, z)
         }
       }
-
-      def connection() = Resource
-        .make(
-          Sync[F].delay(DriverManager.getConnection("jdbc:sqlite:wallet.db"))
-        )(conn => Sync[F].delay(conn.close()))
 
       override def getCurrentAddress(): F[String] = {
         connection().use { conn =>
@@ -133,16 +125,14 @@ object WalletStateApi {
               .lockAddress(
                 vk
               )
-            inserted <- Sync[F].delay(
+            _ <- Sync[F].delay(
               stmnt.executeUpdate(
                 "INSERT INTO cartesian (x_party, y_contract, z_state, address) VALUES (1, 1, 1, '" +
                   lockAddress.toBase58 + "')"
               )
             )
             _ <- Sync[F].delay(stmnt.close())
-          } yield {
-            println("Initialized wallet state: " + inserted)
-          }
+          } yield ()
         }
       }
 

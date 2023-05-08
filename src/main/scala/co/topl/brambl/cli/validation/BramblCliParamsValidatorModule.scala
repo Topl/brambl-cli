@@ -46,6 +46,7 @@ object BramblCliParamsValidatorModule
           )
         ),
       validateNetwork(paramConfig.network),
+      validateWalletFile(paramConfig.someWalletFile),
       validateOutputfile(paramConfig.someOutputFile, required = false),
       validateInputFile(paramConfig.someInputFile, required = false)
     )
@@ -53,6 +54,7 @@ object BramblCliParamsValidatorModule
         (
             modeAndSubCmd,
             network,
+            walletFile,
             someOutputFile,
             someInputFile
         ) => {
@@ -61,6 +63,7 @@ object BramblCliParamsValidatorModule
             subcmd = modeAndSubCmd._2,
             network = network,
             password = paramConfig.password,
+            walletFile = walletFile,
             toAddress = paramConfig.toAddress.map(x =>
               AddressCodecs
                 .decodeAddress(x)

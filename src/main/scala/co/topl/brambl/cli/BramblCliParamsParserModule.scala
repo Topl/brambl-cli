@@ -23,6 +23,9 @@ object BramblCliParamsParserModule {
       opt[Int]('p', "port")
         .action((x, c) => c.copy(port = x))
         .text("Port Bifrost node. (mandatory)"),
+      opt[Option[String]]("walletdb")
+        .action((x, c) => c.copy(someWalletFile = x))
+        .text("Wallet DB file. (mandatory)"),
       opt[String]('n', "network")
         .action((x, c) => c.copy(network = x))
         .text(

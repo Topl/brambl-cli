@@ -11,20 +11,51 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
 
   import BramblCliParamsParserModule._
 
-  test("Test valid key create") {
-    val args0 = List("key", "generate", "-p", "test")
+  test("Test valid wallet create") {
+    val args0 = List(
+      "wallet",
+      "init",
+      "-w",
+      "test",
+      "--walletdb",
+      "wallet.db",
+      "-n",
+      "private"
+    )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assertEquals(validateParams(params0).isValid, true)
-    val args1 = List("key", "generate", "-p", "test", "-P", "myPassphrase")
+    val args1 = List(
+      "wallet",
+      "init",
+      "-w",
+      "test",
+      "-P",
+      "myPassphrase",
+      "--walletdb",
+      "wallet.db",
+      "-n",
+      "private"
+    )
     val params1 = OParser.parse(paramParser, args1, BramblCliParams()).get
     assertEquals(validateParams(params1).isValid, true)
-    val args2 = List("key", "generate", "-p", "test", "-o", "outputFile.json")
+    val args2 = List(
+      "wallet",
+      "init",
+      "-w",
+      "test",
+      "-o",
+      "outputFile.json",
+      "--walletdb",
+      "wallet.db",
+      "-n",
+      "private"
+    )
     val params2 = OParser.parse(paramParser, args2, BramblCliParams()).get
     assertEquals(validateParams(params2).isValid, true)
   }
 
   test("Test invalid key create") {
-    val args0 = List("key", "generate")
+    val args0 = List("wallet", "init")
     assertEquals(
       OParser
         .parse(paramParser, args0, BramblCliParams())
@@ -33,61 +64,38 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
         .isInvalid,
       true
     )
-    val args1 = List("key", "invalidCommand", "-p", "test")
-    assertEquals(OParser.parse(paramParser, args1, BramblCliParams()).isEmpty, true)
+    val args1 = List("wallet", "invalidCommand", "-p", "test")
+    assertEquals(
+      OParser.parse(paramParser, args1, BramblCliParams()).isEmpty,
+      true
+    )
   }
 
-  test("Test valid key derive") {
+  test("Test valid transaction create") {
     val args0 = List(
-      "key",
-      "derive",
-      "-p",
+      "simpletransaction",
+      "create",
+      "-t",
+      "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
+      "-w",
       "test",
-      "-i",
-      "src/test/resources/keyfile.json",
       "-o",
-      "unencrypted.json",
-      "-C",
-      "44,0,0"
+      "newTransaction.pbuf",
+      "-p",
+      "9091",
+      "-h",
+      "localhost",
+      "-n",
+      "private",
+      "-a",
+      "100",
+      "-i",
+      "mainkey.json",
+      "--walletdb",
+      "wallet.db"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(
-      validateParams(params0).fold(_.toList, _ => List[String]()),
-      Nil
-    )
     assertEquals(validateParams(params0).isValid, true)
-  }
-  test("Test invalid key derive") {
-    val args0 = List(
-      "key",
-      "derive",
-      "-P",
-      "passphrase",
-      "-p",
-      "test",
-      "-i",
-      "src/test/resources/keyfile.json",
-      "-o",
-      "unencrypted.json",
-      "-C",
-      "44,0,0"
-    )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, false)
-    val args1 = List(
-      "key",
-      "derive",
-      "-p",
-      "test",
-      "-i",
-      "src/test/resources/keyfile.json",
-      "-o",
-      "unencrypted.json",
-      "-C",
-      "fff,0,0"
-    )
-    val params1 = OParser.parse(paramParser, args1, BramblCliParams()).get
-    assertEquals(validateParams(params1).isValid, false)
   }
 
 }

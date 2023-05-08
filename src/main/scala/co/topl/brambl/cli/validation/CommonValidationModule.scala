@@ -123,6 +123,22 @@ trait CommonValidationModule {
         else Validated.validNel(None)
     }
   }
+  def validateWalletFile(
+      someWalletFile: Option[String]
+  ): ValidatedNel[String, String] = {
+    someWalletFile match {
+      case Some(walletFile) =>
+        if (walletFile.trim().length >= 0) {
+          Validated.validNel(walletFile)
+        } else {
+          Validated.invalidNel(
+            "Wallet file is mandatory"
+          )
+        }
+      case None =>
+        Validated.invalidNel("Output file is required")
+    }
+  }
 
   def validateInputFile(
       someInputFile: Option[String],
