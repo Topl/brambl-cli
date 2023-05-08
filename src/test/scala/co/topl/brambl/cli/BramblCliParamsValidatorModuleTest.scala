@@ -90,12 +90,11 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
       "-a",
       "100",
       "-i",
-      "mainkey.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
       "wallet.db"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    println("Result: " + validateParams(params0))
     assertEquals(validateParams(params0).isValid, true)
   }
 
