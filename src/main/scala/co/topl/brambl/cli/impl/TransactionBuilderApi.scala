@@ -199,7 +199,8 @@ object TransactionBuilderApi {
                   .heightProposer(cats.catsInstancesForId)
                   .propose(("header", minHeight, maxHeight))
               )
-            )
+            ),
+            1
           )
         )
 
@@ -214,7 +215,8 @@ object TransactionBuilderApi {
                   .signatureProposer(cats.catsInstancesForId)
                   .propose(("ExtendedEd25519", vk))
               )
-            )
+            ),
+            1
           )
         )
 

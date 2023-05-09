@@ -4,17 +4,19 @@ import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.dataApi.DataApi
+import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
 import co.topl.genus.services.QueryByAddressRequest
 import co.topl.genus.services.TransactionServiceGrpc
+import co.topl.genus.services.TxoState
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import quivr.models.KeyPair
 
 import java.io.FileOutputStream
-import co.topl.brambl.models.LockAddress
+import co.topl.brambl.utils.Encoding
 
 trait SimpleTransactionOps[F[_]] {
 
@@ -101,7 +103,7 @@ object SimpleTransactionOps {
           response <- Sync[F].blocking(
             blockingStub
               .getTxosByAddress(
-                QueryByAddressRequest(fromAddress, None)
+                QueryByAddressRequest(fromAddress, None, TxoState.UNSPENT)
               )
           )
         } yield {
@@ -121,21 +123,16 @@ object SimpleTransactionOps {
             keyPair <- loadKeysFromParam(params)
             someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
               params.fromParty,
-              params.fromContract
+              params.fromContract,
+              params.someFromState
             )
             predicateFundsToUnlock <- someCurrentIndices
               .map(currentIndices =>
-                walletApi
-                  .deriveChildKeys(keyPair, currentIndices)
-                  .map(_.vk)
-                  .map(x => transactionBuilderApi.lockPredicateSignature(x))
+                walletStateApi
+                  .getLockByIndex(currentIndices)
               )
               .sequence
-              .flatMap(
-                _.getOrElse(
-                  transactionBuilderApi.lockPredicateHeight(1, Long.MaxValue)
-                )
-              )
+              .map(_.get)
             someNextIndices <- walletStateApi.getNextIndicesForFunds(
               "self", // default party to send funds to
               "default" // default contract to send funds to
@@ -152,7 +149,7 @@ object SimpleTransactionOps {
                 _.get
               ) // the deault party to send funds to should always be present
             fromAddress <- transactionBuilderApi.lockAddress(
-              predicateFundsToUnlock
+              predicateFundsToUnlock.get
             )
             response <- getTxos(fromAddress, channel)
             lvlTxos = response.filter(
@@ -166,12 +163,13 @@ object SimpleTransactionOps {
             )
             ioTransaction <- transactionBuilderApi.buildSimpleLvlTransaction(
               lvlTxos,
-              predicateFundsToUnlock,
+              predicateFundsToUnlock.get,
               lockPredicateForChange,
               params.toAddress.get,
               params.amount
             )
             _ <- walletStateApi.updateWalletState(
+              Encoding.encodeToBase58Check(lockPredicateForChange.toByteArray),
               lockAddress.toBase58(),
               someNextIndices.get
             )

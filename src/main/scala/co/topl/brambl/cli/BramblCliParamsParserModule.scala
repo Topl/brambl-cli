@@ -52,6 +52,15 @@ object BramblCliParamsParserModule {
             .action((_, c) => c.copy(subcmd = "create"))
             .text("Create transaction")
             .children(
+              opt[Option[String]]("from-party")
+                .action((x, c) => c.copy(someFromParty = x))
+                .text("Party where we are sending the funds from"),
+              opt[Option[String]]("from-contract")
+                .action((x, c) => c.copy(someFromContract = x))
+                .text("Contract where we are sending the funds from"),
+              opt[Option[String]]("from-state")
+                .action((x, c) => c.copy(someFromState = x))
+                .text("State from where we are sending the funds from"),
               opt[Option[String]]('t', "to")
                 .action((x, c) => c.copy(toAddress = x))
                 .text("Address to send polys to. (mandatory)"),
