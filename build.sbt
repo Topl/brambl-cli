@@ -14,12 +14,16 @@ organization := "co.topl"
     "jitpack" at "https://jitpack.io"
     )
 
-libraryDependencies += bramblSc
+libraryDependencies += bramblSdk
+// libraryDependencies += bramblCrypto
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core
 libraryDependencies += fs2IO
 libraryDependencies += logback
+libraryDependencies += grpcNetty
+libraryDependencies += grpcRuntime
+libraryDependencies += sqlite
 
 scalacOptions += "-Ymacro-annotations"
 

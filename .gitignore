@@ -7,3 +7,6 @@ keyfile.json
 .bloop/
 target/
 *.json
+wallet.db
+derivedkey.txt
+*.pbuf
