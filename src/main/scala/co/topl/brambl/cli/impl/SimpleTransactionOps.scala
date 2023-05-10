@@ -22,7 +22,7 @@ trait SimpleTransactionOps[F[_]] {
 
   def createSimpleTransactionFromParams(
       params: BramblCliValidatedParams
-  ): F[IoTransaction]
+  ): F[Unit]
 
 }
 object SimpleTransactionOps {
@@ -113,7 +113,7 @@ object SimpleTransactionOps {
 
       def createSimpleTransactionFromParams(
           params: BramblCliValidatedParams
-      ): F[IoTransaction] = {
+      ): F[Unit] = {
         import TransactionBuilderApi.implicits._
         (for {
           channel <- channelResource(params.host, params.port)
@@ -155,30 +155,37 @@ object SimpleTransactionOps {
             lvlTxos = response.filter(
               _.transactionOutput.value.value.isLvl
             )
-            _ <- Sync[F].raiseWhen(lvlTxos.isEmpty)(
-              new Throwable("No LVL txos found")
-            )
-            lockAddress <- transactionBuilderApi.lockAddress(
-              lockPredicateForChange
-            )
-            ioTransaction <- transactionBuilderApi.buildSimpleLvlTransaction(
-              lvlTxos,
-              predicateFundsToUnlock.get,
-              lockPredicateForChange,
-              params.toAddress.get,
-              params.amount
-            )
-            _ <- walletStateApi.updateWalletState(
-              Encoding.encodeToBase58Check(lockPredicateForChange.toByteArray),
-              lockAddress.toBase58(),
-              someNextIndices.get
-            )
-            _ <- Resource
-              .make(
-                Sync[F].delay(new FileOutputStream(params.someOutputFile.get))
-              )(fos => Sync[F].delay(fos.close()))
-              .use(fos => Sync[F].delay(ioTransaction.writeTo(fos)))
-          } yield ioTransaction
+            _ <-
+              if (lvlTxos.isEmpty) {
+                Sync[F].delay(println("No LVL txos found"))
+              } else
+                for {
+                  lockAddress <- transactionBuilderApi.lockAddress(
+                    lockPredicateForChange
+                  )
+                  ioTransaction <- transactionBuilderApi
+                    .buildSimpleLvlTransaction(
+                      lvlTxos,
+                      predicateFundsToUnlock.get,
+                      lockPredicateForChange,
+                      params.toAddress.get,
+                      params.amount
+                    )
+                  _ <- walletStateApi.updateWalletState(
+                    Encoding.encodeToBase58Check(
+                      lockPredicateForChange.toByteArray
+                    ),
+                    lockAddress.toBase58(),
+                    someNextIndices.get
+                  )
+                  _ <- Resource
+                    .make(
+                      Sync[F]
+                        .delay(new FileOutputStream(params.someOutputFile.get))
+                    )(fos => Sync[F].delay(fos.close()))
+                    .use(fos => Sync[F].delay(ioTransaction.writeTo(fos)))
+                } yield ()
+          } yield ()
         }
       }
     }
