@@ -38,6 +38,23 @@ trait SimpleTransactionValidationModule {
     }
   }
 
+  def validateFromCoordinates(
+      someFromParty: Option[String],
+      someFromContract: Option[String],
+      someFromState: Option[String]
+  ) = {
+    import cats.implicits._
+    if (someFromParty.map(_ == "noparty").getOrElse(false)) {
+      if (someFromState.isEmpty) {
+        "You must specify a from-state when using noparty".invalidNel
+      } else {
+        (someFromParty, someFromContract, someFromState).validNel
+      }
+    } else {
+      (someFromParty, someFromContract, someFromState).validNel
+    }
+  }
+
   def validateSimpleTransactionParams(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {
@@ -48,6 +65,11 @@ trait SimpleTransactionValidationModule {
       validatePassword(paramConfig.password),
       validatePort(paramConfig.port),
       validateHost(paramConfig.host),
+      validateFromCoordinates(
+        paramConfig.someFromParty,
+        paramConfig.someFromContract,
+        paramConfig.someFromState
+      ),
       validateOutputfile(paramConfig.someOutputFile, required = true),
       validateInputFile(paramConfig.someInputFile, required = true),
       validateAmount(paramConfig.amount)

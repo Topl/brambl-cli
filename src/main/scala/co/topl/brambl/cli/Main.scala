@@ -62,28 +62,39 @@ object Main extends IOApp {
                   validateParams.network.networkId,
                   NetworkConstants.MAIN_LEDGER_ID
                 )
-                SimpleTransactionOps
+                val walletStateApi = WalletStateApi.make[IO](
+                  () =>
+                    Resource
+                      .make(
+                        IO.delay(
+                          DriverManager.getConnection(
+                            s"jdbc:sqlite:${validateParams.walletFile}"
+                          )
+                        )
+                      )(conn => IO.delay(conn.close())),
+                  transactionBuilderApi
+                )
+                val simplTransactionOps = SimpleTransactionOps
                   .make[IO](
                     Main.this.dataApi,
                     Main.this.walletApi,
-                    WalletStateApi.make[IO](
-                      () =>
-                        Resource
-                          .make(
-                            IO.delay(
-                              DriverManager.getConnection(
-                                s"jdbc:sqlite:${validateParams.walletFile}"
-                              )
-                            )
-                          )(conn => IO.delay(conn.close())),
-                      transactionBuilderApi
-                    ),
+                    walletStateApi,
                     transactionBuilderApi
                   )
-                  .createSimpleTransactionFromParams(
-                    validateParams
-                  )
-
+                walletStateApi.validateCurrentIndicesForFunds(
+                  validateParams.fromParty,
+                  validateParams.fromContract,
+                  validateParams.someFromState
+                ) flatMap {
+                  case Validated.Invalid(errors) =>
+                    IO.println("Invalid params") *> IO.println(
+                      errors.toList.mkString(", ")
+                    ) *> IO.print(OParser.usage(paramParser))
+                  case Validated.Valid(_) =>
+                    simplTransactionOps.createSimpleTransactionFromParams(
+                      validateParams
+                    )
+                }
             }
           case Validated.Invalid(errors) =>
             IO.println("Invalid params") *> IO.println(

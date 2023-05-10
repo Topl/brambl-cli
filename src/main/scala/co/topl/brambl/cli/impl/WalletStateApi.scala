@@ -6,6 +6,8 @@ import co.topl.brambl.models.Indices
 import quivr.models.VerificationKey
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.models.box.Lock
+import cats.data.ValidatedNel
+import cats.data.Validated
 
 abstract class WalletStateApiFailure extends RuntimeException
 
@@ -28,6 +30,12 @@ trait WalletStateApi[F[_]] {
       contract: String,
       someState: Option[Int]
   ): F[Option[Indices]]
+
+  def validateCurrentIndicesForFunds(
+      party: String,
+      contract: String,
+      someState: Option[Int]
+  ): F[ValidatedNel[String, Indices]]
 
   def getNextIndicesForFunds(
       party: String,
@@ -118,6 +126,57 @@ object WalletStateApi {
         }
       }
 
+      private def validateParty(
+          party: String
+      ): F[ValidatedNel[String, String]] =
+        connection().use { conn =>
+          import cats.implicits._
+          for {
+            stmnt <- Sync[F].blocking(conn.createStatement())
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT x_party, party FROM parties WHERE party = '${party}'"
+              )
+            )
+          } yield
+            if (rs.next()) Validated.validNel(party)
+            else Validated.invalidNel("Party not found")
+        }
+
+      private def validateContract(
+          contract: String
+      ): F[ValidatedNel[String, String]] =
+        connection().use { conn =>
+          import cats.implicits._
+          for {
+            stmnt <- Sync[F].blocking(conn.createStatement())
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
+              )
+            )
+          } yield
+            if (rs.next()) Validated.validNel(contract)
+            else Validated.invalidNel("Contract not found")
+        }
+
+      def validateCurrentIndicesForFunds(
+          party: String,
+          contract: String,
+          someState: Option[Int]
+      ): F[ValidatedNel[String, Indices]] = {
+        import cats.implicits._
+        for {
+          validatedParty <- validateParty(party)
+          validatedContract <- validateContract(contract)
+          indices <- getCurrentIndicesForFunds(party, contract, someState)
+        } yield (
+          validatedParty,
+          validatedContract,
+          indices.toValidNel("Indices not found")
+        ).mapN((_, _, index) => index)
+      }
+
       override def getCurrentIndicesForFunds(
           party: String,
           contract: String,
@@ -150,11 +209,10 @@ object WalletStateApi {
                   .getOrElse("")
               )
             )
-            // y <- Sync[F].delay(rs.getInt("y_contract"))
             z <- someState
               .map(x => Sync[F].point(x))
               .getOrElse(Sync[F].delay(rs.getInt("z_index")))
-          } yield Some(Indices(x, y, z))
+          } yield if (rs.next()) Some(Indices(x, y, z)) else None
         }
       }
 

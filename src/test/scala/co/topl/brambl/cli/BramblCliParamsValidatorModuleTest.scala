@@ -98,4 +98,68 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
     assertEquals(validateParams(params0).isValid, true)
   }
 
+  test("Test noparty transactions require index") {
+    val args0 = List(
+      "simpletransaction",
+      "create",
+      "--from-party",
+      "noparty",
+      "--from-contract",
+      "genesis",
+      "-t",
+      "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
+      "-w",
+      "test",
+      "-o",
+      "newTransaction.pbuf",
+      "-p",
+      "9091",
+      "-h",
+      "localhost",
+      "-n",
+      "private",
+      "-a",
+      "100",
+      "-i",
+      "src/test/resources/keyfile.json",
+      "--walletdb",
+      "wallet.db"
+    )
+    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
+    assertEquals(validateParams(params0).isInvalid, true)
+  }
+
+  test("Test from-party transactions require index") {
+    val args0 = List(
+      "simpletransaction",
+      "create",
+      "--from-party",
+      "noparty",
+      "--from-contract",
+      "genesis",
+      "--from-state",
+      "0",
+      "-t",
+      "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
+      "-w",
+      "test",
+      "-o",
+      "newTransaction.pbuf",
+      "-p",
+      "9091",
+      "-h",
+      "localhost",
+      "-n",
+      "private",
+      "-a",
+      "100",
+      "-i",
+      "src/test/resources/keyfile.json",
+      "--walletdb",
+      "wallet.db"
+    )
+    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
+    assertEquals(validateParams(params0).isValid, true)
+  }
+
 }
