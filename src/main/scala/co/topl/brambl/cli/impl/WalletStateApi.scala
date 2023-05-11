@@ -1,13 +1,13 @@
 package co.topl.brambl.cli.impl
 
+import cats.data.Validated
+import cats.data.ValidatedNel
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.models.Indices
-import quivr.models.VerificationKey
-import co.topl.brambl.utils.Encoding
 import co.topl.brambl.models.box.Lock
-import cats.data.ValidatedNel
-import cats.data.Validated
+import co.topl.brambl.utils.Encoding
+import quivr.models.VerificationKey
 
 abstract class WalletStateApiFailure extends RuntimeException
 
@@ -21,7 +21,7 @@ trait WalletStateApi[F[_]] {
 
   def updateWalletState(
       lock_predicate: String,
-      address: String,
+      lockAddress: String,
       indices: Indices
   ): F[Unit]
 
@@ -78,7 +78,7 @@ object WalletStateApi {
         }
 
       override def updateWalletState(
-          address: String,
+          lockAddress: String,
           lock_predicate: String,
           indices: Indices
       ): F[Unit] = {
@@ -89,7 +89,7 @@ object WalletStateApi {
             _ <- Sync[F].blocking(
               stmnt.executeUpdate(
                 s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address) VALUES (${indices.x}, ${indices.y}, ${indices.z}, '${lock_predicate}', '" +
-                  address + "')"
+                  lockAddress + "')"
               )
             )
           } yield ()
@@ -115,12 +115,12 @@ object WalletStateApi {
                 s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
               )
             )
+            y <- Sync[F].delay(rs.getInt("y_contract"))
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
                 s"SELECT x_party, y_contract, MAX(z_state) as z_index FROM cartesian WHERE x_party = ${x} AND y_contract = 1"
               )
             )
-            y <- Sync[F].delay(rs.getInt("y_contract"))
             z <- Sync[F].delay(rs.getInt("z_index"))
           } yield if (x == 0) None else Some(Indices(x, y, z + 1))
         }
@@ -226,8 +226,8 @@ object WalletStateApi {
                 "SELECT address FROM cartesian WHERE x_party = 1 AND y_contract = 1 AND z_state = MAX(z_state)"
               )
             )
-            address <- Sync[F].delay(rs.getString("address"))
-          } yield address
+            lockAddress <- Sync[F].delay(rs.getString("address"))
+          } yield lockAddress
         }
       }
 

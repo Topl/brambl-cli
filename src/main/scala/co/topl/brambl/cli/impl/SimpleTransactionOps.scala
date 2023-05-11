@@ -5,7 +5,7 @@ import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.dataApi.DataApi
 import co.topl.brambl.models.LockAddress
-import co.topl.brambl.models.transaction.IoTransaction
+import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
 import co.topl.genus.services.QueryByAddressRequest
@@ -16,7 +16,6 @@ import io.grpc.ManagedChannelBuilder
 import quivr.models.KeyPair
 
 import java.io.FileOutputStream
-import co.topl.brambl.utils.Encoding
 
 trait SimpleTransactionOps[F[_]] {
 
