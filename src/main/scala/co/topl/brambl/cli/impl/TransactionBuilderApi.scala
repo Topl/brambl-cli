@@ -10,24 +10,28 @@ import co.topl.brambl.models.box.Attestation
 import co.topl.brambl.models.box.Challenge
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.models.box.Value
+import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.Schedule
+import co.topl.brambl.models.transaction.SpentTransactionOutput
 import co.topl.brambl.models.transaction.UnspentTransactionOutput
+import co.topl.genus.services.Txo
 import co.topl.quivr.api.Proposer
+import com.google.protobuf.ByteString
 import quivr.models.Int128
 import quivr.models.SmallData
 import quivr.models.VerificationKey
-import co.topl.brambl.models.transaction.SpentTransactionOutput
-import co.topl.brambl.models.transaction.IoTransaction
-import com.google.protobuf.ByteString
-import co.topl.genus.services.Txo
 
 trait TransactionBuilderApi[F[_]] {
 
-  def lockPredicate(vk: VerificationKey): F[Lock.Predicate]
+  def lockPredicateSignature(vk: VerificationKey): F[Lock.Predicate]
 
-  def unprovenAttestation(vk: VerificationKey): F[Attestation]
+  def unprovenAttestation(lockPredicate: Lock.Predicate): F[Attestation]
 
-  def lockAddress(vk: VerificationKey): F[LockAddress]
+  def lockPredicateHeight(minHeight: Long, maxHeight: Long): F[Lock.Predicate]
+
+  def lockAddress(
+      predicate: Lock.Predicate
+  ): F[LockAddress]
 
   def lvlOuput(
       predicate: Lock.Predicate,
@@ -43,8 +47,8 @@ trait TransactionBuilderApi[F[_]] {
 
   def buildSimpleLvlTransaction(
       lvlTxos: Seq[Txo],
-      fromVk: VerificationKey,
-      changeVk: VerificationKey,
+      lockPredicateFrom: Lock.Predicate,
+      lockPredicateForChange: Lock.Predicate,
       recipientLockAddress: LockAddress,
       amount: Long
   ): F[IoTransaction]
@@ -75,18 +79,15 @@ object TransactionBuilderApi {
 
       override def buildSimpleLvlTransaction(
           lvlTxos: Seq[Txo],
-          fromVk: VerificationKey,
-          changeVk: VerificationKey,
+          lockPredicateFrom: Lock.Predicate,
+          lockPredicateForChange: Lock.Predicate,
           recipientLockAddress: LockAddress,
           amount: Long
       ): F[IoTransaction] = {
         import cats.implicits._
         for {
-          unprovenAttestationToProve <- unprovenAttestation(fromVk)
+          unprovenAttestationToProve <- unprovenAttestation(lockPredicateFrom)
           datum <- datum()
-          lockPredicateForChange <- lockPredicate(
-            changeVk
-          )
           lvlOutputForChange <- lvlOuput(
             lockPredicateForChange,
             Int128(ByteString.copyFrom(BigInt(amount).toByteArray))
@@ -122,14 +123,13 @@ object TransactionBuilderApi {
         )
 
       override def lockAddress(
-          vk: VerificationKey
+          predicate: Lock.Predicate
       ): F[LockAddress] = {
         import co.topl.brambl.common.ContainsEvidence.Ops
         import co.topl.brambl.common.ContainsImmutable.instances._
         import cats.implicits._
         for {
-          lockPredicate <- lockPredicate(vk)
-          lock <- Sync[F].point(Lock().withPredicate(lockPredicate))
+          lock <- Sync[F].point(Lock().withPredicate(predicate))
           lockId <- Sync[F].point(
             LockId(lock.sizedEvidence.digest.value)
           )
@@ -173,23 +173,40 @@ object TransactionBuilderApi {
         )
       }
 
-      override def unprovenAttestation(vk: VerificationKey): F[Attestation] = {
+      override def unprovenAttestation(
+          predicate: Lock.Predicate
+      ): F[Attestation] = {
         import cats.implicits._
-        for {
-          lockPredicate <- lockPredicate(vk)
-        } yield {
-          Attestation(
-            Attestation.Value.Predicate(
-              Attestation.Predicate(
-                lockPredicate,
-                Nil
-              )
+        Attestation(
+          Attestation.Value.Predicate(
+            Attestation.Predicate(
+              predicate,
+              Nil
             )
           )
-        }
+        ).pure[F]
       }
 
-      override def lockPredicate(vk: VerificationKey): F[Lock.Predicate] =
+      override def lockPredicateHeight(
+          minHeight: Long,
+          maxHeight: Long
+      ): F[Lock.Predicate] =
+        Sync[F].point(
+          Lock.Predicate(
+            List(
+              Challenge().withRevealed(
+                Proposer
+                  .heightProposer(cats.catsInstancesForId)
+                  .propose(("header", minHeight, maxHeight))
+              )
+            ),
+            1
+          )
+        )
+
+      override def lockPredicateSignature(
+          vk: VerificationKey
+      ): F[Lock.Predicate] =
         Sync[F].point(
           Lock.Predicate(
             List(
@@ -198,7 +215,8 @@ object TransactionBuilderApi {
                   .signatureProposer(cats.catsInstancesForId)
                   .propose(("ExtendedEd25519", vk))
               )
-            )
+            ),
+            1
           )
         )
 
