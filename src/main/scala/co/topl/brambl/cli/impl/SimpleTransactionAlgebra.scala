@@ -17,22 +17,22 @@ import quivr.models.KeyPair
 
 import java.io.FileOutputStream
 
-trait SimpleTransactionOps[F[_]] {
+trait SimpleTransactionAlgebra[F[_]] {
 
   def createSimpleTransactionFromParams(
       params: BramblCliValidatedParams
   ): F[Unit]
 
 }
-object SimpleTransactionOps {
+object SimpleTransactionAlgebra {
 
   def make[F[_]: Sync](
       dataApi: DataApi[F],
       walletApi: WalletApi[F],
-      walletStateApi: WalletStateApi[F],
+      walletStateApi: WalletStateAlgebra[F],
       transactionBuilderApi: TransactionBuilderApi[F]
   ) =
-    new SimpleTransactionOps[F] {
+    new SimpleTransactionAlgebra[F] {
 
       def channelResource(address: String, port: Int) = {
         Resource

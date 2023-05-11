@@ -11,7 +11,7 @@ import quivr.models.VerificationKey
 
 abstract class WalletStateApiFailure extends RuntimeException
 
-trait WalletStateApi[F[_]] {
+trait WalletStateAlgebra[F[_]] {
 
   def initWalletState(
       vk: VerificationKey
@@ -48,13 +48,13 @@ trait WalletStateApi[F[_]] {
 
 }
 
-object WalletStateApi {
+object WalletStateAlgebra {
 
   def make[F[_]: Sync](
       connection: () => Resource[F, java.sql.Connection],
       transactionBuilderApi: TransactionBuilderApi[F]
-  ): WalletStateApi[F] =
-    new WalletStateApi[F] {
+  ): WalletStateAlgebra[F] =
+    new WalletStateAlgebra[F] {
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
         connection().use { conn =>

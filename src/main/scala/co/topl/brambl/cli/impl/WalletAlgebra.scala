@@ -7,17 +7,17 @@ import quivr.models.KeyPair
 import co.topl.brambl.models.Indices
 import co.topl.crypto.encryption.VaultStore
 
-trait WalletOps[F[_]] {
+trait WalletAlgebra[F[_]] {
 
   def createWalletFromParams(params: BramblCliValidatedParams): F[Unit]
 
 }
 
-object WalletOps {
+object WalletAlgebra {
   def make[F[_]: Sync](
       walletApi: WalletApi[F],
-      walletStateApi: WalletStateApi[F]
-  ) = new WalletOps[F] {
+      walletStateApi: WalletStateAlgebra[F]
+  ) = new WalletAlgebra[F] {
     import cats.implicits._
 
     private def createNewWallet(params: BramblCliValidatedParams) = walletApi
