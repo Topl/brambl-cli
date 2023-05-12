@@ -10,6 +10,17 @@ import co.topl.brambl.utils.EncodingError
 trait SimpleTransactionValidationModule {
   self: CommonValidationModule =>
 
+  def validateNoAddress(
+      someAddress: Option[String]
+  ): ValidatedNel[String, Unit] = {
+    import cats.implicits._
+    if (someAddress.isDefined) {
+      s"Address is not required".invalidNel
+    } else {
+      ().validNel
+    }
+  }
+
   def validateAddress(
       someAddress: Option[String]
   ): ValidatedNel[String, LockAddress] = {
@@ -35,6 +46,15 @@ trait SimpleTransactionValidationModule {
       amount.validNel
     } else {
       "Amount must be greater than 0".invalidNel
+    }
+  }
+
+  def validateNoAmount(amount: Long) = {
+    import cats.implicits._
+    if (amount == 0) {
+      amount.validNel
+    } else {
+      "Amount is not required".invalidNel
     }
   }
 
@@ -73,6 +93,24 @@ trait SimpleTransactionValidationModule {
       validateOutputfile(paramConfig.someOutputFile, required = true),
       validateInputFile(paramConfig.someInputFile, required = true),
       validateAmount(paramConfig.amount)
+    ).sequence.map(_ => paramConfig)
+  }
+  def validateUtxoQueryParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateNoAddress(paramConfig.toAddress),
+      validateNoPassphrase(paramConfig.somePassphrase),
+      validateNoPassword(paramConfig.password),
+      validatePort(paramConfig.port),
+      validateHost(paramConfig.host),
+      validateFromCoordinates(
+        paramConfig.someFromParty,
+        paramConfig.someFromContract,
+        paramConfig.someFromState
+      ),
+      validateNoAmount(paramConfig.amount)
     ).sequence.map(_ => paramConfig)
   }
 

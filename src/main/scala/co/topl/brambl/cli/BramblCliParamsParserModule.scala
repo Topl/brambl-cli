@@ -31,6 +31,25 @@ object BramblCliParamsParserModule {
         .text(
           "Network name: Possible values: mainnet, testnet, private. (mandatory)"
         ),
+      cmd("utxo")
+        .action((_, c) => c.copy(mode = "utxo"))
+        .text("Utxo mode")
+        .children(
+          cmd("query")
+            .action((_, c) => c.copy(subcmd = "query"))
+            .text("Query utxo")
+            .children(
+              opt[Option[String]]("from-party")
+                .action((x, c) => c.copy(someFromParty = x))
+                .text("Party where we are sending the funds from"),
+              opt[Option[String]]("from-contract")
+                .action((x, c) => c.copy(someFromContract = x))
+                .text("Contract where we are sending the funds from"),
+              opt[Option[String]]("from-state")
+                .action((x, c) => c.copy(someFromState = x))
+                .text("State from where we are sending the funds from")
+            )
+        ),
       cmd("wallet")
         .action((_, c) => c.copy(mode = "wallet"))
         .text("Wallet mode")

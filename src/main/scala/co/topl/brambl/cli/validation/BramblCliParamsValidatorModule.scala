@@ -23,6 +23,8 @@ object BramblCliParamsValidatorModule
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
         validateSimpleTransactionParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.utxo, BramblCliSubCmd.query) =>
+        validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
     }
   }
 

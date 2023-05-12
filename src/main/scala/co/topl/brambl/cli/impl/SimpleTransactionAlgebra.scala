@@ -4,15 +4,9 @@ import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.dataApi.DataApi
-import co.topl.brambl.models.LockAddress
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
-import co.topl.genus.services.QueryByAddressRequest
-import co.topl.genus.services.TransactionServiceGrpc
-import co.topl.genus.services.TxoState
-import io.grpc.ManagedChannel
-import io.grpc.ManagedChannelBuilder
 import quivr.models.KeyPair
 
 import java.io.FileOutputStream
@@ -30,21 +24,10 @@ object SimpleTransactionAlgebra {
       dataApi: DataApi[F],
       walletApi: WalletApi[F],
       walletStateApi: WalletStateAlgebra[F],
+      utxoAlgebra: UtxoAlgebra[F],
       transactionBuilderApi: TransactionBuilderApi[F]
   ) =
     new SimpleTransactionAlgebra[F] {
-
-      def channelResource(address: String, port: Int) = {
-        Resource
-          .make {
-            Sync[F].delay(
-              ManagedChannelBuilder
-                .forAddress(address, port)
-                .usePlaintext()
-                .build
-            )
-          }(channel => Sync[F].delay(channel.shutdown()))
-      }
 
       def readInputFile(
           someInputFile: Option[String]
@@ -90,102 +73,78 @@ object SimpleTransactionAlgebra {
         } yield keyPair
       }
 
-      def getTxos(
-          fromAddress: LockAddress,
-          channel: ManagedChannel
-      ) = {
-        import cats.implicits._
-        for {
-          blockingStub <- Sync[F].point(
-            TransactionServiceGrpc.blockingStub(channel)
-          )
-          response <- Sync[F].blocking(
-            blockingStub
-              .getTxosByAddress(
-                QueryByAddressRequest(fromAddress, None, TxoState.UNSPENT)
-              )
-          )
-        } yield {
-          response.txos
-        }
-      }
-
       def createSimpleTransactionFromParams(
           params: BramblCliValidatedParams
       ): F[Unit] = {
         import TransactionBuilderApi.implicits._
-        (for {
-          channel <- channelResource(params.host, params.port)
-        } yield (channel)).use { case (channel) =>
-          import cats.implicits._
-          for {
-            keyPair <- loadKeysFromParam(params)
-            someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
-              params.fromParty,
-              params.fromContract,
-              params.someFromState
+        import cats.implicits._
+        for {
+          keyPair <- loadKeysFromParam(params)
+          someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
+            params.fromParty,
+            params.fromContract,
+            params.someFromState
+          )
+          predicateFundsToUnlock <- someCurrentIndices
+            .map(currentIndices =>
+              walletStateApi
+                .getLockByIndex(currentIndices)
             )
-            predicateFundsToUnlock <- someCurrentIndices
-              .map(currentIndices =>
-                walletStateApi
-                  .getLockByIndex(currentIndices)
-              )
-              .sequence
-              .map(_.get)
-            someNextIndices <- walletStateApi.getNextIndicesForFunds(
-              "self", // default party to send funds to
-              "default" // default contract to send funds to
+            .sequence
+            .map(_.get)
+          someNextIndices <- walletStateApi.getNextIndicesForFunds(
+            "self", // default party to send funds to
+            "default" // default contract to send funds to
+          )
+          lockPredicateForChange <- someNextIndices
+            .map(nextIndices =>
+              walletApi
+                .deriveChildKeys(keyPair, nextIndices)
+                .map(_.vk)
+                .flatMap(x => transactionBuilderApi.lockPredicateSignature(x))
             )
-            lockPredicateForChange <- someNextIndices
-              .map(nextIndices =>
-                walletApi
-                  .deriveChildKeys(keyPair, nextIndices)
-                  .map(_.vk)
-                  .flatMap(x => transactionBuilderApi.lockPredicateSignature(x))
-              )
-              .sequence
-              .map(
-                _.get
-              ) // the deault party to send funds to should always be present
-            fromAddress <- transactionBuilderApi.lockAddress(
-              predicateFundsToUnlock.get
-            )
-            response <- getTxos(fromAddress, channel)
-            lvlTxos = response.filter(
-              _.transactionOutput.value.value.isLvl
-            )
-            _ <-
-              if (lvlTxos.isEmpty) {
-                Sync[F].delay(println("No LVL txos found"))
-              } else
-                for {
-                  lockAddress <- transactionBuilderApi.lockAddress(
-                    lockPredicateForChange
+            .sequence
+            .map(
+              _.get
+            ) // the deault party to send funds to should always be present
+          fromAddress <- transactionBuilderApi.lockAddress(
+            predicateFundsToUnlock.get
+          )
+          response <- utxoAlgebra.queryUtxo(fromAddress)
+          lvlTxos = response.filter(
+            _.transactionOutput.value.value.isLvl
+          )
+          _ <-
+            if (lvlTxos.isEmpty) {
+              Sync[F].delay(println("No LVL txos found"))
+            } else
+              for {
+                lockAddress <- transactionBuilderApi.lockAddress(
+                  lockPredicateForChange
+                )
+                ioTransaction <- transactionBuilderApi
+                  .buildSimpleLvlTransaction(
+                    lvlTxos,
+                    predicateFundsToUnlock.get,
+                    lockPredicateForChange,
+                    params.toAddress.get,
+                    params.amount
                   )
-                  ioTransaction <- transactionBuilderApi
-                    .buildSimpleLvlTransaction(
-                      lvlTxos,
-                      predicateFundsToUnlock.get,
-                      lockPredicateForChange,
-                      params.toAddress.get,
-                      params.amount
-                    )
-                  _ <- walletStateApi.updateWalletState(
-                    Encoding.encodeToBase58Check(
-                      lockPredicateForChange.toByteArray
-                    ),
-                    lockAddress.toBase58(),
-                    someNextIndices.get
-                  )
-                  _ <- Resource
-                    .make(
-                      Sync[F]
-                        .delay(new FileOutputStream(params.someOutputFile.get))
-                    )(fos => Sync[F].delay(fos.close()))
-                    .use(fos => Sync[F].delay(ioTransaction.writeTo(fos)))
-                } yield ()
-          } yield ()
-        }
+                _ <- walletStateApi.updateWalletState(
+                  Encoding.encodeToBase58Check(
+                    lockPredicateForChange.toByteArray
+                  ),
+                  lockAddress.toBase58(),
+                  someNextIndices.get
+                )
+                _ <- Resource
+                  .make(
+                    Sync[F]
+                      .delay(new FileOutputStream(params.someOutputFile.get))
+                  )(fos => Sync[F].delay(fos.close()))
+                  .use(fos => Sync[F].delay(ioTransaction.writeTo(fos)))
+              } yield ()
+        } yield ()
       }
     }
 }

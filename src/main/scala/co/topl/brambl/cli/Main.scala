@@ -15,6 +15,12 @@ import co.topl.brambl.wallet.WalletApi
 import scopt.OParser
 
 import java.sql.DriverManager
+import cats.effect.kernel.Sync
+import io.grpc.ManagedChannelBuilder
+import co.topl.brambl.cli.impl.UtxoAlgebra
+import co.topl.brambl.utils.Encoding
+import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.models.box.Value
 
 object Main extends IOApp {
 
@@ -25,6 +31,18 @@ object Main extends IOApp {
   val dataApi = new DefaultDataApi[IO]()
 
   val walletApi = WalletApi.make(dataApi)
+
+  def channelResource[F[_]: Sync](address: String, port: Int) = {
+    Resource
+      .make {
+        Sync[F].delay(
+          ManagedChannelBuilder
+            .forAddress(address, port)
+            .usePlaintext()
+            .build
+        )
+      }(channel => Sync[F].delay(channel.shutdown()))
+  }
 
   def walletResource(name: String) = Resource
     .make(
@@ -46,7 +64,7 @@ object Main extends IOApp {
       .make[IO](
         Main.this.walletApi,
         WalletStateAlgebra.make[IO](
-          () => walletResource(params.walletFile),
+          walletResource(params.walletFile),
           transactionBuilderApi
         )
       )
@@ -61,7 +79,7 @@ object Main extends IOApp {
       NetworkConstants.MAIN_LEDGER_ID
     )
     val walletStateApi = WalletStateAlgebra.make[IO](
-      () => walletResource(params.walletFile),
+      walletResource(params.walletFile),
       transactionBuilderApi
     )
     val simplTransactionOps = SimpleTransactionAlgebra
@@ -69,6 +87,7 @@ object Main extends IOApp {
         Main.this.dataApi,
         Main.this.walletApi,
         walletStateApi,
+        UtxoAlgebra.make[IO](channelResource(params.host, params.port)),
         transactionBuilderApi
       )
     walletStateApi.validateCurrentIndicesForFunds(
@@ -87,8 +106,64 @@ object Main extends IOApp {
     }
   }
 
-  def queryUtxoFromParams(params: BramblCliValidatedParams): IO[Unit] =
-    ??? // TODO
+  private def txoType(txoValue: Value.Value) =
+    if (txoValue.isLvl) "LVL"
+    else if (txoValue.isAsset) "Asset"
+    else if (txoValue.isRegistration) "Registration"
+    else if (txoValue.isTopl) "TOPL"
+    else "Unknown txo type"
+
+  private def value(txoValue: Value.Value): String =
+    if (txoValue.isLvl)
+      BigInt(txoValue.lvl.get.quantity.value.toByteArray()).toString()
+    else if (txoValue.isAsset)
+      BigInt(txoValue.asset.get.quantity.value.toByteArray())
+        .toString() + txoValue.asset.get.label
+    else if (txoValue.isRegistration)
+      "Registration"
+    else if (txoValue.isTopl)
+      BigInt(txoValue.topl.get.quantity.value.toByteArray()).toString()
+    else "Undefine type"
+
+  def queryUtxoFromParams(params: BramblCliValidatedParams): IO[Unit] = {
+    val transactionBuilderApi = TransactionBuilderApi.make[IO](
+      params.network.networkId,
+      NetworkConstants.MAIN_LEDGER_ID
+    )
+    WalletStateAlgebra
+      .make[IO](
+        walletResource(params.walletFile),
+        transactionBuilderApi
+      )
+      .getAddress(params.fromParty, params.fromContract, params.someFromState)
+      .flatMap {
+        case Some(address) =>
+          UtxoAlgebra
+            .make[IO](channelResource(params.host, params.port))
+            .queryUtxo(AddressCodecs.decodeAddress(address).toOption.get)
+            .flatMap { txos =>
+              import cats.implicits._
+              (txos
+                .map { txo =>
+s"""---------------------------------
+TxoAddress: ${Encoding.encodeToBase58Check(
+            txo.outputAddress.id.value.toByteArray()
+          )}#${txo.outputAddress.index}
+LockAddress: ${AddressCodecs.encodeAddress(
+            txo.transactionOutput.address
+          )}
+Type: ${txoType(txo.transactionOutput.value.value)}
+Value: ${value(txo.transactionOutput.value.value)}
+"""
+                })
+                .map(x => IO(println(x)))
+                .sequence
+                .map(_ => ())
+            }
+        case None => IO.raiseError(new Exception("Address not found"))
+      }
+
+  }
 
   override def run(args: List[String]): IO[ExitCode] = {
     OParser.parse(paramParser, args, BramblCliParams()) match {
