@@ -162,4 +162,31 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
     assertEquals(validateParams(params0).isValid, true)
   }
 
+  test("Test from-party transactions require index (UTXO query)") {
+    val args0 = List(
+      "utxo",
+      "query",
+      "--from-party",
+      "noparty",
+      "--from-contract",
+      "genesis",
+      "--from-state",
+      "0",
+      "-o",
+      "newTransaction.pbuf",
+      "-p",
+      "9091",
+      "-h",
+      "localhost",
+      "-n",
+      "private",
+      "--walletdb",
+      "wallet.db"
+    )
+    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
+    println("Validation result: " + validateParams(params0))
+    assertEquals(validateParams(params0).isValid, true)
+  }
+
+
 }

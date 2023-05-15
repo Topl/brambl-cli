@@ -90,6 +90,12 @@ trait CommonValidationModule {
           subcmd,
           Set(BramblCliSubCmd.init)
         )
+      case BramblCliMode.utxo =>
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(BramblCliSubCmd.query)
+        )
     }
   }
 

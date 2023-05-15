@@ -11,7 +11,7 @@ import quivr.models.VerificationKey
 
 abstract class WalletStateApiFailure extends RuntimeException
 
-trait WalletStateApi[F[_]] {
+trait WalletStateAlgebra[F[_]] {
 
   def initWalletState(
       vk: VerificationKey
@@ -46,18 +46,24 @@ trait WalletStateApi[F[_]] {
       indices: Indices
   ): F[Option[Lock.Predicate]]
 
+  def getAddress(
+      party: String,
+      contract: String,
+      someState: Option[Int]
+  ): F[Option[String]]
+
 }
 
-object WalletStateApi {
+object WalletStateAlgebra {
 
   def make[F[_]: Sync](
-      connection: () => Resource[F, java.sql.Connection],
+      connection: Resource[F, java.sql.Connection],
       transactionBuilderApi: TransactionBuilderApi[F]
-  ): WalletStateApi[F] =
-    new WalletStateApi[F] {
+  ): WalletStateAlgebra[F] =
+    new WalletStateAlgebra[F] {
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
@@ -82,7 +88,7 @@ object WalletStateApi {
           lock_predicate: String,
           indices: Indices
       ): F[Unit] = {
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
@@ -100,7 +106,7 @@ object WalletStateApi {
           party: String,
           contract: String
       ): F[Option[Indices]] = {
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
@@ -129,7 +135,7 @@ object WalletStateApi {
       private def validateParty(
           party: String
       ): F[ValidatedNel[String, String]] =
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
@@ -146,7 +152,7 @@ object WalletStateApi {
       private def validateContract(
           contract: String
       ): F[ValidatedNel[String, String]] =
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
@@ -177,12 +183,49 @@ object WalletStateApi {
         ).mapN((_, _, index) => index)
       }
 
+      override def getAddress(
+          party: String,
+          contract: String,
+          someState: Option[Int]
+      ): F[Option[String]] = {
+        connection.use { conn =>
+          import cats.implicits._
+          for {
+            stmnt <- Sync[F].blocking(conn.createStatement())
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT x_party, party FROM parties WHERE party = '${party}'"
+              )
+            )
+            x <- Sync[F].delay(rs.getInt("x_party"))
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
+              )
+            )
+            y <- Sync[F].delay(rs.getInt("y_contract"))
+            rs <- Sync[F].blocking(
+              stmnt.executeQuery(
+                s"SELECT address, x_party, y_contract, " + someState
+                  .map(_ => "z_state as z_index")
+                  .getOrElse(
+                    "MAX(z_state) as z_index"
+                  ) + s" FROM cartesian WHERE x_party = ${x} AND y_contract = ${y}" + someState
+                  .map(x => s" AND z_state = ${x}")
+                  .getOrElse("")
+              )
+            )
+            address <- Sync[F].delay(rs.getString("address"))
+          } yield if (rs.next()) Some(address) else None
+        }
+      }
+
       override def getCurrentIndicesForFunds(
           party: String,
           contract: String,
           someState: Option[Int]
       ): F[Option[Indices]] = {
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
@@ -217,7 +260,7 @@ object WalletStateApi {
       }
 
       override def getCurrentAddress(): F[String] = {
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
@@ -235,7 +278,7 @@ object WalletStateApi {
           vk: VerificationKey
       ): F[Unit] = {
         import TransactionBuilderApi.implicits._
-        connection().use { conn =>
+        connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].delay(conn.createStatement())
@@ -322,6 +365,5 @@ object WalletStateApi {
           } yield ()
         }
       }
-
     }
 }
