@@ -8,6 +8,7 @@ import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
 import quivr.models.VerificationKey
+import quivr.models.Proposition
 
 abstract class WalletStateApiFailure extends RuntimeException
 
@@ -16,6 +17,10 @@ trait WalletStateAlgebra[F[_]] {
   def initWalletState(
       vk: VerificationKey
   ): F[Unit]
+
+  def getIndicesBySignature(
+      signatureProposition: Proposition.DigitalSignature
+  ): F[Indices]
 
   def getCurrentAddress(): F[String]
 
@@ -61,6 +66,25 @@ object WalletStateAlgebra {
       transactionBuilderApi: TransactionBuilderApi[F]
   ): WalletStateAlgebra[F] =
     new WalletStateAlgebra[F] {
+
+      override def getIndicesBySignature(
+          signatureProposition: Proposition.DigitalSignature
+      ): F[Indices] = connection.use { conn =>
+        import cats.implicits._
+        for {
+          stmnt <- Sync[F].blocking(conn.createStatement())
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT x_party, y_contract, z_state, routine, vk FROM " +
+                s"cartesian WHERE routine = '${signatureProposition.routine}'' AND " +
+                s"vk = ${Encoding.encodeToBase58(signatureProposition.verificationKey.toByteArray)}"
+            )
+          )
+          x <- Sync[F].delay(rs.getInt("x_party"))
+          y <- Sync[F].delay(rs.getInt("y_contract"))
+          z <- Sync[F].delay(rs.getInt("z_state"))
+        } yield Indices(x, y, z)
+      }
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
         connection.use { conn =>
@@ -286,7 +310,7 @@ object WalletStateAlgebra {
               stmnt.execute(
                 "CREATE TABLE IF NOT EXISTS cartesian (id INTEGER PRIMARY KEY," +
                   " x_party INTEGER NOT NULL, y_contract INTEGER NOT NULL, z_state INTEGER NOT NULL, " +
-                  "lock_predicate TEXT NOT NULL, address TEXT NOT NULL)"
+                  "lock_predicate TEXT NOT NULL, address TEXT NOT NULL, routine TEXT, vk TEXT)"
               )
             )
             _ <- Sync[F].delay(
@@ -304,6 +328,11 @@ object WalletStateAlgebra {
             _ <- Sync[F].delay(
               stmnt.execute(
                 "CREATE INDEX IF NOT EXISTS cartesian_coordinates ON cartesian (x_party, y_contract, z_state)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.execute(
+                "CREATE INDEX IF NOT EXISTS signature_idx ON cartesian (routine, vk)"
               )
             )
             predicate <- transactionBuilderApi
@@ -325,11 +354,14 @@ object WalletStateAlgebra {
               )
             _ <- Sync[F].delay(
               stmnt.executeUpdate(
-                "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address) VALUES (1, 1, 1, '" +
+                "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (1, 1, 1, '" +
                   Encoding
                     .encodeToBase58Check(predicate.toByteArray) +
                   "', '" +
-                  lockAddress.toBase58 + "')"
+                  lockAddress.toBase58 + "', " + "'ExtendedEd25519', " + "'" +
+                  Encoding
+                    .encodeToBase58Check(vk.toByteArray)
+                  + "'" + ")"
               )
             )
             _ <- Sync[F].delay(

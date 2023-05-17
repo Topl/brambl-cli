@@ -22,7 +22,17 @@ object BramblCliParamsValidatorModule
       case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
-        validateSimpleTransactionParams(paramConfig).map(_ => (mode, subcmd))
+        validateSimpleTransactionCreateParams(paramConfig).map(_ =>
+          (mode, subcmd)
+        )
+      case (BramblCliMode.simpletransaction, BramblCliSubCmd.prove) =>
+        validateSimpleTransactionProveParams(paramConfig).map(_ =>
+          (mode, subcmd)
+        )
+      case (BramblCliMode.simpletransaction, BramblCliSubCmd.broadcast) =>
+        validateSimpleTransactionBroadcastParams(paramConfig).map(_ =>
+          (mode, subcmd)
+        )
       case (BramblCliMode.utxo, BramblCliSubCmd.query) =>
         validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
     }
@@ -46,16 +56,14 @@ object BramblCliParamsValidatorModule
         ),
       validateNetwork(paramConfig.network),
       validateWalletFile(paramConfig.someWalletFile),
-      validateOutputfile(paramConfig.someOutputFile, required = false),
-      validateInputFile(paramConfig.someInputFile, required = false)
+      validateOutputfile(paramConfig.someOutputFile, required = false)
     )
       .mapN(
         (
             modeAndSubCmd,
             network,
             walletFile,
-            someOutputFile,
-            someInputFile
+            someOutputFile
         ) => {
           BramblCliValidatedParams(
             mode = modeAndSubCmd._1,
@@ -72,12 +80,13 @@ object BramblCliParamsValidatorModule
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),
-            port = paramConfig.port,
+            genusPort = paramConfig.genusPort,
             host = paramConfig.host,
             amount = paramConfig.amount,
+            someKeyFile = paramConfig.someKeyFile,
             somePassphrase = paramConfig.somePassphrase,
             someOutputFile = someOutputFile,
-            someInputFile = someInputFile
+            someInputFile = paramConfig.someInputFile
           ).validNel
         }
       )

@@ -75,7 +75,7 @@ trait SimpleTransactionValidationModule {
     }
   }
 
-  def validateSimpleTransactionParams(
+  def validateSimpleTransactionCreateParams(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
@@ -83,7 +83,7 @@ trait SimpleTransactionValidationModule {
       validateAddress(paramConfig.toAddress),
       validateNoPassphrase(paramConfig.somePassphrase),
       validatePassword(paramConfig.password),
-      validatePort(paramConfig.port),
+      validatePort(paramConfig.genusPort),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
@@ -91,10 +91,40 @@ trait SimpleTransactionValidationModule {
         paramConfig.someFromState
       ),
       validateOutputfile(paramConfig.someOutputFile, required = true),
-      validateInputFile(paramConfig.someInputFile, required = true),
+      validateInputFile("Key file", paramConfig.someKeyFile, required = true),
       validateAmount(paramConfig.amount)
     ).sequence.map(_ => paramConfig)
   }
+
+  def validateSimpleTransactionProveParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateNoPassphrase(paramConfig.somePassphrase),
+      validatePassword(paramConfig.password),
+      validateFromCoordinates(
+        paramConfig.someFromParty,
+        paramConfig.someFromContract,
+        paramConfig.someFromState
+      ),
+      validateOutputfile(paramConfig.someOutputFile, required = true),
+      validateInputFile("Key file", paramConfig.someKeyFile, required = true),
+      validateInputFile("Transaction file", paramConfig.someInputFile, required = true)
+    ).sequence.map(_ => paramConfig)
+  }
+
+  def validateSimpleTransactionBroadcastParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateNoPassphrase(paramConfig.somePassphrase),
+      validateHost(paramConfig.host),
+      validateInputFile("Transaction file", paramConfig.someInputFile, required = true)
+    ).sequence.map(_ => paramConfig)
+  }
+
   def validateUtxoQueryParams(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {
@@ -103,7 +133,7 @@ trait SimpleTransactionValidationModule {
       validateNoAddress(paramConfig.toAddress),
       validateNoPassphrase(paramConfig.somePassphrase),
       validateNoPassword(paramConfig.password),
-      validatePort(paramConfig.port),
+      validatePort(paramConfig.genusPort),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,

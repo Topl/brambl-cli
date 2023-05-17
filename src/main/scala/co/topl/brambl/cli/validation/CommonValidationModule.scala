@@ -32,7 +32,6 @@ trait CommonValidationModule {
         )
     }
   }
-
   def validatePort(port: Int) = {
     import cats.implicits._
     if (port > 0 && port < 65536) {
@@ -83,7 +82,15 @@ trait CommonValidationModule {
   ): ValidatedNel[String, BramblCliSubCmd.Value] = {
     mode match {
       case BramblCliMode.simpletransaction =>
-        checkValidSubCmd(mode, subcmd, Set(BramblCliSubCmd.create))
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(
+            BramblCliSubCmd.create,
+            BramblCliSubCmd.prove,
+            BramblCliSubCmd.broadcast
+          )
+        )
       case BramblCliMode.wallet =>
         checkValidSubCmd(
           mode,
@@ -145,6 +152,7 @@ trait CommonValidationModule {
   }
 
   def validateInputFile(
+      fileType: String,
       someInputFile: Option[String],
       required: Boolean
   ): ValidatedNel[String, Option[String]] = {
@@ -156,16 +164,16 @@ trait CommonValidationModule {
             Validated.validNel(Some(inputFile))
           } else {
             Validated.invalidNel(
-              "Input file does not exist"
+              fileType + " does not exist"
             )
           }
         } else {
           Validated.invalidNel(
-            "Input file must not be empty"
+            fileType + " must not be empty"
           )
         }
       case None =>
-        if (required) Validated.invalidNel("Input file is required")
+        if (required) Validated.invalidNel(fileType + " is required")
         else Validated.validNel(None)
     }
   }

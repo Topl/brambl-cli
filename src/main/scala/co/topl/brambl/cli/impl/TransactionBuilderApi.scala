@@ -87,27 +87,43 @@ object TransactionBuilderApi {
         import cats.implicits._
         for {
           unprovenAttestationToProve <- unprovenAttestation(lockPredicateFrom)
+          totalValues =
+            lvlTxos
+              .foldLeft(
+                BigInt(0)
+              )((acc, x) =>
+                acc + x.transactionOutput.value.value.lvl
+                  .map(y => BigInt(y.quantity.value.toByteArray()))
+                  .getOrElse(BigInt(0))
+              )
+          _ = println("totalValues: " + totalValues)
+          _ = println("change: " + (totalValues.toLong - amount))
+          _ = println("amont: " + amount)
           datum <- datum()
           lvlOutputForChange <- lvlOuput(
-            lockPredicateForChange,
-            Int128(ByteString.copyFrom(BigInt(amount).toByteArray))
+            lockPredicateFrom,
+            Int128(
+              ByteString.copyFrom(
+                BigInt(totalValues.toLong - amount).toByteArray
+              )
+            )
           )
           lvlOutputForRecipient <- lvlOuput(
             recipientLockAddress,
             Int128(ByteString.copyFrom(BigInt(amount).toByteArray))
           )
-          ioTransaction = IoTransaction(
-            None,
-            lvlTxos.map(x =>
-              SpentTransactionOutput(
-                x.outputAddress,
-                unprovenAttestationToProve,
-                x.transactionOutput.value
+          ioTransaction = IoTransaction.defaultInstance
+            .withInputs(
+              lvlTxos.map(x =>
+                SpentTransactionOutput(
+                  x.outputAddress,
+                  unprovenAttestationToProve,
+                  x.transactionOutput.value
+                )
               )
-            ),
-            Seq(lvlOutputForChange, lvlOutputForRecipient),
-            datum = datum
-          )
+            )
+            .withOutputs(Seq(lvlOutputForChange, lvlOutputForRecipient))
+            .withDatum(datum)
         } yield ioTransaction
       }
 

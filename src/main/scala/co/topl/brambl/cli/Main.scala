@@ -5,32 +5,28 @@ import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebra
 import co.topl.brambl.cli.impl.TransactionBuilderApi
+import co.topl.brambl.cli.impl.UtxoAlgebra
 import co.topl.brambl.cli.impl.WalletAlgebra
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
+import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.models.box.Value
+import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
+import io.grpc.ManagedChannelBuilder
 import scopt.OParser
 
 import java.sql.DriverManager
-import cats.effect.kernel.Sync
-import io.grpc.ManagedChannelBuilder
-import co.topl.brambl.cli.impl.UtxoAlgebra
-import co.topl.brambl.utils.Encoding
-import co.topl.brambl.codecs.AddressCodecs
-import co.topl.brambl.models.box.Value
 
 object Main extends IOApp {
 
   import BramblCliParamsValidatorModule._
 
   import BramblCliParamsParserModule._
-
-  val dataApi = new DefaultDataApi[IO]()
-
-  val walletApi = WalletApi.make(dataApi)
 
   def channelResource[F[_]: Sync](address: String, port: Int) = {
     Resource
@@ -60,13 +56,17 @@ object Main extends IOApp {
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
+    val walletStateAlgebra = WalletStateAlgebra.make[IO](
+      walletResource(params.walletFile),
+      transactionBuilderApi
+    )
+    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
+
+    val walletApi = WalletApi.make(dataApi)
     WalletAlgebra
       .make[IO](
-        Main.this.walletApi,
-        WalletStateAlgebra.make[IO](
-          walletResource(params.walletFile),
-          transactionBuilderApi
-        )
+        walletApi,
+        walletStateAlgebra
       )
       .createWalletFromParams(params)
   }
@@ -78,17 +78,24 @@ object Main extends IOApp {
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
+    val walletStateAlgebra = WalletStateAlgebra.make[IO](
+      walletResource(params.walletFile),
+      transactionBuilderApi
+    )
+    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource(params.walletFile),
       transactionBuilderApi
     )
+    val walletApi = WalletApi.make(dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
-        Main.this.dataApi,
-        Main.this.walletApi,
+        dataApi,
+        walletApi,
         walletStateApi,
-        UtxoAlgebra.make[IO](channelResource(params.host, params.port)),
-        transactionBuilderApi
+        UtxoAlgebra.make[IO](channelResource(params.host, params.genusPort)),
+        transactionBuilderApi,
+        channelResource(params.host, 9084)
       )
     walletStateApi.validateCurrentIndicesForFunds(
       params.fromParty,
@@ -139,19 +146,19 @@ object Main extends IOApp {
       .flatMap {
         case Some(address) =>
           UtxoAlgebra
-            .make[IO](channelResource(params.host, params.port))
+            .make[IO](channelResource(params.host, params.genusPort))
             .queryUtxo(AddressCodecs.decodeAddress(address).toOption.get)
             .flatMap { txos =>
               import cats.implicits._
               (txos
                 .map { txo =>
-s"""---------------------------------
+                  s"""---------------------------------
 TxoAddress: ${Encoding.encodeToBase58Check(
-            txo.outputAddress.id.value.toByteArray()
-          )}#${txo.outputAddress.index}
+                      txo.outputAddress.id.value.toByteArray()
+                    )}#${txo.outputAddress.index}
 LockAddress: ${AddressCodecs.encodeAddress(
-            txo.transactionOutput.address
-          )}
+                      txo.transactionOutput.address
+                    )}
 Type: ${txoType(txo.transactionOutput.value.value)}
 Value: ${value(txo.transactionOutput.value.value)}
 """
@@ -165,6 +172,75 @@ Value: ${value(txo.transactionOutput.value.value)}
 
   }
 
+  def broadcastSimpleTransactionFromParams(params: BramblCliValidatedParams) = {
+    val transactionBuilderApi = TransactionBuilderApi.make[IO](
+      params.network.networkId,
+      NetworkConstants.MAIN_LEDGER_ID
+    )
+    val walletStateAlgebra = WalletStateAlgebra.make[IO](
+      walletResource(params.walletFile),
+      transactionBuilderApi
+    )
+    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
+    val walletStateApi = WalletStateAlgebra.make[IO](
+      walletResource(params.walletFile),
+      transactionBuilderApi
+    )
+    val walletApi = WalletApi.make(dataApi)
+    val simplTransactionOps = SimpleTransactionAlgebra
+      .make[IO](
+        dataApi,
+        walletApi,
+        walletStateApi,
+        UtxoAlgebra.make[IO](channelResource(params.host, params.genusPort)),
+        transactionBuilderApi,
+        channelResource(params.host, 9084)
+      )
+    simplTransactionOps.broadcastSimpleTransactionFromParams(
+      params
+    )
+  }
+
+  def proveSimpleTransactionFromParams(params: BramblCliValidatedParams) = {
+    val transactionBuilderApi = TransactionBuilderApi.make[IO](
+      params.network.networkId,
+      NetworkConstants.MAIN_LEDGER_ID
+    )
+    val walletStateAlgebra = WalletStateAlgebra.make[IO](
+      walletResource(params.walletFile),
+      transactionBuilderApi
+    )
+    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
+    val walletStateApi = WalletStateAlgebra.make[IO](
+      walletResource(params.walletFile),
+      transactionBuilderApi
+    )
+    val walletApi = WalletApi.make(dataApi)
+    val simplTransactionOps = SimpleTransactionAlgebra
+      .make[IO](
+        dataApi,
+        walletApi,
+        walletStateApi,
+        UtxoAlgebra.make[IO](channelResource(params.host, params.genusPort)),
+        transactionBuilderApi,
+        channelResource(params.host, 9084)
+      )
+    walletStateApi.validateCurrentIndicesForFunds(
+      params.fromParty,
+      params.fromContract,
+      params.someFromState
+    ) flatMap {
+      case Validated.Invalid(errors) =>
+        IO.println("Invalid params") *> IO.println(
+          errors.toList.mkString(", ")
+        ) *> IO.print(OParser.usage(paramParser))
+      case Validated.Valid(_) =>
+        simplTransactionOps.proveSimpleTransactionFromParams(
+          params
+        )
+    }
+  }
+
   override def run(args: List[String]): IO[ExitCode] = {
     OParser.parse(paramParser, args, BramblCliParams()) match {
       case Some(params) =>
@@ -173,6 +249,13 @@ Value: ${value(txo.transactionOutput.value.value)}
             (validateParams.mode, validateParams.subcmd) match {
               case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
                 createWalletFromParams(validateParams)
+              case (
+                    BramblCliMode.simpletransaction,
+                    BramblCliSubCmd.broadcast
+                  ) =>
+                broadcastSimpleTransactionFromParams(validateParams)
+              case (BramblCliMode.simpletransaction, BramblCliSubCmd.prove) =>
+                proveSimpleTransactionFromParams(validateParams)
               case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
                 createSimpleTransactionFromParams(validateParams)
               case (BramblCliMode.utxo, BramblCliSubCmd.query) =>

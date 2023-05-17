@@ -10,18 +10,22 @@ import co.topl.brambl.models.box.Lock
 import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.crypto.encryption.VaultStore
 import quivr.models.Preimage
+import co.topl.brambl.cli.impl.WalletStateAlgebra
 
 import java.io.PrintWriter
 import scala.io.Source
 import quivr.models.Proposition
 
-case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
+case class DefaultDataApi[F[_]: Sync](walletStateAlgebra: WalletStateAlgebra[F])
+    extends DataApi[F] {
 
-  override def getLockByLockAddress(address: LockAddress): F[Either[DataApi.DataApiException,Lock]] = ???
+  override def getLockByLockAddress(
+      address: LockAddress
+  ): F[Either[DataApi.DataApiException, Lock]] = ???
 
-
-  override def getUtxoByTxoAddress(address: TransactionOutputAddress): F[Either[DataApi.DataApiException,UnspentTransactionOutput]] = ???
-
+  override def getUtxoByTxoAddress(
+      address: TransactionOutputAddress
+  ): F[Either[DataApi.DataApiException, UnspentTransactionOutput]] = ???
 
   override def getPreimage(
       digestProposition: Proposition.Digest
@@ -29,7 +33,12 @@ case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
 
   override def getIndices(
       signatureProposition: Proposition.DigitalSignature
-  ): F[Either[DataApi.DataApiException, Indices]] = ???
+  ): F[Either[DataApi.DataApiException, Indices]] = {
+    import cats.implicits._
+    walletStateAlgebra
+      .getIndicesBySignature(signatureProposition)
+      .map(_.asRight)
+  }
 
   override def updateMainKeyVaultStore(
       mainKeyVaultStore: VaultStore[F],
