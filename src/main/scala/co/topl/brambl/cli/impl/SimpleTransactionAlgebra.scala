@@ -17,6 +17,7 @@ import co.topl.node.services.BroadcastTransactionReq
 import io.grpc.ManagedChannel
 import co.topl.brambl.models.box.Attestation
 import quivr.models.Proof
+import co.topl.brambl.cli.impl.GenusQueryAlgebra
 
 trait SimpleTransactionAlgebra[F[_]] {
 
@@ -39,7 +40,7 @@ object SimpleTransactionAlgebra {
       dataApi: DataApi[F],
       walletApi: WalletApi[F],
       walletStateApi: WalletStateAlgebra[F],
-      utxoAlgebra: UtxoAlgebra[F],
+      utxoAlgebra: GenusQueryAlgebra[F],
       transactionBuilderApi: TransactionBuilderApi[F],
       channelResource: Resource[F, ManagedChannel]
   ) =

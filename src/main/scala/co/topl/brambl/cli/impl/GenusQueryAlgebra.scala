@@ -9,16 +9,16 @@ import co.topl.genus.services.Txo
 import co.topl.genus.services.TxoState
 import io.grpc.ManagedChannel
 
-trait UtxoAlgebra[F[_]] {
+trait GenusQueryAlgebra[F[_]] {
 
   def queryUtxo(fromAddress: LockAddress): F[Seq[Txo]]
 
 }
 
-object UtxoAlgebra {
+object GenusQueryAlgebra {
 
   def make[F[_]: Sync](channelResource: Resource[F, ManagedChannel]) =
-    new UtxoAlgebra[F] {
+    new GenusQueryAlgebra[F] {
 
       def queryUtxo(fromAddress: LockAddress): F[Seq[Txo]] = {
         import cats.implicits._

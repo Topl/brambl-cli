@@ -6,10 +6,10 @@ import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
+import co.topl.brambl.cli.controllers.WalletController
+import co.topl.brambl.cli.impl.GenusQueryAlgebra
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebra
 import co.topl.brambl.cli.impl.TransactionBuilderApi
-import co.topl.brambl.cli.impl.UtxoAlgebra
-import co.topl.brambl.cli.impl.WalletAlgebra
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
 import co.topl.brambl.codecs.AddressCodecs
@@ -49,28 +49,6 @@ object Main extends IOApp {
       )
     )(conn => IO.delay(conn.close()))
 
-  private def createWalletFromParams(
-      params: BramblCliValidatedParams
-  ): IO[Unit] = {
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
-    )
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource(params.walletFile),
-      transactionBuilderApi
-    )
-    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
-
-    val walletApi = WalletApi.make(dataApi)
-    WalletAlgebra
-      .make[IO](
-        walletApi,
-        walletStateAlgebra
-      )
-      .createWalletFromParams(params)
-  }
-
   private def createSimpleTransactionFromParams(
       params: BramblCliValidatedParams
   ): IO[Unit] = {
@@ -93,7 +71,9 @@ object Main extends IOApp {
         dataApi,
         walletApi,
         walletStateApi,
-        UtxoAlgebra.make[IO](channelResource(params.host, params.genusPort)),
+        GenusQueryAlgebra.make[IO](
+          channelResource(params.host, params.genusPort)
+        ),
         transactionBuilderApi,
         channelResource(params.host, 9084)
       )
@@ -145,7 +125,7 @@ object Main extends IOApp {
       .getAddress(params.fromParty, params.fromContract, params.someFromState)
       .flatMap {
         case Some(address) =>
-          UtxoAlgebra
+          GenusQueryAlgebra
             .make[IO](channelResource(params.host, params.genusPort))
             .queryUtxo(AddressCodecs.decodeAddress(address).toOption.get)
             .flatMap { txos =>
@@ -192,7 +172,9 @@ Value: ${value(txo.transactionOutput.value.value)}
         dataApi,
         walletApi,
         walletStateApi,
-        UtxoAlgebra.make[IO](channelResource(params.host, params.genusPort)),
+        GenusQueryAlgebra.make[IO](
+          channelResource(params.host, params.genusPort)
+        ),
         transactionBuilderApi,
         channelResource(params.host, 9084)
       )
@@ -221,7 +203,9 @@ Value: ${value(txo.transactionOutput.value.value)}
         dataApi,
         walletApi,
         walletStateApi,
-        UtxoAlgebra.make[IO](channelResource(params.host, params.genusPort)),
+        GenusQueryAlgebra.make[IO](
+          channelResource(params.host, params.genusPort)
+        ),
         transactionBuilderApi,
         channelResource(params.host, 9084)
       )
@@ -248,7 +232,10 @@ Value: ${value(txo.transactionOutput.value.value)}
           case Validated.Valid(validateParams) =>
             (validateParams.mode, validateParams.subcmd) match {
               case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
-                createWalletFromParams(validateParams)
+                (new WalletController(
+                  walletResource(validateParams.walletFile)
+                ))
+                  .createWalletFromParams(validateParams)
               case (
                     BramblCliMode.simpletransaction,
                     BramblCliSubCmd.broadcast
@@ -258,7 +245,12 @@ Value: ${value(txo.transactionOutput.value.value)}
                 proveSimpleTransactionFromParams(validateParams)
               case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
                 createSimpleTransactionFromParams(validateParams)
-              case (BramblCliMode.utxo, BramblCliSubCmd.query) =>
+              case (BramblCliMode.genusquery, BramblCliSubCmd.utxobyaddress) =>
+                queryUtxoFromParams(validateParams)
+              case (
+                    BramblCliMode.bifrostquery,
+                    BramblCliSubCmd.utxobyaddress
+                  ) =>
                 queryUtxoFromParams(validateParams)
             }
           case Validated.Invalid(errors) =>

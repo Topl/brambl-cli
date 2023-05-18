@@ -33,7 +33,7 @@ object BramblCliParamsValidatorModule
         validateSimpleTransactionBroadcastParams(paramConfig).map(_ =>
           (mode, subcmd)
         )
-      case (BramblCliMode.utxo, BramblCliSubCmd.query) =>
+      case (BramblCliMode.genusquery, BramblCliSubCmd.utxobyaddress) =>
         validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
     }
   }

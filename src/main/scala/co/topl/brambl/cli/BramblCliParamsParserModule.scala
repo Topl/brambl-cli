@@ -58,12 +58,12 @@ object BramblCliParamsParserModule {
   val paramParser = {
     import builder._
     OParser.sequence(
-      cmd("utxo")
-        .action((_, c) => c.copy(mode = "utxo"))
-        .text("Utxo mode")
+      cmd("genus-query")
+        .action((_, c) => c.copy(mode = "genusquery"))
+        .text("Genus query mode")
         .children(
-          cmd("query")
-            .action((_, c) => c.copy(subcmd = "query"))
+          cmd("utxo-by-address")
+            .action((_, c) => c.copy(subcmd = "utxobyaddress"))
             .text("Query utxo")
             .children(
               (coordinates ++ hostPortNetwork ++ Seq(
