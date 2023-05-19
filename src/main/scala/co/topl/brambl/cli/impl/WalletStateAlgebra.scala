@@ -27,6 +27,8 @@ trait WalletStateAlgebra[F[_]] {
   def updateWalletState(
       lock_predicate: String,
       lockAddress: String,
+      routine: Option[String],
+      vk: Option[String],
       indices: Indices
   ): F[Unit]
 
@@ -76,14 +78,25 @@ object WalletStateAlgebra {
           rs <- Sync[F].blocking(
             stmnt.executeQuery(
               s"SELECT x_party, y_contract, z_state, routine, vk FROM " +
-                s"cartesian WHERE routine = '${signatureProposition.routine}'' AND " +
-                s"vk = ${Encoding.encodeToBase58(signatureProposition.verificationKey.toByteArray)}"
+                s"cartesian WHERE routine = '${signatureProposition.routine}' AND " +
+                s"vk = '${Encoding.encodeToBase58(signatureProposition.verificationKey.toByteArray)}'"
             )
           )
           x <- Sync[F].delay(rs.getInt("x_party"))
           y <- Sync[F].delay(rs.getInt("y_contract"))
           z <- Sync[F].delay(rs.getInt("z_state"))
-        } yield Indices(x, y, z)
+        } yield {
+          println("Get indices by signature:")
+          println(
+            "vk: " + Encoding.encodeToBase58(
+              signatureProposition.verificationKey.toByteArray
+            )
+          )
+          println("Indices x: " + x)
+          println("Indices y: " + y)
+          println("Indices z: " + z)
+          Indices(x, y, z)
+        }
       }
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
@@ -110,17 +123,24 @@ object WalletStateAlgebra {
       override def updateWalletState(
           lockAddress: String,
           lock_predicate: String,
+          routine: Option[String],
+          vk: Option[String],
           indices: Indices
       ): F[Unit] = {
         connection.use { conn =>
           import cats.implicits._
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
+            statement =
+              s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (${indices.x}, ${indices.y}, ${indices.z}, '${lock_predicate}', '" +
+                lockAddress + "', " + routine
+                  .map(x => s"'$x'")
+                  .getOrElse("NULL") + ", " + vk
+                  .map(x => s"'$x'")
+                  .getOrElse("NULL") + ")"
+            _ <- Sync[F].blocking(println("statement: " + statement))
             _ <- Sync[F].blocking(
-              stmnt.executeUpdate(
-                s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address) VALUES (${indices.x}, ${indices.y}, ${indices.z}, '${lock_predicate}', '" +
-                  lockAddress + "')"
-              )
+              stmnt.executeUpdate(statement)
             )
           } yield ()
         }
@@ -152,7 +172,13 @@ object WalletStateAlgebra {
               )
             )
             z <- Sync[F].delay(rs.getInt("z_index"))
-          } yield if (x == 0) None else Some(Indices(x, y, z + 1))
+          } yield {
+            println("getNextIndicesForFunds:")
+            println("Indices x: " + x)
+            println("Indices y: " + y)
+            println("Indices z: " + (z + 1))
+            if (x == 0) None else Some(Indices(x, y, z + 1))
+          }
         }
       }
 
@@ -279,7 +305,13 @@ object WalletStateAlgebra {
             z <- someState
               .map(x => Sync[F].point(x))
               .getOrElse(Sync[F].delay(rs.getInt("z_index")))
-          } yield if (rs.next()) Some(Indices(x, y, z)) else None
+          } yield {
+            println("getCurrentIndicesForFunds:")
+            println("Indices x: " + x)
+            println("Indices y: " + y)
+            println("Indices z: " + z)
+            if (rs.next()) Some(Indices(x, y, z)) else None
+          }
         }
       }
 
@@ -290,7 +322,7 @@ object WalletStateAlgebra {
             stmnt <- Sync[F].blocking(conn.createStatement())
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
-                "SELECT address FROM cartesian WHERE x_party = 1 AND y_contract = 1 AND z_state = MAX(z_state)"
+                "SELECT address, MAX(z_state) FROM cartesian WHERE x_party = 1 AND y_contract = 1  group by x_party, y_contract"
               )
             )
             lockAddress <- Sync[F].delay(rs.getString("address"))

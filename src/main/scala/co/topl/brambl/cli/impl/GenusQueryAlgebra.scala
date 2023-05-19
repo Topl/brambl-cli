@@ -3,7 +3,7 @@ package co.topl.brambl.cli.impl
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.models.LockAddress
-import co.topl.genus.services.QueryByAddressRequest
+import co.topl.genus.services.QueryByLockAddressRequest
 import co.topl.genus.services.TransactionServiceGrpc
 import co.topl.genus.services.Txo
 import co.topl.genus.services.TxoState
@@ -31,8 +31,8 @@ object GenusQueryAlgebra {
             )
             response <- Sync[F].blocking(
               blockingStub
-                .getTxosByAddress(
-                  QueryByAddressRequest(fromAddress, None, TxoState.UNSPENT)
+                .getTxosByLockAddress(
+                  QueryByLockAddressRequest(fromAddress, None, TxoState.UNSPENT)
                 )
             )
           } yield response.txos

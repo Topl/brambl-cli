@@ -95,7 +95,7 @@ trait CommonValidationModule {
         checkValidSubCmd(
           mode,
           subcmd,
-          Set(BramblCliSubCmd.init)
+          Set(BramblCliSubCmd.init,BramblCliSubCmd.currentaddress)
         )
       case BramblCliMode.genusquery =>
         checkValidSubCmd(

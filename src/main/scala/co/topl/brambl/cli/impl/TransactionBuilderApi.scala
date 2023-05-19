@@ -98,7 +98,7 @@ object TransactionBuilderApi {
               )
           datum <- datum()
           lvlOutputForChange <- lvlOuput(
-            lockPredicateFrom,
+            lockPredicateForChange,
             Int128(
               ByteString.copyFrom(
                 BigInt(totalValues.toLong - amount).toByteArray

@@ -20,3 +20,22 @@ sbt "run simpletransaction prove --from-party noparty --from-contract genesis --
 echo "Broadcasting transaction"
 
 sbt "run simpletransaction broadcast -n private -i $TX_PROVED_FILE -h localhost --genus-port 9091 --bifrost-port 9084 --walletdb $WALLET"
+
+echo "Sleeping for 40 seconds"
+
+sleep 40
+
+TO_ADDRESS=ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
+TX1_FILE=tmp/tx1.pbuf
+TX1_PROVED_FILE=tmp/tx1_proved.pbuf
+
+echo "Creating transaction"
+sbt "run simpletransaction create --from-party self --from-contract default -t $TO_ADDRESS -w test --genus-port 9091 -o $TX1_FILE -n private -a 100 -h localhost --keyfile $MAIN_KEY --walletdb $WALLET"
+
+echo "Proving transaction"
+
+sbt "run simpletransaction prove --from-party self --from-contract default -w test --keyfile $MAIN_KEY -n private -i $TX1_FILE -o $TX1_PROVED_FILE --walletdb $WALLET"
+
+echo "Broadcasting transaction"
+
+sbt "run simpletransaction broadcast -n private -i $TX1_PROVED_FILE -h localhost --genus-port 9091 --bifrost-port 9084 --walletdb $WALLET"

@@ -18,6 +18,10 @@ import io.grpc.ManagedChannel
 import co.topl.brambl.models.box.Attestation
 import quivr.models.Proof
 import co.topl.brambl.cli.impl.GenusQueryAlgebra
+import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.Context
+import cats.Id
+import co.topl.brambl.validation.TransactionAuthorizationInterpreter
 
 trait SimpleTransactionAlgebra[F[_]] {
 
@@ -73,7 +77,6 @@ object SimpleTransactionAlgebra {
                 )
             )
           } yield {
-            println("Response: " + response)
             response
           }
         }).flatten.map(_ => ())
@@ -84,6 +87,7 @@ object SimpleTransactionAlgebra {
       ): F[Unit] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
+        import co.topl.quivr.api.Verifier.instances.verifierInstance
         for {
           ioTransaction <- Resource
             .make {
@@ -109,6 +113,14 @@ object SimpleTransactionAlgebra {
             )
           )
           provedTransaction <- credentialer.prove(unprovenTransaction)
+          errors <- TransactionAuthorizationInterpreter
+            .make[F]()
+            .validate(Context[F](provedTransaction, 500, _ => None))(
+              provedTransaction
+            )
+          _ <- Sync[F].delay(
+            println("Errors: " + errors.left.map(_.toString()))
+          )
           _ <- Resource
             .make(
               Sync[F]
@@ -199,6 +211,9 @@ object SimpleTransactionAlgebra {
           fromAddress <- transactionBuilderApi.lockAddress(
             predicateFundsToUnlock.get
           )
+          _ <- Sync[F].delay(
+            println("From address: " + AddressCodecs.encodeAddress(fromAddress))
+          )
           response <- utxoAlgebra.queryUtxo(fromAddress)
           lvlTxos = response.filter(
             _.transactionOutput.value.value.isLvl
@@ -208,9 +223,6 @@ object SimpleTransactionAlgebra {
               Sync[F].delay(println("No LVL txos found"))
             } else
               for {
-                lockAddress <- transactionBuilderApi.lockAddress(
-                  lockPredicateForChange
-                )
                 ioTransaction <- transactionBuilderApi
                   .buildSimpleLvlTransaction(
                     lvlTxos,
@@ -219,11 +231,23 @@ object SimpleTransactionAlgebra {
                     params.toAddress.get,
                     params.amount
                   )
+                lockAddress <- transactionBuilderApi.lockAddress(
+                  lockPredicateForChange
+                )
+                vk <- someNextIndices
+                  .map(nextIndices =>
+                    walletApi
+                      .deriveChildKeys(keyPair, nextIndices)
+                      .map(_.vk)
+                  )
+                  .sequence
                 _ <- walletStateApi.updateWalletState(
+                  lockAddress.toBase58(),
                   Encoding.encodeToBase58Check(
                     lockPredicateForChange.toByteArray
                   ),
-                  lockAddress.toBase58(),
+                  vk.map(_ => "ExtendedEd25519"),
+                  vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
                   someNextIndices.get
                 )
                 _ <- Resource

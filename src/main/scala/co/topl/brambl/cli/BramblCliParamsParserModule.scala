@@ -137,7 +137,10 @@ object BramblCliParamsParserModule {
                     .action((x, c) => c.copy(somePassphrase = Some(x)))
                     .text("Passphrase for the encrypted key. (optional))")
                 )): _*
-            )
+            ),
+          cmd("current-address")
+            .action((_, c) => c.copy(subcmd = "currentaddress"))
+            .text("Initialize wallet")
         ),
       cmd("simpletransaction")
         .action((_, c) => c.copy(mode = "simpletransaction"))

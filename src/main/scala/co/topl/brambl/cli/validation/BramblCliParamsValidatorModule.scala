@@ -18,9 +18,12 @@ object BramblCliParamsValidatorModule
       subcmd: BramblCliSubCmd.Value,
       paramConfig: BramblCliParams
   ) = {
+    import cats.implicits._
     (mode, subcmd) match {
       case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
+        ((mode, subcmd)).validNel
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
         validateSimpleTransactionCreateParams(paramConfig).map(_ =>
           (mode, subcmd)

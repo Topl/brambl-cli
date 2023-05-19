@@ -54,6 +54,11 @@ object Main extends IOApp {
                   walletResource(validateParams.walletFile)
                 ))
                   .createWalletFromParams(validateParams)
+              case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
+                (new WalletController(
+                  walletResource(validateParams.walletFile)
+                ))
+                  .currentaddress(validateParams)
               case (
                     BramblCliMode.simpletransaction,
                     BramblCliSubCmd.broadcast

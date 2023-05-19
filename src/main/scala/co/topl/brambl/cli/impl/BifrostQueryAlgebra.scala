@@ -1,7 +1,5 @@
 package co.topl.brambl.cli.impl
 
-import cats.arrow.FunctionK
-import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
@@ -10,10 +8,6 @@ import co.topl.brambl.models.TransactionId
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.consensus.models.BlockId
 import co.topl.node.models.BlockBody
-import co.topl.node.services.FetchBlockBodyReq
-import co.topl.node.services.FetchBlockIdAtHeightReq
-import co.topl.node.services.FetchTransactionReq
-import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
 
 trait BifrostQueryAlgebra[F[_]] {
@@ -30,7 +24,7 @@ trait BifrostQueryAlgebra[F[_]] {
 
 }
 
-object BifrostQueryAlgebra {
+object BifrostQueryAlgebra extends BifrostQueryInterpreter {
 
   sealed trait BifrostQueryADT[A]
 
@@ -57,64 +51,6 @@ object BifrostQueryAlgebra {
 
   def blockByHeightF(height: Long): BifrostQueryADTMonad[Option[BlockId]] =
     Free.liftF(BlockByHeight(height))
-
-  def interpretADT[A, F[_]: Sync](
-      channelResource: Resource[F, ManagedChannel],
-      computation: BifrostQueryADTMonad[A]
-  ) = {
-    type ChannelContextKlesli[A] =
-      Kleisli[F, NodeRpcGrpc.NodeRpcBlockingStub, A]
-    val kleisliComputation = computation.foldMap[ChannelContextKlesli](
-      new FunctionK[BifrostQueryADT, ChannelContextKlesli] {
-
-        override def apply[A](
-            fa: BifrostQueryADT[A]
-        ): ChannelContextKlesli[A] = {
-          import cats.implicits._
-          fa match {
-            case FetchBlockBody(blockId) =>
-              Kleisli(blockingStub =>
-                Sync[F]
-                  .blocking(
-                    blockingStub
-                      .fetchBlockBody(
-                        FetchBlockBodyReq(blockId)
-                      )
-                  )
-                  .map(_.body.asInstanceOf[A])
-              )
-            case FetchTransaction(txId) =>
-              Kleisli(blockingStub =>
-                Sync[F]
-                  .blocking(
-                    blockingStub
-                      .fetchTransaction(
-                        FetchTransactionReq(txId)
-                      )
-                  )
-                  .map(_.transaction.asInstanceOf[A])
-              )
-            case BlockByHeight(height) =>
-              Kleisli(blockingStub =>
-                Sync[F]
-                  .blocking(
-                    blockingStub
-                      .fetchBlockIdAtHeight(
-                        FetchBlockIdAtHeightReq(height)
-                      )
-                  )
-                  .map(_.blockId.asInstanceOf[A])
-              )
-          }
-        }
-      }
-    )
-    (for {
-      channel <- channelResource
-    } yield channel).use { channel =>
-      kleisliComputation.run(NodeRpcGrpc.blockingStub(channel))
-    }
-  }
 
   def make[F[_]: Sync](channelResource: Resource[F, ManagedChannel]) =
     new BifrostQueryAlgebra[F] {

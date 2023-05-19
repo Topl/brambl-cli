@@ -35,4 +35,17 @@ class WalletController(walletResource: Resource[IO, Connection]) {
       )
       .createWalletFromParams(params)
   }
+
+  def currentaddress(
+      params: BramblCliValidatedParams
+  ): IO[Unit] = {
+    val transactionBuilderApi = TransactionBuilderApi.make[IO](
+      params.network.networkId,
+      NetworkConstants.MAIN_LEDGER_ID
+    )
+    WalletStateAlgebra.make[IO](
+      walletResource,
+      transactionBuilderApi
+    ).getCurrentAddress().flatMap(address => IO(println(address)))
+  }
 }
