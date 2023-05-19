@@ -5,10 +5,8 @@ import cats.data.ValidatedNel
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.LockAddress
-import co.topl.brambl.utils.EncodingError
 import co.topl.brambl.utils.Encoding
-import co.topl.consensus.models.BlockId
-import com.google.protobuf.ByteString
+import co.topl.brambl.utils.EncodingError
 
 trait SimpleTransactionValidationModule {
   self: CommonValidationModule =>

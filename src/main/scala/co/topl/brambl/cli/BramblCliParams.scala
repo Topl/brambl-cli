@@ -1,8 +1,7 @@
 package co.topl.brambl.cli
 
-import co.topl.brambl.models.LockAddress
 import co.topl.brambl.constants.NetworkConstants
-import co.topl.consensus.models.BlockId
+import co.topl.brambl.models.LockAddress
 
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
