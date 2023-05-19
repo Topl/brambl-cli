@@ -73,6 +73,41 @@ object BramblCliParamsParserModule {
               )): _*
             )
         ),
+      cmd("bifrost-query")
+        .action((_, c) => c.copy(mode = "bifrostquery"))
+        .text("Bifrost query mode")
+        .children(
+          cmd("block-by-height")
+            .action((_, c) => c.copy(subcmd = "blockbyheight"))
+            .text("Get the block at a given height")
+            .children(
+              (hostPortNetwork ++ Seq(
+                opt[Long]("height")
+                  .action((x, c) => c.copy(height = x))
+                  .text("The height of the block. (mandatory)")
+              )): _*
+            ),
+          cmd("block-by-id")
+            .action((_, c) => c.copy(subcmd = "blockbyid"))
+            .text("Get the block with a given id")
+            .children(
+              (hostPortNetwork ++ Seq(
+                opt[Option[String]]("block-id")
+                  .action((x, c) => c.copy(blockId = x))
+                  .text("The id of the block in base 58. (mandatory)")
+              )): _*
+            ),
+          cmd("transaction-by-id")
+            .action((_, c) => c.copy(subcmd = "transactionbyid"))
+            .text("Get the transaction with a given id")
+            .children(
+              (hostPortNetwork ++ Seq(
+                opt[Option[String]]("transaction-id")
+                  .action((x, c) => c.copy(transactionId = x))
+                  .text("The id of the transaction in base 58. (mandatory)")
+              )): _*
+            )
+        ),
       cmd("wallet")
         .action((_, c) => c.copy(mode = "wallet"))
         .text("Wallet mode")

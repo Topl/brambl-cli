@@ -2,6 +2,7 @@ package co.topl.brambl.cli
 
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.constants.NetworkConstants
+import co.topl.consensus.models.BlockId
 
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
@@ -12,7 +13,8 @@ object BramblCliMode extends Enumeration {
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
-  val init, utxobyaddress, create, prove, broadcast = Value
+  val init, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
+      prove, broadcast = Value
 }
 
 sealed abstract class NetworkIdentifiers(
@@ -29,10 +31,10 @@ case object NetworkIdentifiers {
 
   def fromString(s: String): Option[NetworkIdentifiers] = {
     s match {
-      case "mainnet"    => Some(Mainnet)
-      case "testnet"    => Some(Testnet)
+      case "mainnet" => Some(Mainnet)
+      case "testnet" => Some(Testnet)
       case "private" => Some(Privatenet)
-      case _            => None
+      case _         => None
     }
   }
 }
@@ -65,6 +67,9 @@ final case class BramblCliParams(
     someWalletFile: Option[String] = None,
     toAddress: Option[String] = None,
     amount: Long = 0L,
+    height: Long = 0L,
+    blockId: Option[String] = None,
+    transactionId: Option[String] = None,
     someFromParty: Option[String] = None,
     someFromContract: Option[String] = None,
     someFromState: Option[String] = None,
@@ -84,6 +89,9 @@ final case class BramblCliValidatedParams(
     password: String,
     fromParty: String,
     fromContract: String,
+    height: Long,
+    blockId: Option[String],
+    transactionId: Option[String] = None,
     someFromState: Option[Int],
     toAddress: Option[LockAddress],
     amount: Long,

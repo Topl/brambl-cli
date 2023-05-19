@@ -96,9 +96,6 @@ object TransactionBuilderApi {
                   .map(y => BigInt(y.quantity.value.toByteArray()))
                   .getOrElse(BigInt(0))
               )
-          _ = println("totalValues: " + totalValues)
-          _ = println("change: " + (totalValues.toLong - amount))
-          _ = println("amont: " + amount)
           datum <- datum()
           lvlOutputForChange <- lvlOuput(
             lockPredicateFrom,

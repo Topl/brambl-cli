@@ -103,6 +103,16 @@ trait CommonValidationModule {
           subcmd,
           Set(BramblCliSubCmd.utxobyaddress)
         )
+      case BramblCliMode.bifrostquery =>
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(
+            BramblCliSubCmd.blockbyheight,
+            BramblCliSubCmd.blockbyid,
+            BramblCliSubCmd.transactionbyid
+          )
+        )
     }
   }
 

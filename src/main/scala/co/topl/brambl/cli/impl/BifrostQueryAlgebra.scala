@@ -67,40 +67,46 @@ object BifrostQueryAlgebra {
     val kleisliComputation = computation.foldMap[ChannelContextKlesli](
       new FunctionK[BifrostQueryADT, ChannelContextKlesli] {
 
-        override def apply[A](fa: BifrostQueryADT[A]): ChannelContextKlesli[A] =
+        override def apply[A](
+            fa: BifrostQueryADT[A]
+        ): ChannelContextKlesli[A] = {
+          import cats.implicits._
           fa match {
             case FetchBlockBody(blockId) =>
               Kleisli(blockingStub =>
-                Sync[F].blocking(
-                  blockingStub
-                    .fetchBlockBody(
-                      FetchBlockBodyReq(blockId)
-                    )
-                    .asInstanceOf[A]
-                )
+                Sync[F]
+                  .blocking(
+                    blockingStub
+                      .fetchBlockBody(
+                        FetchBlockBodyReq(blockId)
+                      )
+                  )
+                  .map(_.body.asInstanceOf[A])
               )
             case FetchTransaction(txId) =>
               Kleisli(blockingStub =>
-                Sync[F].blocking(
-                  blockingStub
-                    .fetchTransaction(
-                      FetchTransactionReq(txId)
-                    )
-                    .asInstanceOf[A]
-                )
+                Sync[F]
+                  .blocking(
+                    blockingStub
+                      .fetchTransaction(
+                        FetchTransactionReq(txId)
+                      )
+                  )
+                  .map(_.transaction.asInstanceOf[A])
               )
             case BlockByHeight(height) =>
               Kleisli(blockingStub =>
-                Sync[F].blocking(
-                  blockingStub
-                    .fetchBlockIdAtHeight(
-                      FetchBlockIdAtHeightReq(height)
-                    )
-                    .asInstanceOf[A]
-                )
+                Sync[F]
+                  .blocking(
+                    blockingStub
+                      .fetchBlockIdAtHeight(
+                        FetchBlockIdAtHeightReq(height)
+                      )
+                  )
+                  .map(_.blockId.asInstanceOf[A])
               )
           }
-
+        }
       }
     )
     (for {

@@ -35,6 +35,12 @@ object BramblCliParamsValidatorModule
         )
       case (BramblCliMode.genusquery, BramblCliSubCmd.utxobyaddress) =>
         validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.bifrostquery, BramblCliSubCmd.blockbyheight) =>
+        validateBlockByHeightQueryParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.bifrostquery, BramblCliSubCmd.blockbyid) =>
+        validateBlockByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.bifrostquery, BramblCliSubCmd.transactionbyid) =>
+        validateTransactionByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
     }
   }
 
@@ -55,14 +61,12 @@ object BramblCliParamsValidatorModule
           )
         ),
       validateNetwork(paramConfig.network),
-      validateWalletFile(paramConfig.someWalletFile),
       validateOutputfile(paramConfig.someOutputFile, required = false)
     )
       .mapN(
         (
             modeAndSubCmd,
             network,
-            walletFile,
             someOutputFile
         ) => {
           BramblCliValidatedParams(
@@ -70,7 +74,7 @@ object BramblCliParamsValidatorModule
             subcmd = modeAndSubCmd._2,
             network = network,
             password = paramConfig.password,
-            walletFile = walletFile,
+            walletFile = paramConfig.someWalletFile.getOrElse(""),
             toAddress = paramConfig.toAddress.map(x =>
               AddressCodecs
                 .decodeAddress(x)
@@ -81,8 +85,12 @@ object BramblCliParamsValidatorModule
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),
             genusPort = paramConfig.genusPort,
+            bifrostPort = paramConfig.bifrostPort,
             host = paramConfig.host,
             amount = paramConfig.amount,
+            height = paramConfig.height,
+            blockId = paramConfig.blockId,
+            transactionId = paramConfig.transactionId,
             someKeyFile = paramConfig.someKeyFile,
             somePassphrase = paramConfig.somePassphrase,
             someOutputFile = someOutputFile,
