@@ -117,9 +117,6 @@ object SimpleTransactionAlgebra {
             .validate(Context[F](provedTransaction, 500, _ => None))(
               provedTransaction
             )
-          _ <- Sync[F].delay(
-            println("Errors: " + errors.left.map(_.toString()))
-          )
           _ <- Resource
             .make(
               Sync[F]
@@ -209,9 +206,6 @@ object SimpleTransactionAlgebra {
             ) // the deault party to send funds to should always be present
           fromAddress <- transactionBuilderApi.lockAddress(
             predicateFundsToUnlock.get
-          )
-          _ <- Sync[F].delay(
-            println("From address: " + AddressCodecs.encodeAddress(fromAddress))
           )
           response <- utxoAlgebra.queryUtxo(fromAddress)
           lvlTxos = response.filter(
