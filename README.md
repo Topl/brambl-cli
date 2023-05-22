@@ -106,3 +106,84 @@ To create a keyfile for the valhalla network, with password `test` and to store 
 ```bash
 cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet init -w test -n private -o mainkey.json --walletdb wallet.db
 ```
+
+### Get the current address
+
+To get the current address of the wallet run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet current-address -w test -n private -o $MAIN_KEY --walletdb $WALLET
+```
+
+This will output the current address of the wallet.
+
+### Create a simple transaction
+
+To create a simple transaction to spend the genesis block run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction create --from-party noparty --from-contract genesis --from-state 1 -t ptetP7jshHVRuMURLWzn5RNsEBPth1CParqz5Rug99R4m1pjFN9BrChgbHCY -w test -p 9091 -o $TX_FILE -n private -a 100 -h localhost -i $MAIN_KEY --walletdb $WALLET
+```
+
+This will create a transaction that spends the genesis block and sends 100 polys to the address `ptetP7jshHVRuMURLWzn5RNsEBPth1CParqz5Rug99R4m1pjFN9BrChgbHCY`. The transaction will be stored in the file `$TX_FILE`.
+
+### Prove a simple transaction
+
+To prove a simple transaction run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction prove --from-party self --from-contract default -w test --keyfile $MAIN_KEY -n private -i $TX_FILE -o $TX_PROVED_FILE --walletdb $WALLET
+```
+
+This will prove the transaction in the file `$TX_FILE` and store the result in the file `$TX_PROVED_FILE`.
+
+### Broadcast a simple transaction
+
+To broadcast a simple transaction run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- broadcast -n private -i $TX_PROVED_FILE -h localhost --genus-port 9091 --bifrost-port 9084 --walletdb $WALLET
+```
+
+This will broadcast the transaction in the file `$TX_PROVED_FILE` to the network.
+
+### Query a block by id
+
+To query a block by id run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-id --block-id $BLOCK_ID -n private -h localhost --genus-port 9091 --bifrost-port 9084
+```
+
+This will query the block with id `$BLOCK_ID` from the bifrost node running on `localhost` on port `9084`.
+
+### Query a block by height
+
+To query a block by height run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-height --height $HEIGHT -n private -h localhost --genus-port 9091 --bifrost-port 9084
+```
+
+This will query the block with height `$HEIGHT` from the bifrost node running on `localhost` on port `9084`.
+
+### Query a transaction by id
+
+To query a transaction by id run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query transaction-by-id --transaction-id $TX_ID -n private -h localhost --genus-port 9091 --bifrost-port 9084
+```
+
+This will query the transaction with id `$TX_ID` from the bifrost node running on `localhost` on port `9084`.
+
+### Query UXTO by address
+
+To query UXTOs by address run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- genus-query utxo-by-address --from-party self --from-contract default -n private -h localhost --genus-port 9091 --bifrost-port 9084 --walletdb $WALLET
+```
+
+This will query the UXTOs for the address in the genus node. It uses the wallet to derive the right address to query.
+
