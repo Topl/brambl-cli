@@ -85,18 +85,7 @@ object WalletStateAlgebra {
           x <- Sync[F].delay(rs.getInt("x_party"))
           y <- Sync[F].delay(rs.getInt("y_contract"))
           z <- Sync[F].delay(rs.getInt("z_state"))
-        } yield {
-          println("Get indices by signature:")
-          println(
-            "vk: " + Encoding.encodeToBase58(
-              signatureProposition.verificationKey.toByteArray
-            )
-          )
-          println("Indices x: " + x)
-          println("Indices y: " + y)
-          println("Indices z: " + z)
-          Indices(x, y, z)
-        }
+        } yield Indices(x, y, z)
       }
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
@@ -138,7 +127,6 @@ object WalletStateAlgebra {
                   .getOrElse("NULL") + ", " + vk
                   .map(x => s"'$x'")
                   .getOrElse("NULL") + ")"
-            _ <- Sync[F].blocking(println("statement: " + statement))
             _ <- Sync[F].blocking(
               stmnt.executeUpdate(statement)
             )
@@ -172,13 +160,7 @@ object WalletStateAlgebra {
               )
             )
             z <- Sync[F].delay(rs.getInt("z_index"))
-          } yield {
-            println("getNextIndicesForFunds:")
-            println("Indices x: " + x)
-            println("Indices y: " + y)
-            println("Indices z: " + (z + 1))
-            if (x == 0) None else Some(Indices(x, y, z + 1))
-          }
+          } yield if (x == 0) None else Some(Indices(x, y, z + 1))
         }
       }
 
@@ -305,13 +287,7 @@ object WalletStateAlgebra {
             z <- someState
               .map(x => Sync[F].point(x))
               .getOrElse(Sync[F].delay(rs.getInt("z_index")))
-          } yield {
-            println("getCurrentIndicesForFunds:")
-            println("Indices x: " + x)
-            println("Indices y: " + y)
-            println("Indices z: " + z)
-            if (rs.next()) Some(Indices(x, y, z)) else None
-          }
+          } yield if (rs.next()) Some(Indices(x, y, z)) else None
         }
       }
 

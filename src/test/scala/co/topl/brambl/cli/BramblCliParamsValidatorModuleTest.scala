@@ -184,7 +184,6 @@ class BramblCliParamsValidatorModuleTest extends FunSuite {
       "wallet.db"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    println("Validation result: " + validateParams(params0))
     assertEquals(validateParams(params0).isValid, true)
   }
 
