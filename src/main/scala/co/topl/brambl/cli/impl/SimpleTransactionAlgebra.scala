@@ -2,14 +2,11 @@ package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import co.topl.brambl.Context
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.impl.GenusQueryAlgebra
-import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.dataApi.DataApi
 import co.topl.brambl.models.box.Attestation
 import co.topl.brambl.utils.Encoding
-import co.topl.brambl.validation.TransactionAuthorizationInterpreter
 import co.topl.brambl.wallet.CredentiallerInterpreter
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
@@ -86,7 +83,6 @@ object SimpleTransactionAlgebra {
       ): F[Unit] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
-        import co.topl.quivr.api.Verifier.instances.verifierInstance
         for {
           ioTransaction <- Resource
             .make {
@@ -112,11 +108,6 @@ object SimpleTransactionAlgebra {
             )
           )
           provedTransaction <- credentialer.prove(unprovenTransaction)
-          errors <- TransactionAuthorizationInterpreter
-            .make[F]()
-            .validate(Context[F](provedTransaction, 500, _ => None))(
-              provedTransaction
-            )
           _ <- Resource
             .make(
               Sync[F]
