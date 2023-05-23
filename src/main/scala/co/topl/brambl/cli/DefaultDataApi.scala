@@ -37,7 +37,13 @@ case class DefaultDataApi[F[_]: Sync](walletStateAlgebra: WalletStateAlgebra[F])
     import cats.implicits._
     walletStateAlgebra
       .getIndicesBySignature(signatureProposition)
-      .map(_.asRight)
+      .map(x =>
+        Either.cond(
+          x.isDefined,
+          x.get,
+          NoIndicesFound(new IllegalStateException("No indices found"))
+        )
+      )
   }
 
   override def updateMainKeyVaultStore(
@@ -49,6 +55,8 @@ case class DefaultDataApi[F[_]: Sync](walletStateAlgebra: WalletStateAlgebra[F])
       name: String
   ): F[Either[DataApi.DataApiException, Unit]] = ???
 
+  case class NoIndicesFound(t: Throwable)
+      extends DataApi.DataApiException(null, t)
   case class DecodeVaultStoreException(msg: String, t: Throwable)
       extends DataApi.DataApiException(msg, t)
 

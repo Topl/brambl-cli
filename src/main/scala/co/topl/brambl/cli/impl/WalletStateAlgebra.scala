@@ -20,7 +20,7 @@ trait WalletStateAlgebra[F[_]] {
 
   def getIndicesBySignature(
       signatureProposition: Proposition.DigitalSignature
-  ): F[Indices]
+  ): F[Option[Indices]]
 
   def getCurrentAddress(): F[String]
 
@@ -71,7 +71,7 @@ object WalletStateAlgebra {
 
       override def getIndicesBySignature(
           signatureProposition: Proposition.DigitalSignature
-      ): F[Indices] = connection.use { conn =>
+      ): F[Option[Indices]] = connection.use { conn =>
         import cats.implicits._
         for {
           stmnt <- Sync[F].blocking(conn.createStatement())
@@ -85,7 +85,7 @@ object WalletStateAlgebra {
           x <- Sync[F].delay(rs.getInt("x_party"))
           y <- Sync[F].delay(rs.getInt("y_contract"))
           z <- Sync[F].delay(rs.getInt("z_state"))
-        } yield Indices(x, y, z)
+        } yield if(rs.next()) Some(Indices(x, y, z)) else None
       }
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
