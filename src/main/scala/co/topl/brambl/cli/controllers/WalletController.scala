@@ -25,7 +25,7 @@ class WalletController(walletResource: Resource[IO, Connection]) {
       walletResource,
       transactionBuilderApi
     )
-    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
+    val dataApi = new DefaultDataApi[IO]()
 
     val walletApi = WalletApi.make(dataApi)
     WalletAlgebra
@@ -46,6 +46,6 @@ class WalletController(walletResource: Resource[IO, Connection]) {
     WalletStateAlgebra.make[IO](
       walletResource,
       transactionBuilderApi
-    ).getCurrentAddress().flatMap(address => IO(println(address)))
+    ).getCurrentAddress.flatMap(address => IO(println(address)))
   }
 }

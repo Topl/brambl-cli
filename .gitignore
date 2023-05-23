@@ -10,3 +10,4 @@ target/
 wallet.db
 derivedkey.txt
 *.pbuf
+.idea/
