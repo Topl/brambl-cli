@@ -18,13 +18,32 @@ object BramblCliParamsValidatorModule
       subcmd: BramblCliSubCmd.Value,
       paramConfig: BramblCliParams
   ) = {
+    import cats.implicits._
     (mode, subcmd) match {
       case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
+        ((mode, subcmd)).validNel
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
-        validateSimpleTransactionParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.utxo, BramblCliSubCmd.query) =>
+        validateSimpleTransactionCreateParams(paramConfig).map(_ =>
+          (mode, subcmd)
+        )
+      case (BramblCliMode.simpletransaction, BramblCliSubCmd.prove) =>
+        validateSimpleTransactionProveParams(paramConfig).map(_ =>
+          (mode, subcmd)
+        )
+      case (BramblCliMode.simpletransaction, BramblCliSubCmd.broadcast) =>
+        validateSimpleTransactionBroadcastParams(paramConfig).map(_ =>
+          (mode, subcmd)
+        )
+      case (BramblCliMode.genusquery, BramblCliSubCmd.utxobyaddress) =>
         validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.bifrostquery, BramblCliSubCmd.blockbyheight) =>
+        validateBlockByHeightQueryParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.bifrostquery, BramblCliSubCmd.blockbyid) =>
+        validateBlockByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.bifrostquery, BramblCliSubCmd.transactionbyid) =>
+        validateTransactionByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
     }
   }
 
@@ -45,24 +64,20 @@ object BramblCliParamsValidatorModule
           )
         ),
       validateNetwork(paramConfig.network),
-      validateWalletFile(paramConfig.someWalletFile),
-      validateOutputfile(paramConfig.someOutputFile, required = false),
-      validateInputFile(paramConfig.someInputFile, required = false)
+      validateOutputfile(paramConfig.someOutputFile, required = false)
     )
       .mapN(
         (
             modeAndSubCmd,
             network,
-            walletFile,
-            someOutputFile,
-            someInputFile
+            someOutputFile
         ) => {
           BramblCliValidatedParams(
             mode = modeAndSubCmd._1,
             subcmd = modeAndSubCmd._2,
             network = network,
             password = paramConfig.password,
-            walletFile = walletFile,
+            walletFile = paramConfig.someWalletFile.getOrElse(""),
             toAddress = paramConfig.toAddress.map(x =>
               AddressCodecs
                 .decodeAddress(x)
@@ -72,12 +87,17 @@ object BramblCliParamsValidatorModule
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),
-            port = paramConfig.port,
+            genusPort = paramConfig.genusPort,
+            bifrostPort = paramConfig.bifrostPort,
             host = paramConfig.host,
             amount = paramConfig.amount,
+            height = paramConfig.height,
+            blockId = paramConfig.blockId,
+            transactionId = paramConfig.transactionId,
+            someKeyFile = paramConfig.someKeyFile,
             somePassphrase = paramConfig.somePassphrase,
             someOutputFile = someOutputFile,
-            someInputFile = someInputFile
+            someInputFile = paramConfig.someInputFile
           ).validNel
         }
       )
