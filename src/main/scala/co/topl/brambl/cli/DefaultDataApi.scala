@@ -3,21 +3,16 @@ package co.topl.brambl.cli
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.dataApi.DataApi
-import co.topl.brambl.models.Indices
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.TransactionOutputAddress
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.crypto.encryption.VaultStore
-import quivr.models.Preimage
-import co.topl.brambl.cli.impl.WalletStateAlgebra
 
 import java.io.PrintWriter
 import scala.io.Source
-import quivr.models.Proposition
 
-case class DefaultDataApi[F[_]: Sync](walletStateAlgebra: WalletStateAlgebra[F])
-    extends DataApi[F] {
+case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
 
   override def getLockByLockAddress(
       address: LockAddress
@@ -26,25 +21,6 @@ case class DefaultDataApi[F[_]: Sync](walletStateAlgebra: WalletStateAlgebra[F])
   override def getUtxoByTxoAddress(
       address: TransactionOutputAddress
   ): F[Either[DataApi.DataApiException, UnspentTransactionOutput]] = ???
-
-  override def getPreimage(
-      digestProposition: Proposition.Digest
-  ): F[Either[DataApi.DataApiException, Preimage]] = ???
-
-  override def getIndices(
-      signatureProposition: Proposition.DigitalSignature
-  ): F[Either[DataApi.DataApiException, Indices]] = {
-    import cats.implicits._
-    walletStateAlgebra
-      .getIndicesBySignature(signatureProposition)
-      .map(x =>
-        Either.cond(
-          x.isDefined,
-          x.get,
-          NoIndicesFound(new IllegalStateException("No indices found"))
-        )
-      )
-  }
 
   override def updateMainKeyVaultStore(
       mainKeyVaultStore: VaultStore[F],

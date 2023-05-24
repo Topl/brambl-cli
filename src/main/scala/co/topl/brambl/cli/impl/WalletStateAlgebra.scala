@@ -4,62 +4,15 @@ import cats.data.Validated
 import cats.data.ValidatedNel
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
+import co.topl.brambl.builders.locks.LockTemplate
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
-import quivr.models.VerificationKey
-import quivr.models.Proposition
-
-abstract class WalletStateApiFailure extends RuntimeException
-
-trait WalletStateAlgebra[F[_]] {
-
-  def initWalletState(
-      vk: VerificationKey
-  ): F[Unit]
-
-  def getIndicesBySignature(
-      signatureProposition: Proposition.DigitalSignature
-  ): F[Option[Indices]]
-
-  def getCurrentAddress(): F[String]
-
-  def updateWalletState(
-      lock_predicate: String,
-      lockAddress: String,
-      routine: Option[String],
-      vk: Option[String],
-      indices: Indices
-  ): F[Unit]
-
-  def getCurrentIndicesForFunds(
-      party: String,
-      contract: String,
-      someState: Option[Int]
-  ): F[Option[Indices]]
-
-  def validateCurrentIndicesForFunds(
-      party: String,
-      contract: String,
-      someState: Option[Int]
-  ): F[ValidatedNel[String, Indices]]
-
-  def getNextIndicesForFunds(
-      party: String,
-      contract: String
-  ): F[Option[Indices]]
-
-  def getLockByIndex(
-      indices: Indices
-  ): F[Option[Lock.Predicate]]
-
-  def getAddress(
-      party: String,
-      contract: String,
-      someState: Option[Int]
-  ): F[Option[String]]
-
-}
+import co.topl.brambl.wallet.WalletStateAlgebra
+import quivr.models.{Preimage, Proposition, VerificationKey}
+import co.topl.brambl.codecs.LockTemplateCodecs.{decodeLockTemplate, encodeLockTemplate}
+import io.circe.parser._
+import io.circe.syntax.EncoderOps
 
 object WalletStateAlgebra {
 
@@ -335,6 +288,12 @@ object WalletStateAlgebra {
             )
             _ <- Sync[F].delay(
               stmnt.execute(
+                "CREATE TABLE IF NOT EXISTS verification_keys (x_party INTEGER NOT NULL," +
+                  " y_contract INTEGER NOT NULL, vks TEXT NOT NULL)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.execute(
                 "CREATE INDEX IF NOT EXISTS cartesian_coordinates ON cartesian (x_party, y_contract, z_state)"
               )
             )
@@ -404,6 +363,61 @@ object WalletStateAlgebra {
             _ <- Sync[F].delay(stmnt.close())
           } yield ()
         }
+      }
+
+      override def getPreimage(digestProposition: Proposition.Digest): F[Option[Preimage]] =
+        Sync[F].delay(None) // We are not yet supporting Digest Propositions in brambl-cli
+
+      override def addEntityVks(party: String, contract: String, entities: List[String]): F[Unit] = connection.use { conn =>
+        import cats.implicits._
+        for {
+          stmnt <- Sync[F].blocking(conn.createStatement())
+          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT x_party FROM parties WHERE party = '${party}'"))
+          x <- Sync[F].delay(rs.getInt("x_party"))
+          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT y_contract FROM contracts WHERE contract = '${contract}'"))
+          y <- Sync[F].delay(rs.getInt("y_contract"))
+          statement =
+            s"INSERT INTO verification_keys (x_party, y_contract, vks) VALUES (${x}, ${y}, " +
+              s"'${entities.asJson.toString}'"
+          _ <- Sync[F].blocking(
+            stmnt.executeUpdate(statement)
+          )
+        } yield ()
+      }
+
+      override def getEntityVks(party: String, contract: String): F[Option[List[String]]] = connection.use { conn =>
+        import cats.implicits._
+        for {
+          stmnt <- Sync[F].blocking(conn.createStatement())
+          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT x_party FROM parties WHERE party = '${party}'"))
+          x <- Sync[F].delay(rs.getInt("x_party"))
+          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT y_contract FROM contracts WHERE contract = '${contract}'"))
+          y <- Sync[F].delay(rs.getInt("y_contract"))
+          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT vks FROM verification_keys WHERE x_party = ${x} AND y_contract = ${y}"))
+          vks <- Sync[F].delay(rs.getString("lock"))
+        } yield if (!rs.next()) None else parse(vks).toOption.flatMap(_.as[List[String]].toOption)
+      }
+
+      override def addNewLockTemplate(contract: String, lockTemplate: LockTemplate[F]): F[Unit] = connection.use { conn =>
+        import cats.implicits._
+        for {
+          stmnt <- Sync[F].blocking(conn.createStatement())
+          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT MAX(y_contract) as y_index FROM contracts"))
+          y <- Sync[F].delay(rs.getInt("y_index"))
+          statement =
+            s"INSERT INTO contracts (contract, y_contract, lock) VALUES ('${contract}', ${y+1}, '${encodeLockTemplate(lockTemplate).toString}'"
+          _ <- Sync[F].blocking(
+            stmnt.executeUpdate(statement)
+          )
+        } yield ()
+      }
+      override def getLockTemplate(contract: String): F[Option[LockTemplate[F]]] = connection.use { conn =>
+        import cats.implicits._
+        for {
+          stmnt <- Sync[F].blocking(conn.createStatement())
+          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT lock FROM contracts WHERE contract = '${contract}'"))
+          lockStr <- Sync[F].delay(rs.getString("lock"))
+        } yield if(!rs.next()) None else parse(lockStr).toOption.flatMap(decodeLockTemplate[F](_).toOption)
       }
     }
 }

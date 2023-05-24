@@ -7,8 +7,7 @@ import co.topl.brambl.cli.impl.GenusQueryAlgebra
 import co.topl.brambl.dataApi.DataApi
 import co.topl.brambl.models.box.Attestation
 import co.topl.brambl.utils.Encoding
-import co.topl.brambl.wallet.CredentiallerInterpreter
-import co.topl.brambl.wallet.WalletApi
+import co.topl.brambl.wallet.{CredentiallerInterpreter, WalletApi, WalletStateAlgebra}
 import co.topl.crypto.encryption.VaultStore
 import co.topl.node.services.BroadcastTransactionReq
 import co.topl.node.services.NodeRpcGrpc
@@ -92,7 +91,7 @@ object SimpleTransactionAlgebra {
             .use(fis => Sync[F].blocking(IoTransaction.parseFrom(fis)))
           keyPair <- loadKeysFromParam(params)
           credentialer <- Sync[F].delay(
-            CredentiallerInterpreter.make(dataApi, keyPair)
+            CredentiallerInterpreter.make[F](walletApi, walletStateApi, keyPair)
           )
           unprovenTransaction = ioTransaction.copy(
             inputs = ioTransaction.inputs.map(x =>

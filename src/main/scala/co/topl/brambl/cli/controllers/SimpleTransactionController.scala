@@ -30,7 +30,7 @@ class SimpleTransactionController(
       walletResource,
       transactionBuilderApi
     )
-    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
+    val dataApi = new DefaultDataApi[IO]()
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
       transactionBuilderApi
@@ -61,7 +61,7 @@ class SimpleTransactionController(
       walletResource,
       transactionBuilderApi
     )
-    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
+    val dataApi = new DefaultDataApi[IO]()
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
       transactionBuilderApi
@@ -105,7 +105,7 @@ class SimpleTransactionController(
       walletResource,
       transactionBuilderApi
     )
-    val dataApi = new DefaultDataApi[IO](walletStateAlgebra)
+    val dataApi = new DefaultDataApi[IO]()
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
       transactionBuilderApi
