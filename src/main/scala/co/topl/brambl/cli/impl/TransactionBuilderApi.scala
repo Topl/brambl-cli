@@ -23,18 +23,15 @@ import quivr.models.Int128
 import quivr.models.SmallData
 import quivr.models.VerificationKey
 import cats.implicits._
+import org.bouncycastle.util.Strings
 
 trait TransactionBuilderApi[F[_]] {
 
-  def changeLock(party: String, contract: String, nextState: Int): F[Option[Lock]]
-  def lockPredicateSignature(vk: VerificationKey): F[Lock.Predicate]
-
+  def buildLock(party: String, contract: String, nextState: Int): F[Option[Lock]]
   def unprovenAttestation(lockPredicate: Lock.Predicate): F[Attestation]
-
-  def lockPredicateHeight(minHeight: Long, maxHeight: Long): F[Lock.Predicate]
-
+  
   def lockAddress(
-      predicate: Lock.Predicate
+      lock: Lock
   ): F[LockAddress]
 
   def lvlOuput(
@@ -82,13 +79,13 @@ object TransactionBuilderApi {
       walletApi: WalletApi[F],
   ): TransactionBuilderApi[F] =
     new TransactionBuilderApi[F] {
-      // Generate a new lock for the change
-      override def changeLock(party: String, contract: String, nextState: Int): F[Option[Lock]] = for {
+      // Generate the next lock for a party and contract
+      override def buildLock(party: String, contract: String, nextState: Int): F[Option[Lock]] = for {
           changeTemplate <- walletStateApi.getLockTemplate(contract)
           entityVks <- walletStateApi.getEntityVks(party, contract)
             .map(_.map(_.map(
               // TODO: replace with proper serialization in TSDK-476
-              vk => VerificationKey.parseFrom(vk.getBytes)
+              vk => VerificationKey.parseFrom(Strings.toByteArray(vk))
             )))
           childVks <- entityVks.map(vks => vks.map(
             walletApi.deriveChildVerificationKey(_, nextState)).sequence).sequence
@@ -156,13 +153,12 @@ object TransactionBuilderApi {
         )
 
       override def lockAddress(
-          predicate: Lock.Predicate
+          lock: Lock
       ): F[LockAddress] = {
         import co.topl.brambl.common.ContainsEvidence.Ops
         import co.topl.brambl.common.ContainsImmutable.instances._
         import cats.implicits._
         for {
-          lock <- Sync[F].point(Lock().withPredicate(predicate))
           lockId <- Sync[F].point(
             LockId(lock.sizedEvidence.digest.value)
           )
@@ -219,40 +215,6 @@ object TransactionBuilderApi {
           )
         ).pure[F]
       }
-
-      override def lockPredicateHeight(
-          minHeight: Long,
-          maxHeight: Long
-      ): F[Lock.Predicate] =
-        Sync[F].point(
-          Lock.Predicate(
-            List(
-              Challenge().withRevealed(
-                Proposer
-                  .heightProposer(cats.catsInstancesForId)
-                  .propose(("header", minHeight, maxHeight))
-              )
-            ),
-            1
-          )
-        )
-
-      override def lockPredicateSignature(
-          vk: VerificationKey
-      ): F[Lock.Predicate] =
-        Sync[F].point(
-          Lock.Predicate(
-            List(
-              Challenge().withRevealed(
-                Proposer
-                  .signatureProposer(cats.catsInstancesForId)
-                  .propose(("ExtendedEd25519", vk))
-              )
-            ),
-            1
-          )
-        )
-
     }
 
 }

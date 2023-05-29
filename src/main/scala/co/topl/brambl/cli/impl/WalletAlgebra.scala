@@ -77,14 +77,7 @@ object WalletAlgebra {
               println(new String(wallet.mainKeyVaultStore.asJson.noSpaces))
             )
           }
-        derivedKey <- walletApi.deriveChildKeys(
-          keyPair,
-          new Indices(
-            1,
-            1,
-            1
-          )
-        )
+        derivedKey <- walletApi.deriveChildKeysPartial(keyPair, 1, 1)
         _ <- walletStateApi.initWalletState(derivedKey.vk)
       } yield ()
 

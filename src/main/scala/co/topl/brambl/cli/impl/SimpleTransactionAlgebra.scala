@@ -179,7 +179,7 @@ object SimpleTransactionAlgebra {
                 .getLockByIndex(currentIndices)
             )
             .sequence
-            .map(_.get)
+            .map(_.flatten.map(Lock().withPredicate(_)))
           // Next available z-state for the (party,contract) pair
           someNextIndices <- walletStateApi.getNextIndicesForFunds( // Next available state for the (party,contract) pair
             params.fromParty, // Change goes back to the same party
@@ -204,12 +204,12 @@ object SimpleTransactionAlgebra {
             if (lvlTxos.isEmpty) {
               Sync[F].delay(println("No LVL txos found"))
             } else changeLock match {
-              case Some(Lock(Lock.Value.Predicate(lockPredicateForChange),_)) => for {
+              case Some(lockPredicateForChange) => for {
                 ioTransaction <- transactionBuilderApi
                   .buildSimpleLvlTransaction(
                     lvlTxos,
-                    predicateFundsToUnlock.get,
-                    lockPredicateForChange,
+                    predicateFundsToUnlock.get.getPredicate,
+                    lockPredicateForChange.getPredicate,
                     params.toAddress.get,
                     params.amount
                   )

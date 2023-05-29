@@ -4,7 +4,7 @@ import cats.data.Validated
 import cats.data.ValidatedNel
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import co.topl.brambl.builders.locks.LockTemplate
+import co.topl.brambl.builders.locks.{LockTemplate, PropositionTemplate}
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
@@ -13,6 +13,7 @@ import quivr.models.{Preimage, Proposition, VerificationKey}
 import co.topl.brambl.codecs.LockTemplateCodecs.{decodeLockTemplate, encodeLockTemplate}
 import io.circe.parser._
 import io.circe.syntax.EncoderOps
+import org.bouncycastle.util.Strings
 
 object WalletStateAlgebra {
 
@@ -302,42 +303,18 @@ object WalletStateAlgebra {
                 "CREATE INDEX IF NOT EXISTS signature_idx ON cartesian (routine, vk)"
               )
             )
-            predicate <- transactionBuilderApi
-              .lockPredicateSignature(
-                vk
-              )
-            lockAddress <- transactionBuilderApi
-              .lockAddress(
-                predicate
-              )
-            heighPredicate <- transactionBuilderApi
-              .lockPredicateHeight(
-                1,
-                Long.MaxValue
-              )
-            heightLockAddress <- transactionBuilderApi
-              .lockAddress(
-                heighPredicate
-              )
-            _ <- Sync[F].delay(
-              stmnt.executeUpdate(
-                "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (1, 1, 1, '" +
-                  Encoding
-                    .encodeToBase58Check(predicate.toByteArray) +
-                  "', '" +
-                  lockAddress.toBase58 + "', " + "'ExtendedEd25519', " + "'" +
-                  Encoding
-                    .encodeToBase58Check(vk.toByteArray)
-                  + "'" + ")"
+            defaultTemplate <- Sync[F].delay(
+              LockTemplate.PredicateTemplate[F](
+                List(
+                  PropositionTemplate.SignatureTemplate[F]("ExtendedEd25519", 0)
+                ), 1
               )
             )
-            _ <- Sync[F].delay(
-              stmnt.executeUpdate(
-                "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address) VALUES (0, 2, 1, '" +
-                  Encoding
-                    .encodeToBase58Check(heighPredicate.toByteArray) +
-                  "', '" +
-                  heightLockAddress.toBase58 + "')"
+            genesisTemplate <- Sync[F].delay(
+              LockTemplate.PredicateTemplate[F](
+                List(
+                  PropositionTemplate.HeightTemplate[F]("header", 1, Long.MaxValue)
+                ), 1
               )
             )
             _ <- Sync[F].delay(
@@ -352,12 +329,44 @@ object WalletStateAlgebra {
             )
             _ <- Sync[F].delay(
               stmnt.executeUpdate(
-                "INSERT INTO contracts (contract, y_contract, lock) VALUES ('default', 1, 'signatureProver')"
+                s"INSERT INTO contracts (contract, y_contract, lock) VALUES ('default', 1, '${encodeLockTemplate(defaultTemplate).toString}')"
               )
             )
             _ <- Sync[F].delay(
               stmnt.executeUpdate(
-                "INSERT INTO contracts (contract, y_contract, lock) VALUES ('genesis', 2, 'heightProver')"
+                s"INSERT INTO contracts (contract, y_contract, lock) VALUES ('genesis', 2, '${encodeLockTemplate(genesisTemplate).toString}')"
+              )
+            )
+            _ <- Sync[F].delay(
+              addEntityVks("noparty", "genesis", List())
+            )
+            _ <- Sync[F].delay(
+              // TODO: replace with proper serialization in TSDK-476
+              addEntityVks("self", "default", List(Strings.fromByteArray(vk.toByteArray)))
+            )
+            defaultSignatureLock <- transactionBuilderApi.buildLock("self", "default", 1).map(_.get)
+            signatureLockAddress <- transactionBuilderApi.lockAddress(defaultSignatureLock)
+            genesisHeightLock <- transactionBuilderApi.buildLock("noparty", "genesis", 1).map(_.get)
+            heightLockAddress <- transactionBuilderApi.lockAddress(genesisHeightLock)
+            _ <- Sync[F].delay(
+              stmnt.executeUpdate(
+                "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (1, 1, 1, '" +
+                  Encoding
+                    .encodeToBase58Check(defaultSignatureLock.toByteArray) +
+                  "', '" +
+                  signatureLockAddress.toBase58 + "', " + "'ExtendedEd25519', " + "'" +
+                  Encoding
+                    .encodeToBase58Check(vk.toByteArray)
+                  + "'" + ")"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.executeUpdate(
+                "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address) VALUES (0, 2, 1, '" +
+                  Encoding
+                    .encodeToBase58Check(genesisHeightLock.toByteArray) +
+                  "', '" +
+                  heightLockAddress.toBase58 + "')"
               )
             )
             _ <- Sync[F].delay(stmnt.close())
