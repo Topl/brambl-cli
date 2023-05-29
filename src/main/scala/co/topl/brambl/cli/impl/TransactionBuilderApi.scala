@@ -1,6 +1,7 @@
 package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Sync
+import cats.implicits.{toFunctorOps, toTraverseOps}
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.Datum
 import co.topl.brambl.models.Event
@@ -14,15 +15,18 @@ import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.Schedule
 import co.topl.brambl.models.transaction.SpentTransactionOutput
 import co.topl.brambl.models.transaction.UnspentTransactionOutput
+import co.topl.brambl.wallet.{WalletApi, WalletStateAlgebra}
 import co.topl.genus.services.Txo
 import co.topl.quivr.api.Proposer
 import com.google.protobuf.ByteString
 import quivr.models.Int128
 import quivr.models.SmallData
 import quivr.models.VerificationKey
+import cats.implicits._
 
 trait TransactionBuilderApi[F[_]] {
 
+  def changeLock(party: String, contract: String, nextState: Int): F[Option[Lock]]
   def lockPredicateSignature(vk: VerificationKey): F[Lock.Predicate]
 
   def unprovenAttestation(lockPredicate: Lock.Predicate): F[Attestation]
@@ -73,9 +77,25 @@ object TransactionBuilderApi {
 
   def make[F[_]: Sync](
       networkId: Int,
-      ledgerId: Int
+      ledgerId: Int,
+      walletStateApi: WalletStateAlgebra[F],
+      walletApi: WalletApi[F],
   ): TransactionBuilderApi[F] =
     new TransactionBuilderApi[F] {
+      // Generate a new lock for the change
+      override def changeLock(party: String, contract: String, nextState: Int): F[Option[Lock]] = for {
+          changeTemplate <- walletStateApi.getLockTemplate(contract)
+          entityVks <- walletStateApi.getEntityVks(party, contract)
+            .map(_.map(_.map(
+              // TODO: replace with proper serialization in TSDK-476
+              vk => VerificationKey.parseFrom(vk.getBytes)
+            )))
+          childVks <- entityVks.map(vks => vks.map(
+            walletApi.deriveChildVerificationKey(_, nextState)).sequence).sequence
+          changeLock <- changeTemplate.flatMap(template => childVks.map(vks =>
+            template.build(vks).map(_.toOption)
+          )).sequence.map(_.flatten)
+        } yield changeLock
 
       override def buildSimpleLvlTransaction(
           lvlTxos: Seq[Txo],
