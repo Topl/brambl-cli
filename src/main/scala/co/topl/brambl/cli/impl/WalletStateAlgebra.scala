@@ -4,11 +4,13 @@ import cats.data.Validated
 import cats.data.ValidatedNel
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
+import cats.implicits.{toFunctorOps, toTraverseOps}
+import cats.implicits._
 import co.topl.brambl.builders.locks.{LockTemplate, PropositionTemplate}
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
-import co.topl.brambl.wallet.WalletStateAlgebra
+import co.topl.brambl.wallet.{WalletApi, WalletStateAlgebra}
 import quivr.models.{Preimage, Proposition, VerificationKey}
 import co.topl.brambl.codecs.LockTemplateCodecs.{decodeLockTemplate, encodeLockTemplate}
 import io.circe.parser._
@@ -19,7 +21,8 @@ object WalletStateAlgebra {
 
   def make[F[_]: Sync](
       connection: Resource[F, java.sql.Connection],
-      transactionBuilderApi: TransactionBuilderApi[F]
+      transactionBuilderApi: TransactionBuilderApi[F],
+      walletApi: WalletApi[F]
   ): WalletStateAlgebra[F] =
     new WalletStateAlgebra[F] {
 
@@ -344,9 +347,9 @@ object WalletStateAlgebra {
               // TODO: replace with proper serialization in TSDK-476
               addEntityVks("self", "default", List(Strings.fromByteArray(vk.toByteArray)))
             )
-            defaultSignatureLock <- transactionBuilderApi.buildLock("self", "default", 1).map(_.get)
+            defaultSignatureLock <- getLock("self", "default", 1).map(_.get)
             signatureLockAddress <- transactionBuilderApi.lockAddress(defaultSignatureLock)
-            genesisHeightLock <- transactionBuilderApi.buildLock("noparty", "genesis", 1).map(_.get)
+            genesisHeightLock <- getLock("noparty", "genesis", 1).map(_.get)
             heightLockAddress <- transactionBuilderApi.lockAddress(genesisHeightLock)
             _ <- Sync[F].delay(
               stmnt.executeUpdate(
@@ -428,5 +431,20 @@ object WalletStateAlgebra {
           lockStr <- Sync[F].delay(rs.getString("lock"))
         } yield if(!rs.next()) None else parse(lockStr).toOption.flatMap(decodeLockTemplate[F](_).toOption)
       }
+
+      // Generate the next lock for a party and contract
+      override def getLock(party: String, contract: String, nextState: Int): F[Option[Lock]] = for {
+        changeTemplate <- getLockTemplate(contract)
+        entityVks <- getEntityVks(party, contract)
+          .map(_.map(_.map(
+            // TODO: replace with proper serialization in TSDK-476
+            vk => VerificationKey.parseFrom(Strings.toByteArray(vk))
+          )))
+        childVks <- entityVks.map(vks => vks.map(
+          walletApi.deriveChildVerificationKey(_, nextState)).sequence).sequence
+        changeLock <- changeTemplate.flatMap(template => childVks.map(vks =>
+          template.build(vks).map(_.toOption)
+        )).sequence.map(_.flatten)
+      } yield changeLock
     }
 }

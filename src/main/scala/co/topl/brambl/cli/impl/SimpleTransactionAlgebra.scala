@@ -187,7 +187,7 @@ object SimpleTransactionAlgebra {
           )
           // Generate a new lock for the change, if possible
           changeLock <- someNextIndices.map(idx =>
-            transactionBuilderApi.changeLock(
+            walletStateApi.getLock(
               params.fromParty,
               params.fromContract,
               idx.z

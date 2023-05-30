@@ -1,7 +1,6 @@
 package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Sync
-import cats.implicits.{toFunctorOps, toTraverseOps}
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.Datum
 import co.topl.brambl.models.Event
@@ -22,12 +21,9 @@ import com.google.protobuf.ByteString
 import quivr.models.Int128
 import quivr.models.SmallData
 import quivr.models.VerificationKey
-import cats.implicits._
-import org.bouncycastle.util.Strings
 
 trait TransactionBuilderApi[F[_]] {
 
-  def buildLock(party: String, contract: String, nextState: Int): F[Option[Lock]]
   def unprovenAttestation(lockPredicate: Lock.Predicate): F[Attestation]
   
   def lockAddress(
@@ -74,26 +70,9 @@ object TransactionBuilderApi {
 
   def make[F[_]: Sync](
       networkId: Int,
-      ledgerId: Int,
-      walletStateApi: WalletStateAlgebra[F],
-      walletApi: WalletApi[F],
+      ledgerId: Int
   ): TransactionBuilderApi[F] =
     new TransactionBuilderApi[F] {
-      // Generate the next lock for a party and contract
-      override def buildLock(party: String, contract: String, nextState: Int): F[Option[Lock]] = for {
-          changeTemplate <- walletStateApi.getLockTemplate(contract)
-          entityVks <- walletStateApi.getEntityVks(party, contract)
-            .map(_.map(_.map(
-              // TODO: replace with proper serialization in TSDK-476
-              vk => VerificationKey.parseFrom(Strings.toByteArray(vk))
-            )))
-          childVks <- entityVks.map(vks => vks.map(
-            walletApi.deriveChildVerificationKey(_, nextState)).sequence).sequence
-          changeLock <- changeTemplate.flatMap(template => childVks.map(vks =>
-            template.build(vks).map(_.toOption)
-          )).sequence.map(_.flatten)
-        } yield changeLock
-
       override def buildSimpleLvlTransaction(
           lvlTxos: Seq[Txo],
           lockPredicateFrom: Lock.Predicate,
