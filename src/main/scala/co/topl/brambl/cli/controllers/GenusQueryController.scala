@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.effect.kernel.Resource
 import co.topl.brambl.cli.{BramblCliValidatedParams, DefaultDataApi}
 import co.topl.brambl.cli.impl.GenusQueryAlgebra
-import co.topl.brambl.cli.impl.TransactionBuilderApi
+import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.cli.views.BlockDisplayOps
 import co.topl.brambl.codecs.AddressCodecs

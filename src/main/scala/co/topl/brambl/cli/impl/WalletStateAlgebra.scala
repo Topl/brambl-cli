@@ -11,6 +11,7 @@ import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.{WalletApi, WalletStateAlgebra}
+import co.topl.brambl.builders.TransactionBuilderApi
 import quivr.models.{Preimage, Proposition, VerificationKey}
 import co.topl.brambl.codecs.LockTemplateCodecs.{decodeLockTemplate, encodeLockTemplate}
 import io.circe.parser._
