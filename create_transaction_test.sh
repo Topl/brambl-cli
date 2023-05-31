@@ -3,7 +3,6 @@
 WALLET=tmp/wallet.db
 MAIN_KEY=tmp/mainkey.json
 TO_ADDRESS=ptetP7jshHVnMuaLETgEvQdncWQrr4hCojtmU9q195Q2RHs7pkU6mdycQ2oc
-#TO_ADDRESS=ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
 TX_FILE=tmp/tx.pbuf
 TX_PROVED_FILE=tmp/tx_proved.pbuf
 rm -rf ./tmp
