@@ -173,34 +173,45 @@ object SimpleTransactionAlgebra {
             params.someFromState
           )
           predicateFundsToUnlock <- someCurrentIndices
-            .map(currentIndices =>
-              walletStateApi
-                .getLockByIndex(currentIndices)
-            )
+            .map(currentIndices => walletStateApi.getLockByIndex(currentIndices))
             .sequence
             .map(_.flatten.map(Lock().withPredicate(_)))
-          // Next available z-state for the (party,contract) pair
-          someNextIndices <- walletStateApi.getNextIndicesForFunds( // Next available state for the (party,contract) pair
-            params.fromParty, // Change goes back to the same party
-            params.fromContract // Change goes back to the same contract
+          someNextIndices <- walletStateApi.getNextIndicesForFunds(
+            "self",
+            "default"
           )
           // Generate a new lock for the change, if possible
           changeLock <- someNextIndices.map(idx =>
             walletStateApi.getLock(
-              params.fromParty,
-              params.fromContract,
+              "self",
+              "default",
               idx.z
             )
           ).sequence.map(_.flatten)
           fromAddress <- transactionBuilderApi.lockAddress(
             predicateFundsToUnlock.get
           )
-          response <- utxoAlgebra.queryUtxo(fromAddress)
+          response <- {
+            println("XXXXXXX")
+            println(s"from: ${fromAddress.toBase58}")
+            println(s"to: ${params.toAddress.get.toBase58}")
+            println(params.fromParty)
+            println(params.fromContract)
+            println(someNextIndices)
+            println(changeLock)
+            println("XXXXXXX")
+            utxoAlgebra.queryUtxo(fromAddress)
+          }
           lvlTxos = response.filter(
             _.transactionOutput.value.value.isLvl
           )
           _ <-
             if (lvlTxos.isEmpty) {
+              println(lvlTxos)
+              println(predicateFundsToUnlock)
+              println(predicateFundsToUnlock.get.getPredicate)
+              println(fromAddress)
+              println(response)
               Sync[F].delay(println("No LVL txos found"))
             } else changeLock match {
               case Some(lockPredicateForChange) => for {
@@ -215,13 +226,18 @@ object SimpleTransactionAlgebra {
                 lockAddress <- transactionBuilderApi.lockAddress(
                   lockPredicateForChange
                 )
-                vk <- someNextIndices
-                  .map(nextIndices =>
-                    walletApi
-                      .deriveChildKeys(keyPair, nextIndices)
-                      .map(_.vk)
-                  )
-                  .sequence
+                vk <- {
+                  println("here")
+                  println(lockPredicateForChange.getPredicate)
+                  println(lockAddress)
+                  someNextIndices
+                    .map(nextIndices =>
+                      walletApi
+                        .deriveChildKeys(keyPair, nextIndices)
+                        .map(_.vk)
+                    )
+                    .sequence
+                }
                 _ <- walletStateApi.updateWalletState(
                   lockAddress.toBase58(),
                   Encoding.encodeToBase58Check(

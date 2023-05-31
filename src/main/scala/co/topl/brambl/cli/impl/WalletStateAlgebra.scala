@@ -114,11 +114,11 @@ object WalletStateAlgebra {
             y <- Sync[F].delay(rs.getInt("y_contract"))
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
-                s"SELECT x_party, y_contract, MAX(z_state) as z_index FROM cartesian WHERE x_party = ${x} AND y_contract = 1"
+                s"SELECT x_party, y_contract, MAX(z_state) as z_index FROM cartesian WHERE x_party = ${x} AND y_contract = ${y}"
               )
             )
             z <- Sync[F].delay(rs.getInt("z_index"))
-          } yield if (x == 0) None else Some(Indices(x, y, z + 1))
+          } yield if (rs.next()) Some(Indices(x, y, z + 1)) else None
         }
       }
 
@@ -342,25 +342,29 @@ object WalletStateAlgebra {
               )
             )
             _ <- Sync[F].delay(
-              addEntityVks("noparty", "genesis", List())
+              stmnt.executeUpdate(
+                // TODO: replace with proper serialization in TSDK-476
+                s"INSERT INTO verification_keys (x_party, y_contract, vks) VALUES (1, 1, '${List(Encoding.encodeToBase58(vk.toByteArray)).asJson.toString}')"
+              )
             )
             _ <- Sync[F].delay(
-              // TODO: replace with proper serialization in TSDK-476
-              addEntityVks("self", "default", List(Strings.fromByteArray(vk.toByteArray)))
+              stmnt.executeUpdate(
+                s"INSERT INTO verification_keys (x_party, y_contract, vks) VALUES (0, 2, '${List[String]().asJson.toString}')"
+              )
             )
             defaultSignatureLock <- getLock("self", "default", 1).map(_.get)
             signatureLockAddress <- transactionBuilderApi.lockAddress(defaultSignatureLock)
+            childVk <- walletApi.deriveChildVerificationKey(vk, 1)
             genesisHeightLock <- getLock("noparty", "genesis", 1).map(_.get)
             heightLockAddress <- transactionBuilderApi.lockAddress(genesisHeightLock)
             _ <- Sync[F].delay(
               stmnt.executeUpdate(
                 "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (1, 1, 1, '" +
                   Encoding
-                    .encodeToBase58Check(defaultSignatureLock.toByteArray) +
+                    .encodeToBase58Check(defaultSignatureLock.getPredicate.toByteArray) +
                   "', '" +
                   signatureLockAddress.toBase58 + "', " + "'ExtendedEd25519', " + "'" +
-                  Encoding
-                    .encodeToBase58Check(vk.toByteArray)
+                  Encoding.encodeToBase58(childVk.toByteArray)
                   + "'" + ")"
               )
             )
@@ -368,7 +372,7 @@ object WalletStateAlgebra {
               stmnt.executeUpdate(
                 "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address) VALUES (0, 2, 1, '" +
                   Encoding
-                    .encodeToBase58Check(genesisHeightLock.toByteArray) +
+                    .encodeToBase58Check(genesisHeightLock.getPredicate.toByteArray) +
                   "', '" +
                   heightLockAddress.toBase58 + "')"
               )
@@ -407,7 +411,7 @@ object WalletStateAlgebra {
           rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT y_contract FROM contracts WHERE contract = '${contract}'"))
           y <- Sync[F].delay(rs.getInt("y_contract"))
           rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT vks FROM verification_keys WHERE x_party = ${x} AND y_contract = ${y}"))
-          vks <- Sync[F].delay(rs.getString("lock"))
+          vks <- Sync[F].delay(rs.getString("vks"))
         } yield if (!rs.next()) None else parse(vks).toOption.flatMap(_.as[List[String]].toOption)
       }
 
@@ -439,7 +443,7 @@ object WalletStateAlgebra {
         entityVks <- getEntityVks(party, contract)
           .map(_.map(_.map(
             // TODO: replace with proper serialization in TSDK-476
-            vk => VerificationKey.parseFrom(Strings.toByteArray(vk))
+            vk => VerificationKey.parseFrom(Encoding.decodeFromBase58(vk).toOption.get)
           )))
         childVks <- entityVks.map(vks => vks.map(
           walletApi.deriveChildVerificationKey(_, nextState)).sequence).sequence
