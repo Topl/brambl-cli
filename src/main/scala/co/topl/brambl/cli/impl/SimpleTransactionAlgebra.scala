@@ -191,29 +191,14 @@ object SimpleTransactionAlgebra {
           fromAddress <- transactionBuilderApi.lockAddress(
             predicateFundsToUnlock.get
           )
-          response <- {
-            println("XXXXXXX")
-            println(s"from: ${fromAddress.toBase58}")
-            println(s"to: ${params.toAddress.get.toBase58}")
-            println(params.fromParty)
-            println(params.fromContract)
-            println(someNextIndices)
-            println(changeLock)
-            println("XXXXXXX")
-            utxoAlgebra.queryUtxo(fromAddress)
-          }
+          response <- utxoAlgebra.queryUtxo(fromAddress)
           lvlTxos = response.filter(
             _.transactionOutput.value.value.isLvl
           )
           _ <-
-            if (lvlTxos.isEmpty) {
-              println(lvlTxos)
-              println(predicateFundsToUnlock)
-              println(predicateFundsToUnlock.get.getPredicate)
-              println(fromAddress)
-              println(response)
+            if (lvlTxos.isEmpty)
               Sync[F].delay(println("No LVL txos found"))
-            } else changeLock match {
+             else changeLock match {
               case Some(lockPredicateForChange) => for {
                 ioTransaction <- transactionBuilderApi
                   .buildSimpleLvlTransaction(
@@ -226,18 +211,13 @@ object SimpleTransactionAlgebra {
                 lockAddress <- transactionBuilderApi.lockAddress(
                   lockPredicateForChange
                 )
-                vk <- {
-                  println("here")
-                  println(lockPredicateForChange.getPredicate)
-                  println(lockAddress)
-                  someNextIndices
-                    .map(nextIndices =>
-                      walletApi
-                        .deriveChildKeys(keyPair, nextIndices)
-                        .map(_.vk)
-                    )
-                    .sequence
-                }
+                vk <- someNextIndices
+                  .map(nextIndices =>
+                    walletApi
+                      .deriveChildKeys(keyPair, nextIndices)
+                      .map(_.vk)
+                  )
+                  .sequence
                 _ <- walletStateApi.updateWalletState(
                   lockAddress.toBase58(),
                   Encoding.encodeToBase58Check(
