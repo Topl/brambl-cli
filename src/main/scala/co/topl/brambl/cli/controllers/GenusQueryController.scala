@@ -2,13 +2,14 @@ package co.topl.brambl.cli.controllers
 
 import cats.effect.IO
 import cats.effect.kernel.Resource
-import co.topl.brambl.cli.BramblCliValidatedParams
+import co.topl.brambl.cli.{BramblCliValidatedParams, DefaultDataApi}
 import co.topl.brambl.cli.impl.GenusQueryAlgebra
-import co.topl.brambl.cli.impl.TransactionBuilderApi
+import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.cli.views.BlockDisplayOps
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.wallet.WalletApi
 import io.grpc.ManagedChannel
 
 import java.sql.Connection
@@ -23,10 +24,13 @@ class GenusQueryController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
+    val dataApi = new DefaultDataApi[IO]()
+    val walletApi = WalletApi.make(dataApi)
     WalletStateAlgebra
       .make[IO](
         walletResource,
-        transactionBuilderApi
+        transactionBuilderApi,
+        walletApi
       )
       .getAddress(params.fromParty, params.fromContract, params.someFromState)
       .flatMap {

@@ -3,12 +3,12 @@ package co.topl.brambl.cli.impl
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.cli.impl.GenusQueryAlgebra
 import co.topl.brambl.dataApi.DataApi
-import co.topl.brambl.models.box.Attestation
+import co.topl.brambl.models.box.{Attestation, Lock}
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.{CredentiallerInterpreter, WalletApi, WalletStateAlgebra}
 import co.topl.crypto.encryption.VaultStore
+import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.node.services.BroadcastTransactionReq
 import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
@@ -173,27 +173,21 @@ object SimpleTransactionAlgebra {
             params.someFromState
           )
           predicateFundsToUnlock <- someCurrentIndices
-            .map(currentIndices =>
-              walletStateApi
-                .getLockByIndex(currentIndices)
-            )
+            .map(currentIndices => walletStateApi.getLockByIndex(currentIndices))
             .sequence
-            .map(_.get)
+            .map(_.flatten.map(Lock().withPredicate(_)))
           someNextIndices <- walletStateApi.getNextIndicesForFunds(
-            "self", // default party to send funds to
-            "default" // default contract to send funds to
+            "self",
+            "default"
           )
-          lockPredicateForChange <- someNextIndices
-            .map(nextIndices =>
-              walletApi
-                .deriveChildKeys(keyPair, nextIndices)
-                .map(_.vk)
-                .flatMap(x => transactionBuilderApi.lockPredicateSignature(x))
+          // Generate a new lock for the change, if possible
+          changeLock <- someNextIndices.map(idx =>
+            walletStateApi.getLock(
+              "self",
+              "default",
+              idx.z
             )
-            .sequence
-            .map(
-              _.get
-            ) // the deault party to send funds to should always be present
+          ).sequence.map(_.flatten)
           fromAddress <- transactionBuilderApi.lockAddress(
             predicateFundsToUnlock.get
           )
@@ -202,15 +196,15 @@ object SimpleTransactionAlgebra {
             _.transactionOutput.value.value.isLvl
           )
           _ <-
-            if (lvlTxos.isEmpty) {
+            if (lvlTxos.isEmpty)
               Sync[F].delay(println("No LVL txos found"))
-            } else
-              for {
+             else changeLock match {
+              case Some(lockPredicateForChange) => for {
                 ioTransaction <- transactionBuilderApi
                   .buildSimpleLvlTransaction(
                     lvlTxos,
-                    predicateFundsToUnlock.get,
-                    lockPredicateForChange,
+                    predicateFundsToUnlock.get.getPredicate,
+                    lockPredicateForChange.getPredicate,
                     params.toAddress.get,
                     params.amount
                   )
@@ -242,6 +236,8 @@ object SimpleTransactionAlgebra {
                     Sync[F].delay(ioTransaction.writeTo(fos))
                   }
               } yield ()
+              case _ => Sync[F].delay(println("Unable to generate change lock"))
+            }
         } yield ()
       }
     }

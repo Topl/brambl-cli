@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.effect.kernel.Resource
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.DefaultDataApi
-import co.topl.brambl.cli.impl.TransactionBuilderApi
+import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.cli.impl.WalletAlgebra
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.constants.NetworkConstants
@@ -21,13 +21,15 @@ class WalletController(walletResource: Resource[IO, Connection]) {
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi
-    )
     val dataApi = new DefaultDataApi[IO]()
 
     val walletApi = WalletApi.make(dataApi)
+    val walletStateAlgebra = WalletStateAlgebra.make[IO](
+      walletResource,
+      transactionBuilderApi,
+      walletApi
+    )
+
     WalletAlgebra
       .make[IO](
         walletApi,
@@ -39,13 +41,17 @@ class WalletController(walletResource: Resource[IO, Connection]) {
   def currentaddress(
       params: BramblCliValidatedParams
   ): IO[Unit] = {
+    val dataApi = new DefaultDataApi[IO]()
+
+    val walletApi = WalletApi.make(dataApi)
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
     WalletStateAlgebra.make[IO](
       walletResource,
-      transactionBuilderApi
+      transactionBuilderApi,
+      walletApi
     ).getCurrentAddress.flatMap(address => IO(println(address)))
   }
 }

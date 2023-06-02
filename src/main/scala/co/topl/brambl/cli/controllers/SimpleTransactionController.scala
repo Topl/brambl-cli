@@ -7,7 +7,7 @@ import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.DefaultDataApi
 import co.topl.brambl.cli.impl.GenusQueryAlgebra
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebra
-import co.topl.brambl.cli.impl.TransactionBuilderApi
+import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.wallet.WalletApi
@@ -26,16 +26,13 @@ class SimpleTransactionController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi
-    )
     val dataApi = new DefaultDataApi[IO]()
+    val walletApi = WalletApi.make(dataApi)
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
-      transactionBuilderApi
+      transactionBuilderApi,
+      walletApi
     )
-    val walletApi = WalletApi.make(dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
         dataApi,
@@ -57,16 +54,13 @@ class SimpleTransactionController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi
-    )
     val dataApi = new DefaultDataApi[IO]()
+    val walletApi = WalletApi.make(dataApi)
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
-      transactionBuilderApi
+      transactionBuilderApi,
+      walletApi
     )
-    val walletApi = WalletApi.make(dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
         dataApi,
@@ -101,16 +95,13 @@ class SimpleTransactionController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi
-    )
     val dataApi = new DefaultDataApi[IO]()
+    val walletApi = WalletApi.make(dataApi)
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
-      transactionBuilderApi
+      transactionBuilderApi,
+      walletApi
     )
-    val walletApi = WalletApi.make(dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
         dataApi,
