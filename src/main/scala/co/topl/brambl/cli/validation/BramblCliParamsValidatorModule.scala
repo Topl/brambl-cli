@@ -84,6 +84,8 @@ object BramblCliParamsValidatorModule
                 .toOption
                 .get
             ), // this was validated before
+            someToParty = paramConfig.someToParty,
+            someToContract = paramConfig.someToContract,
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),

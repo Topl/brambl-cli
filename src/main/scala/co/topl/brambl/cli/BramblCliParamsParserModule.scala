@@ -158,7 +158,13 @@ object BramblCliParamsParserModule {
                 Seq(
                   opt[Option[String]]('t', "to")
                     .action((x, c) => c.copy(toAddress = x))
-                    .text("Address to send polys to. (mandatory)"),
+                    .text("Address to send LVLs to. (mandatory if toParty and toContract are not provided)"),
+                  opt[Option[String]]('t', "toParty")
+                    .action((x, c) => c.copy(someToParty = x))
+                    .text("Party to send LVLs to. (mandatory if to (address) is not provided)"),
+                  opt[Option[String]]('t', "toContract")
+                    .action((x, c) => c.copy(someToContract = x))
+                    .text("Contract to send LVLs to. (mandatory if to (address) is not provided)"),
                   opt[Long]('a', "amount")
                     .action((x, c) => c.copy(amount = x))
                     .text("Amount to send simple transaction")
