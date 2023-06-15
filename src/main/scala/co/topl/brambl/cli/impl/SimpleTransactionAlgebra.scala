@@ -9,6 +9,8 @@ import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.{CredentiallerInterpreter, WalletApi, WalletStateAlgebra}
 import co.topl.crypto.encryption.VaultStore
 import co.topl.brambl.builders.TransactionBuilderApi
+import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.models.LockAddress
 import co.topl.node.services.BroadcastTransactionReq
 import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
@@ -195,17 +197,31 @@ object SimpleTransactionAlgebra {
           lvlTxos = response.filter(
             _.transactionOutput.value.value.isLvl
           )
+          // either toAddress or both toContract and toParty must be defined
+          toAddressOpt <- (params.toAddress, params.someToParty, params.someToContract) match {
+            case (Some(address), _, _) =>  Sync[F].point(Some(address))
+            case (None, Some(party), Some(contract)) => walletStateApi.getAddress(party, contract, None).map(_.flatMap(
+              addrStr => AddressCodecs.decodeAddress(addrStr).toOption
+            ))
+            case _ => Sync[F].point(None)
+          }
           _ <-
-            if (lvlTxos.isEmpty)
-              Sync[F].delay(println("No LVL txos found"))
-             else changeLock match {
-              case Some(lockPredicateForChange) => for {
+            if (lvlTxos.isEmpty) {
+              Sync[F].delay(println(fromAddress))
+              println(fromAddress)
+              println(fromAddress.toBase58)
+              Sync[F].delay(println(someCurrentIndices))
+              Sync[F].delay(println(fromAddress.toBase58))
+              Sync[F].delay(println("No LVL txos found", someCurrentIndices))
+            }
+             else (changeLock, toAddressOpt) match {
+              case (Some(lockPredicateForChange), Some(toAddress)) => for {
                 ioTransaction <- transactionBuilderApi
                   .buildSimpleLvlTransaction(
                     lvlTxos,
                     predicateFundsToUnlock.get.getPredicate,
                     lockPredicateForChange.getPredicate,
-                    params.toAddress.get,
+                    toAddress,
                     params.amount
                   )
                 lockAddress <- transactionBuilderApi.lockAddress(
@@ -236,7 +252,8 @@ object SimpleTransactionAlgebra {
                     Sync[F].delay(ioTransaction.writeTo(fos))
                   }
               } yield ()
-              case _ => Sync[F].delay(println("Unable to generate change lock"))
+              case (None, _) => Sync[F].delay(println("Unable to generate change lock"))
+              case (_, _) => Sync[F].delay(println("Unable to derive recipient address"))
             }
         } yield ()
       }

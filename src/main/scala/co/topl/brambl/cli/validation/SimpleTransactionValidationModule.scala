@@ -8,6 +8,8 @@ import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.utils.EncodingError
+import cats.syntax.either._
+import cats.syntax.validated._
 
 trait SimpleTransactionValidationModule {
   self: CommonValidationModule =>
@@ -32,8 +34,6 @@ trait SimpleTransactionValidationModule {
   def validateAddress(
       someAddress: Option[String]
   ): ValidatedNel[String, LockAddress] = {
-    import cats.syntax.either._
-    import cats.syntax.validated._
     someAddress
       .map(address =>
         AddressCodecs
