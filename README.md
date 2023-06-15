@@ -78,7 +78,9 @@ Create transaction
   -w, --password <value>   Password for the encrypted key. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
   -o, --output <value>     The output file. (mandatory)
-  -t, --to <value>         Address to send polys to. (mandatory)
+  -t, --to <value>         Address to send LVLs to. (mandatory if to-party and to-contract are not provided)
+  --to-party <value>       Party to send LVLs to. (mandatory if to is not provided)
+  --to-contract <value>    Contract to send LVLs to. (mandatory if to is not provided)
   -a, --amount <value>     Amount to send simple transaction
 Command: simpletransaction broadcast
 Broadcast transaction
@@ -126,6 +128,15 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction create --fr
 ```
 
 This will create a transaction that spends the genesis block and sends 100 polys to the address `ptetP7jshHVRuMURLWzn5RNsEBPth1CParqz5Rug99R4m1pjFN9BrChgbHCY`. The transaction will be stored in the file `$TX_FILE`.
+
+Alternatively, instead of providing an output address, the party and contract of the output can be used instead. To do this, run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction create --from-party noparty --from-contract genesis --from-state 1 --from-party self --from-contract default -w test -p 9091 -o $TX_FILE -n private -a 100 -h localhost -i $MAIN_KEY --walletdb $WALLET
+```
+
+
+```bash 
 
 ### Prove a simple transaction
 

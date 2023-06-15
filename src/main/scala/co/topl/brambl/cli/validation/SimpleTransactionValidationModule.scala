@@ -2,21 +2,30 @@ package co.topl.brambl.cli.validation
 
 import cats.data.NonEmptyList
 import cats.data.ValidatedNel
+import cats.implicits.catsSyntaxValidatedId
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.utils.EncodingError
+import cats.syntax.either._
+import cats.syntax.validated._
 
 trait SimpleTransactionValidationModule {
   self: CommonValidationModule =>
 
-  def validateNoAddress(
-      someAddress: Option[String]
+  def validateNoAddressOrCoordinates(
+      someAddress: Option[String],
+      someToParty: Option[String],
+      someToContract: Option[String]
   ): ValidatedNel[String, Unit] = {
     import cats.implicits._
     if (someAddress.isDefined) {
       s"Address is not required".invalidNel
+    } else if (someToParty.isDefined) {
+      s"toParty is not required".invalidNel
+    } else if (someToContract.isDefined) {
+      s"toContract is not required".invalidNel
     } else {
       ().validNel
     }
@@ -25,8 +34,6 @@ trait SimpleTransactionValidationModule {
   def validateAddress(
       someAddress: Option[String]
   ): ValidatedNel[String, LockAddress] = {
-    import cats.syntax.either._
-    import cats.syntax.validated._
     someAddress
       .map(address =>
         AddressCodecs
@@ -39,6 +46,16 @@ trait SimpleTransactionValidationModule {
           )
       )
       .getOrElse("Address is required".invalidNel)
+  }
+
+  def validateAddressOrCoordinates(
+                                    someAddress: Option[String],
+                                    someToParty: Option[String],
+                                    someToContract: Option[String]
+                                  ): ValidatedNel[String, Unit] = (someAddress, someToParty, someToContract) match {
+    case (Some(addr), None, None) => validateAddress(Some(addr)).map(_ => ())
+    case (None, Some(_), Some(_)) => ().validNel
+    case _ => "Exactly toParty and toContract together or only toAddress must be specified".invalidNel
   }
 
   def validateAmount(amount: Long) = {
@@ -118,7 +135,7 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateAddress(paramConfig.toAddress),
+      validateAddressOrCoordinates(paramConfig.toAddress, paramConfig.someToParty, paramConfig.someToContract),
       validateNoPassphrase(paramConfig.somePassphrase),
       validatePassword(paramConfig.password),
       validatePort(paramConfig.genusPort),
@@ -176,7 +193,7 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNoAddress(paramConfig.toAddress),
+      validateNoAddressOrCoordinates(paramConfig.toAddress, paramConfig.someToParty, paramConfig.someToContract),
       validateNoPassphrase(paramConfig.somePassphrase),
       validateNoPassword(paramConfig.password),
       validatePort(paramConfig.genusPort),
