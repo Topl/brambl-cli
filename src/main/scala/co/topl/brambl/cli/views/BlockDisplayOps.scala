@@ -115,7 +115,6 @@ Value      : ${display(txo.transactionOutput.value.value)}
   def displayType(txoValue: Value.Value) =
     if (txoValue.isLvl) "LVL"
     else if (txoValue.isAsset) "Asset"
-    else if (txoValue.isRegistration) "Registration"
     else if (txoValue.isTopl) "TOPL"
     else "Unknown txo type"
 
@@ -125,8 +124,6 @@ Value      : ${display(txo.transactionOutput.value.value)}
     else if (txoValue.isAsset)
       BigInt(txoValue.asset.get.quantity.value.toByteArray())
         .toString() + txoValue.asset.get.label
-    else if (txoValue.isRegistration)
-      "Registration"
     else if (txoValue.isTopl)
       BigInt(txoValue.topl.get.quantity.value.toByteArray()).toString()
     else "Undefine type"

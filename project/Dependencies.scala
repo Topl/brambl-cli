@@ -7,6 +7,8 @@ object Dependencies {
   lazy val bramblVersion = "eca6926"
   val bramblSdk = toplOrg % "BramblSc" % bramblVersion
   // val bramblCrypto = toplOrg % "crypto" % bramblVersion
+  lazy val pbVersion = "e03a093"
+  val protobufSpecs = s"$toplOrg.protobuf-specs" %% "protobuf-fs2" % pbVersion
 
   val grpcNetty =
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
