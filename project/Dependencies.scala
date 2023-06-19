@@ -4,7 +4,7 @@ object Dependencies {
 
   lazy val toplOrg = "com.github.Topl"
 
-  lazy val bramblVersion = "4b06ca9"
+  lazy val bramblVersion = "eca6926"
   val bramblSdk = toplOrg % "BramblSc" % bramblVersion
   // val bramblCrypto = toplOrg % "crypto" % bramblVersion
 

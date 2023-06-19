@@ -2,8 +2,8 @@ package co.topl.brambl.cli.controllers
 
 import cats.effect.IO
 import cats.effect.kernel.Resource
-import co.topl.brambl.cli.{BramblCliValidatedParams, DefaultDataApi}
-import co.topl.brambl.cli.impl.GenusQueryAlgebra
+import co.topl.brambl.cli.{BramblCliValidatedParams, DefaultWalletKeyApi}
+import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.cli.views.BlockDisplayOps
@@ -24,7 +24,7 @@ class GenusQueryController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val dataApi = new DefaultDataApi[IO]()
+    val dataApi = new DefaultWalletKeyApi[IO]()
     val walletApi = WalletApi.make(dataApi)
     WalletStateAlgebra
       .make[IO](
