@@ -19,6 +19,7 @@ configs(IntegrationTest)
 Defaults.itSettings
 
 libraryDependencies += bramblSdk
+dependencyOverrides += protobufSpecs // force pb version in case bramblSdk and quivr4s use a different version
 // libraryDependencies += bramblCrypto
 libraryDependencies += scopt
 libraryDependencies += munit

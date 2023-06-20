@@ -4,8 +4,8 @@ import cats.data.Validated
 import cats.effect.IO
 import cats.effect.kernel.Resource
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.cli.DefaultDataApi
-import co.topl.brambl.cli.impl.GenusQueryAlgebra
+import co.topl.brambl.cli.DefaultWalletKeyApi
+import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebra
 import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.cli.impl.WalletStateAlgebra
@@ -26,7 +26,7 @@ class SimpleTransactionController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val dataApi = new DefaultDataApi[IO]()
+    val dataApi = new DefaultWalletKeyApi[IO]()
     val walletApi = WalletApi.make(dataApi)
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
@@ -54,7 +54,7 @@ class SimpleTransactionController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val dataApi = new DefaultDataApi[IO]()
+    val dataApi = new DefaultWalletKeyApi[IO]()
     val walletApi = WalletApi.make(dataApi)
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,
@@ -95,7 +95,7 @@ class SimpleTransactionController(
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
     )
-    val dataApi = new DefaultDataApi[IO]()
+    val dataApi = new DefaultWalletKeyApi[IO]()
     val walletApi = WalletApi.make(dataApi)
     val walletStateApi = WalletStateAlgebra.make[IO](
       walletResource,

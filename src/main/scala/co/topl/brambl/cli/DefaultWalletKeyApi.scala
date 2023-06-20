@@ -2,44 +2,30 @@ package co.topl.brambl.cli
 
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import co.topl.brambl.dataApi.DataApi
-import co.topl.brambl.models.LockAddress
-import co.topl.brambl.models.TransactionOutputAddress
-import co.topl.brambl.models.box.Lock
-import co.topl.brambl.models.transaction.UnspentTransactionOutput
+import co.topl.brambl.dataApi.WalletKeyApiAlgebra
 import co.topl.crypto.encryption.VaultStore
 
 import java.io.PrintWriter
 import scala.io.Source
 
-case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
-
-  override def getLockByLockAddress(
-      address: LockAddress
-  ): F[Either[DataApi.DataApiException, Lock]] = ???
-
-  override def getUtxoByTxoAddress(
-      address: TransactionOutputAddress
-  ): F[Either[DataApi.DataApiException, UnspentTransactionOutput]] = ???
+case class DefaultWalletKeyApi[F[_]: Sync]() extends WalletKeyApiAlgebra[F] {
 
   override def updateMainKeyVaultStore(
       mainKeyVaultStore: VaultStore[F],
       name: String
-  ): F[Either[DataApi.DataApiException, Unit]] = ???
+  ): F[Either[WalletKeyApiAlgebra.WalletKeyException, Unit]] = ???
 
   override def deleteMainKeyVaultStore(
       name: String
-  ): F[Either[DataApi.DataApiException, Unit]] = ???
+  ): F[Either[WalletKeyApiAlgebra.WalletKeyException, Unit]] = ???
 
-  case class NoIndicesFound(t: Throwable)
-      extends DataApi.DataApiException(null, t)
   case class DecodeVaultStoreException(msg: String, t: Throwable)
-      extends DataApi.DataApiException(msg, t)
+      extends WalletKeyApiAlgebra.WalletKeyException(msg, t)
 
   override def saveMainKeyVaultStore(
       mainKeyVaultStore: VaultStore[F],
       name: String
-  ): F[Either[DataApi.DataApiException, Unit]] =
+  ): F[Either[WalletKeyApiAlgebra.WalletKeyException, Unit]] =
     Resource
       .make(Sync[F].delay(new PrintWriter(name)))(file =>
         Sync[F].delay(file.close())
@@ -50,12 +36,12 @@ case class DefaultDataApi[F[_]: Sync]() extends DataApi[F] {
         import cats.implicits._
         for {
           res <- Sync[F].blocking(file.write(mainKeyVaultStore.asJson.noSpaces))
-        } yield res.asRight[DataApi.DataApiException]
+        } yield res.asRight[WalletKeyApiAlgebra.WalletKeyException]
       }
 
   override def getMainKeyVaultStore(
       name: String
-  ): F[Either[DataApi.DataApiException, VaultStore[F]]] = Resource
+  ): F[Either[WalletKeyApiAlgebra.WalletKeyException, VaultStore[F]]] = Resource
     .make(Sync[F].delay(Source.fromFile(name))) { file =>
       Sync[F].delay(file.close())
     }

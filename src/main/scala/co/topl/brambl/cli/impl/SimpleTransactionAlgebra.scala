@@ -3,10 +3,10 @@ package co.topl.brambl.cli.impl
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.dataApi.DataApi
+import co.topl.brambl.dataApi.{WalletKeyApiAlgebra, WalletStateAlgebra, GenusQueryAlgebra}
 import co.topl.brambl.models.box.{Attestation, Lock}
 import co.topl.brambl.utils.Encoding
-import co.topl.brambl.wallet.{CredentiallerInterpreter, WalletApi, WalletStateAlgebra}
+import co.topl.brambl.wallet.{CredentiallerInterpreter, WalletApi}
 import co.topl.crypto.encryption.VaultStore
 import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.codecs.AddressCodecs
@@ -38,7 +38,7 @@ trait SimpleTransactionAlgebra[F[_]] {
 object SimpleTransactionAlgebra {
 
   def make[F[_]: Sync](
-      dataApi: DataApi[F],
+      dataApi: WalletKeyApiAlgebra[F],
       walletApi: WalletApi[F],
       walletStateApi: WalletStateAlgebra[F],
       utxoAlgebra: GenusQueryAlgebra[F],
