@@ -207,11 +207,6 @@ object SimpleTransactionAlgebra {
           }
           _ <-
             if (lvlTxos.isEmpty) {
-              Sync[F].delay(println(fromAddress))
-              println(fromAddress)
-              println(fromAddress.toBase58)
-              Sync[F].delay(println(someCurrentIndices))
-              Sync[F].delay(println(fromAddress.toBase58))
               Sync[F].delay(println("No LVL txos found", someCurrentIndices))
             }
              else (changeLock, toAddressOpt) match {
