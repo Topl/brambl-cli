@@ -4,7 +4,7 @@ import cats.effect.IO
 import co.topl.brambl.cli.BramblCliValidatedParams
 import cats.effect.kernel.Resource
 import io.grpc.ManagedChannel
-import co.topl.brambl.cli.impl.BifrostQueryAlgebra
+import co.topl.brambl.dataApi.BifrostQueryAlgebra
 import co.topl.brambl.cli.views.BlockDisplayOps
 import co.topl.brambl.utils.Encoding
 import co.topl.consensus.models.BlockId
