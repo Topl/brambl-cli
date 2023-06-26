@@ -113,6 +113,14 @@ trait CommonValidationModule {
             BramblCliSubCmd.transactionbyid
           )
         )
+      case BramblCliMode.contracts =>
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(
+            BramblCliSubCmd.list
+          )
+        )
       case BramblCliMode.parties =>
         checkValidSubCmd(
           mode,

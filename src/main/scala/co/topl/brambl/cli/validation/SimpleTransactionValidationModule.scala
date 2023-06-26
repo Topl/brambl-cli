@@ -240,7 +240,7 @@ trait SimpleTransactionValidationModule {
     ).sequence.map(_ => paramConfig)
   }
 
-  def validateListEntitiyParams(
+  def validateListParams(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._

@@ -58,6 +58,21 @@ object BramblCliParamsParserModule {
   val paramParser = {
     import builder._
     OParser.sequence(
+      cmd("contracts")
+        .action((_, c) => c.copy(mode = "contracts"))
+        .text("Contract mode")
+        .children(
+          cmd("list")
+            .action((_, c) => c.copy(subcmd = "list"))
+            .text("List existing contracts")
+            .children(
+              hostPortNetwork ++ Seq(
+                opt[Option[String]]("walletdb")
+                  .action((x, c) => c.copy(someWalletFile = x))
+                  .text("Wallet DB file. (mandatory)")
+              ): _*
+            )
+        ),
       cmd("parties")
         .action((_, c) => c.copy(mode = "parties"))
         .text("Entity mode")

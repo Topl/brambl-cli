@@ -45,7 +45,9 @@ object BramblCliParamsValidatorModule
       case (BramblCliMode.bifrostquery, BramblCliSubCmd.transactionbyid) =>
         validateTransactionByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.parties, BramblCliSubCmd.list) =>
-        validateListEntitiyParams(paramConfig).map(_ => (mode, subcmd))
+        validateListParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.contracts, BramblCliSubCmd.list) =>
+        validateListParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.parties, BramblCliSubCmd.add) =>
         validateAddEntitiyParams(paramConfig).map(_ => (mode, subcmd))
     }

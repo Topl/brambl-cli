@@ -292,8 +292,8 @@ object WalletStateAlgebra {
             )
             _ <- Sync[F].delay(
               stmnt.execute(
-                "CREATE TABLE IF NOT EXISTS contracts (contract TEXT PRIMARY KEY," +
-                  " y_contract INTEGER NOT NULL,  lock TEXT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS contracts (contract TEXT NOT NULL," +
+                  " y_contract INTEGER PRIMARY KEY ASC,  lock TEXT NOT NULL)"
               )
             )
             _ <- Sync[F].delay(
@@ -304,7 +304,12 @@ object WalletStateAlgebra {
             )
             _ <- Sync[F].delay(
               stmnt.execute(
-                "CREATE INDEX IF NOT EXISTS party_names_idx ON parties (x_party)"
+                "CREATE INDEX IF NOT EXISTS coonntract_names_idx ON contracts (contract)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.execute(
+                "CREATE INDEX IF NOT EXISTS party_names_idx ON parties (party)"
               )
             )
             _ <- Sync[F].delay(
