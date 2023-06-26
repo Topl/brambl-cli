@@ -2,11 +2,10 @@ package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.wallet.WalletApi
 import co.topl.brambl.dataApi.WalletStateAlgebra
-import quivr.models.KeyPair
-import co.topl.brambl.models.Indices
+import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
+import quivr.models.KeyPair
 
 trait WalletAlgebra[F[_]] {
 

@@ -4,20 +4,24 @@ import cats.data.Validated
 import cats.data.ValidatedNel
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import cats.implicits.{toFunctorOps, toTraverseOps}
 import cats.implicits._
-import co.topl.brambl.builders.locks.{LockTemplate, PropositionTemplate}
+import cats.implicits.toFunctorOps
+import cats.implicits.toTraverseOps
+import co.topl.brambl.builders.TransactionBuilderApi
+import co.topl.brambl.builders.locks.LockTemplate
+import co.topl.brambl.builders.locks.PropositionTemplate
+import co.topl.brambl.codecs.LockTemplateCodecs.decodeLockTemplate
+import co.topl.brambl.codecs.LockTemplateCodecs.encodeLockTemplate
+import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
-import co.topl.brambl.dataApi.WalletStateAlgebra
-import co.topl.brambl.builders.TransactionBuilderApi
-import quivr.models.{Preimage, Proposition, VerificationKey}
-import co.topl.brambl.codecs.LockTemplateCodecs.{decodeLockTemplate, encodeLockTemplate}
 import io.circe.parser._
 import io.circe.syntax.EncoderOps
-import org.bouncycastle.util.Strings
+import quivr.models.Preimage
+import quivr.models.Proposition
+import quivr.models.VerificationKey
 
 object WalletStateAlgebra {
 
@@ -250,7 +254,7 @@ object WalletStateAlgebra {
         }
       }
 
-      override def getCurrentAddress(): F[String] = {
+      override def getCurrentAddress: F[String] = {
         connection.use { conn =>
           import cats.implicits._
           for {

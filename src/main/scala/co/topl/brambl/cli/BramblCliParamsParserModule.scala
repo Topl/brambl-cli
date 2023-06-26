@@ -58,6 +58,21 @@ object BramblCliParamsParserModule {
   val paramParser = {
     import builder._
     OParser.sequence(
+      cmd("parties")
+        .action((_, c) => c.copy(mode = "parties"))
+        .text("Entity mode")
+        .children(
+          cmd("list")
+            .action((_, c) => c.copy(subcmd = "list"))
+            .text("List existing entities")
+            .children(
+              hostPortNetwork ++ Seq(
+                opt[Option[String]]("walletdb")
+                  .action((x, c) => c.copy(someWalletFile = x))
+                  .text("Wallet DB file. (mandatory)")
+              ): _*
+            )
+        ),
       cmd("genus-query")
         .action((_, c) => c.copy(mode = "genusquery"))
         .text("Genus query mode")
@@ -158,13 +173,19 @@ object BramblCliParamsParserModule {
                 Seq(
                   opt[Option[String]]('t', "to")
                     .action((x, c) => c.copy(toAddress = x))
-                    .text("Address to send LVLs to. (mandatory if to-party and to-contract are not provided)"),
+                    .text(
+                      "Address to send LVLs to. (mandatory if to-party and to-contract are not provided)"
+                    ),
                   opt[Option[String]]("to-party")
                     .action((x, c) => c.copy(someToParty = x))
-                    .text("Party to send LVLs to. (mandatory if to is not provided)"),
+                    .text(
+                      "Party to send LVLs to. (mandatory if to is not provided)"
+                    ),
                   opt[Option[String]]("to-contract")
                     .action((x, c) => c.copy(someToContract = x))
-                    .text("Contract to send LVLs to. (mandatory if to is not provided)"),
+                    .text(
+                      "Contract to send LVLs to. (mandatory if to is not provided)"
+                    ),
                   opt[Long]('a', "amount")
                     .action((x, c) => c.copy(amount = x))
                     .text("Amount to send simple transaction")

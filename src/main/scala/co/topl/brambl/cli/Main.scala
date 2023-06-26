@@ -15,6 +15,7 @@ import io.grpc.ManagedChannelBuilder
 import scopt.OParser
 
 import java.sql.DriverManager
+import co.topl.brambl.cli.controllers.PartiesController
 
 object Main extends IOApp {
 
@@ -49,6 +50,9 @@ object Main extends IOApp {
         val op = validateParams(params) match {
           case Validated.Valid(validateParams) =>
             (validateParams.mode, validateParams.subcmd) match {
+              case (BramblCliMode.parties, BramblCliSubCmd.list) =>
+                new PartiesController(walletResource(validateParams.walletFile))
+                  .listParties()
               case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
                 (new WalletController(
                   walletResource(validateParams.walletFile)

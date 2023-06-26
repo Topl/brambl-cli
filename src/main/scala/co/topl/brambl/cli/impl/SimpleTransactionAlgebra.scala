@@ -2,15 +2,18 @@ package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.dataApi.{WalletKeyApiAlgebra, WalletStateAlgebra, GenusQueryAlgebra}
-import co.topl.brambl.models.box.{Attestation, Lock}
-import co.topl.brambl.utils.Encoding
-import co.topl.brambl.wallet.{CredentiallerInterpreter, WalletApi}
-import co.topl.crypto.encryption.VaultStore
 import co.topl.brambl.builders.TransactionBuilderApi
+import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.codecs.AddressCodecs
-import co.topl.brambl.models.LockAddress
+import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.dataApi.WalletKeyApiAlgebra
+import co.topl.brambl.dataApi.WalletStateAlgebra
+import co.topl.brambl.models.box.Attestation
+import co.topl.brambl.models.box.Lock
+import co.topl.brambl.utils.Encoding
+import co.topl.brambl.wallet.CredentiallerInterpreter
+import co.topl.brambl.wallet.WalletApi
+import co.topl.crypto.encryption.VaultStore
 import co.topl.node.services.BroadcastTransactionReq
 import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel

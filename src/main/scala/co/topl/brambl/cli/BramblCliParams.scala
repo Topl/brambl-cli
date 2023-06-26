@@ -6,14 +6,14 @@ import co.topl.brambl.models.LockAddress
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val wallet, genusquery, bifrostquery, simpletransaction = Value
+  val wallet, genusquery, bifrostquery, simpletransaction, parties = Value
 }
 
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
   val init, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
-      prove, broadcast, currentaddress = Value
+      prove, broadcast, currentaddress, list = Value
 }
 
 sealed abstract class NetworkIdentifiers(

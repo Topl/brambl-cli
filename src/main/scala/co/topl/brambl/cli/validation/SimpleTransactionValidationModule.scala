@@ -3,13 +3,12 @@ package co.topl.brambl.cli.validation
 import cats.data.NonEmptyList
 import cats.data.ValidatedNel
 import cats.implicits.catsSyntaxValidatedId
+import cats.syntax.either._
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.utils.EncodingError
-import cats.syntax.either._
-import cats.syntax.validated._
 
 trait SimpleTransactionValidationModule {
   self: CommonValidationModule =>
@@ -228,6 +227,19 @@ trait SimpleTransactionValidationModule {
     import cats.implicits._
     List(
       validateTransactionId(paramConfig.transactionId)
+    ).sequence.map(_ => paramConfig)
+  }
+
+  def validateListEntitiyParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateInputFile(
+        "Wallet DB",
+        paramConfig.someWalletFile,
+        required = true
+      )
     ).sequence.map(_ => paramConfig)
   }
 

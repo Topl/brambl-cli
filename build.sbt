@@ -16,6 +16,8 @@ resolvers ++= Seq(
 
 configs(IntegrationTest)
 
+fork := true
+
 Defaults.itSettings
 
 libraryDependencies += bramblSdk
