@@ -64,12 +64,25 @@ object BramblCliParamsParserModule {
         .children(
           cmd("list")
             .action((_, c) => c.copy(subcmd = "list"))
-            .text("List existing entities")
+            .text("List existing parties")
             .children(
               hostPortNetwork ++ Seq(
                 opt[Option[String]]("walletdb")
                   .action((x, c) => c.copy(someWalletFile = x))
                   .text("Wallet DB file. (mandatory)")
+              ): _*
+            ),
+          cmd("add")
+            .action((_, c) => c.copy(subcmd = "add"))
+            .text("Add a new parties")
+            .children(
+              hostPortNetwork ++ Seq(
+                opt[Option[String]]("walletdb")
+                  .action((x, c) => c.copy(someWalletFile = x))
+                  .text("Wallet DB file. (mandatory)"),
+                opt[String]("party-name")
+                  .action((x, c) => c.copy(partyName = x))
+                  .text("Name of the party. (mandatory)")
               ): _*
             )
         ),

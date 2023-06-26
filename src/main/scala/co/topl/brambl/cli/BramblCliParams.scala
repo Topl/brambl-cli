@@ -13,7 +13,7 @@ object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
   val init, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
-      prove, broadcast, currentaddress, list = Value
+      prove, broadcast, currentaddress, list, add = Value
 }
 
 sealed abstract class NetworkIdentifiers(
@@ -63,6 +63,7 @@ final case class BramblCliParams(
     genusPort: Int = 0,
     bifrostPort: Int = 0,
     network: String = "",
+    partyName: String = "",
     someWalletFile: Option[String] = None,
     toAddress: Option[String] = None,
     someToParty: Option[String] = None,
@@ -83,6 +84,7 @@ final case class BramblCliValidatedParams(
     mode: BramblCliMode.Value,
     subcmd: BramblCliSubCmd.Value,
     network: NetworkIdentifiers,
+    partyName: String = "",
     host: String = "",
     genusPort: Int = 0,
     bifrostPort: Int = 0,

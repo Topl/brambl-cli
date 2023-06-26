@@ -50,6 +50,9 @@ object Main extends IOApp {
         val op = validateParams(params) match {
           case Validated.Valid(validateParams) =>
             (validateParams.mode, validateParams.subcmd) match {
+              case (BramblCliMode.parties, BramblCliSubCmd.add) =>
+                new PartiesController(walletResource(validateParams.walletFile))
+                  .addParty(validateParams.partyName)
               case (BramblCliMode.parties, BramblCliSubCmd.list) =>
                 new PartiesController(walletResource(validateParams.walletFile))
                   .listParties()

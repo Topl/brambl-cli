@@ -8,11 +8,28 @@ trait PartyStorageAlgebra[F[_]] {
 
   def findParties(): F[Seq[WalletEntity]]
 
+  def addParty(walletEntity: WalletEntity): F[Int]
+
 }
 object PartyStorageAlgebra {
   def make[F[_]: Sync](
       connection: Resource[F, java.sql.Connection]
   ): PartyStorageAlgebra[F] = new PartyStorageAlgebra[F] {
+
+    override def addParty(walletEntity: WalletEntity): F[Int] = {
+      connection.use { conn =>
+        import cats.implicits._
+        for {
+          stmnt <- Sync[F].blocking(conn.createStatement())
+          inserted <- Sync[F].blocking(
+            stmnt.executeUpdate(
+              s"INSERT INTO parties (party) VALUES ('${walletEntity.name}')"
+            )
+          )
+        } yield inserted
+      }
+    }
+
     override def findParties(): F[Seq[WalletEntity]] = {
       connection.use { conn =>
         import cats.implicits._
@@ -36,7 +53,8 @@ object PartyStorageAlgebra {
                 None
               }
             }
-            .force.toSeq
+            .force
+            .toSeq
         }
       }
     }

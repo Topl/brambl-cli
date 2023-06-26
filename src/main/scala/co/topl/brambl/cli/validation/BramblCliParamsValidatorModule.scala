@@ -46,6 +46,8 @@ object BramblCliParamsValidatorModule
         validateTransactionByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.parties, BramblCliSubCmd.list) =>
         validateListEntitiyParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.parties, BramblCliSubCmd.add) =>
+        validateAddEntitiyParams(paramConfig).map(_ => (mode, subcmd))
     }
   }
 
@@ -88,6 +90,7 @@ object BramblCliParamsValidatorModule
             ), // this was validated before
             someToParty = paramConfig.someToParty,
             someToContract = paramConfig.someToContract,
+            partyName = paramConfig.partyName,
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),

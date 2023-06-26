@@ -12,7 +12,7 @@ trait WalletValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validatePassword(paramConfig.password),
+      validateNonEmpty("Password", paramConfig.password),
       validatePassphrase(paramConfig.somePassphrase)
     ).sequence.map(_ => paramConfig)
   }
