@@ -138,7 +138,6 @@ trait SimpleTransactionValidationModule {
       validateAddressOrCoordinates(paramConfig.toAddress, paramConfig.someToParty, paramConfig.someToContract),
       validateNoPassphrase(paramConfig.somePassphrase),
       validatePassword(paramConfig.password),
-      validatePort(paramConfig.genusPort),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
@@ -196,7 +195,6 @@ trait SimpleTransactionValidationModule {
       validateNoAddressOrCoordinates(paramConfig.toAddress, paramConfig.someToParty, paramConfig.someToContract),
       validateNoPassphrase(paramConfig.somePassphrase),
       validateNoPassword(paramConfig.password),
-      validatePort(paramConfig.genusPort),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,

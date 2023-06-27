@@ -24,7 +24,6 @@ Query utxo
   --from-state <value>     State from where we are sending the funds from
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the Genus node. (mandatory)
-  --genus-port <value>     Port Genus node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
 Command: bifrost-query [block-by-height|block-by-id|transaction-by-id] [options]
@@ -33,21 +32,18 @@ Command: bifrost-query block-by-height
 Get the block at a given height
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the Genus node. (mandatory)
-  --genus-port <value>     Port Genus node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --height <value>         The height of the block. (mandatory)
 Command: bifrost-query block-by-id
 Get the block with a given id
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the Genus node. (mandatory)
-  --genus-port <value>     Port Genus node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --block-id <value>       The id of the block in base 58. (mandatory)
 Command: bifrost-query transaction-by-id
 Get the transaction with a given id
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the Genus node. (mandatory)
-  --genus-port <value>     Port Genus node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --transaction-id <value>
                            The id of the transaction in base 58. (mandatory)
@@ -72,7 +68,6 @@ Create transaction
   --from-state <value>     State from where we are sending the funds from
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the Genus node. (mandatory)
-  --genus-port <value>     Port Genus node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   -k, --keyfile <value>    The key file.
   -w, --password <value>   Password for the encrypted key. (mandatory)
@@ -86,7 +81,6 @@ Command: simpletransaction broadcast
 Broadcast transaction
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the Genus node. (mandatory)
-  --genus-port <value>     Port Genus node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   -i, --input <value>      The input file. (mandatory)
 Command: simpletransaction prove
@@ -153,7 +147,7 @@ This will prove the transaction in the file `$TX_FILE` and store the result in t
 To broadcast a simple transaction run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- broadcast -n private -i $TX_PROVED_FILE -h localhost --genus-port 9091 --bifrost-port 9084 --walletdb $WALLET
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- broadcast -n private -i $TX_PROVED_FILE -h localhost --bifrost-port 9084 --walletdb $WALLET
 ```
 
 This will broadcast the transaction in the file `$TX_PROVED_FILE` to the network.
@@ -163,7 +157,7 @@ This will broadcast the transaction in the file `$TX_PROVED_FILE` to the network
 To query a block by id run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-id --block-id $BLOCK_ID -n private -h localhost --genus-port 9091 --bifrost-port 9084
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-id --block-id $BLOCK_ID -n private -h localhost --bifrost-port 9084
 ```
 
 This will query the block with id `$BLOCK_ID` from the bifrost node running on `localhost` on port `9084`.
@@ -173,7 +167,7 @@ This will query the block with id `$BLOCK_ID` from the bifrost node running on `
 To query a block by height run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-height --height $HEIGHT -n private -h localhost --genus-port 9091 --bifrost-port 9084
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-height --height $HEIGHT -n private -h localhost --bifrost-port 9084
 ```
 
 This will query the block with height `$HEIGHT` from the bifrost node running on `localhost` on port `9084`.
@@ -183,7 +177,7 @@ This will query the block with height `$HEIGHT` from the bifrost node running on
 To query a transaction by id run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query transaction-by-id --transaction-id $TX_ID -n private -h localhost --genus-port 9091 --bifrost-port 9084
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query transaction-by-id --transaction-id $TX_ID -n private -h localhost --bifrost-port 9084
 ```
 
 This will query the transaction with id `$TX_ID` from the bifrost node running on `localhost` on port `9084`.
@@ -193,7 +187,7 @@ This will query the transaction with id `$TX_ID` from the bifrost node running o
 To query UXTOs by address run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- genus-query utxo-by-address --from-party self --from-contract default -n private -h localhost --genus-port 9091 --bifrost-port 9084 --walletdb $WALLET
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- genus-query utxo-by-address --from-party self --from-contract default -n private -h localhost --bifrost-port 9084 --walletdb $WALLET
 ```
 
 This will query the UXTOs for the address in the genus node. It uses the wallet to derive the right address to query.

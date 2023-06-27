@@ -15,10 +15,7 @@ object BramblCliParamsParserModule {
         ),
       opt[String]('h', "host")
         .action((x, c) => c.copy(host = x))
-        .text("The host of the Genus node. (mandatory)"),
-      opt[Int]("genus-port")
-        .action((x, c) => c.copy(genusPort = x))
-        .text("Port Genus node. (mandatory)"),
+        .text("The host of the node. (mandatory)"),
       opt[Int]("bifrost-port")
         .action((x, c) => c.copy(bifrostPort = x))
         .text("Port Bifrost node. (mandatory)")

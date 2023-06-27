@@ -69,8 +69,8 @@ object WalletStateAlgebra {
         }
 
       override def updateWalletState(
+          lockPredicate: String,
           lockAddress: String,
-          lock_predicate: String,
           routine: Option[String],
           vk: Option[String],
           indices: Indices
@@ -80,7 +80,7 @@ object WalletStateAlgebra {
           for {
             stmnt <- Sync[F].blocking(conn.createStatement())
             statement =
-              s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (${indices.x}, ${indices.y}, ${indices.z}, '${lock_predicate}', '" +
+              s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (${indices.x}, ${indices.y}, ${indices.z}, '${lockPredicate}', '" +
                 lockAddress + "', " + routine
                   .map(x => s"'$x'")
                   .getOrElse("NULL") + ", " + vk
