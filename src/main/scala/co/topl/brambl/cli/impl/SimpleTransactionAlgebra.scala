@@ -6,18 +6,15 @@ import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.dataApi.GenusQueryAlgebra
-import co.topl.brambl.dataApi.WalletKeyApiAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.box.Attestation
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.CredentiallerInterpreter
 import co.topl.brambl.wallet.WalletApi
-import co.topl.crypto.encryption.VaultStore
 import co.topl.node.services.BroadcastTransactionReq
 import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
-import quivr.models.KeyPair
 import quivr.models.Proof
 
 import java.io.FileInputStream
@@ -41,11 +38,11 @@ trait SimpleTransactionAlgebra[F[_]] {
 object SimpleTransactionAlgebra {
 
   def make[F[_]: Sync](
-      dataApi: WalletKeyApiAlgebra[F],
       walletApi: WalletApi[F],
       walletStateApi: WalletStateAlgebra[F],
       utxoAlgebra: GenusQueryAlgebra[F],
       transactionBuilderApi: TransactionBuilderApi[F],
+      walletManagementUtils: WalletManagementUtils[F],
       channelResource: Resource[F, ManagedChannel]
   ) =
     new SimpleTransactionAlgebra[F] {
@@ -94,7 +91,7 @@ object SimpleTransactionAlgebra {
                 .delay(new FileInputStream(params.someInputFile.get))
             }(fos => Sync[F].delay(fos.close()))
             .use(fis => Sync[F].blocking(IoTransaction.parseFrom(fis)))
-          keyPair <- loadKeysFromParam(params)
+          keyPair <- walletManagementUtils.loadKeysFromParam(params)
           credentialer <- Sync[F].delay(
             CredentiallerInterpreter.make[F](walletApi, walletStateApi, keyPair)
           )
@@ -121,49 +118,6 @@ object SimpleTransactionAlgebra {
         } yield ()
       }
 
-      def readInputFile(
-          someInputFile: Option[String]
-      ): F[VaultStore[F]] = {
-        someInputFile match {
-          case Some(inputFile) =>
-            import cats.implicits._
-            dataApi
-              .getMainKeyVaultStore(inputFile)
-              .flatMap(
-                _.fold(
-                  x =>
-                    Sync[F].raiseError[VaultStore[F]](
-                      new Throwable("Error reading input file: " + x)
-                    ),
-                  Sync[F].point(_)
-                )
-              )
-
-          case None =>
-            Sync[F].raiseError(
-              (new Throwable("No input file (should not happen)"))
-            )
-        }
-      }
-
-      def loadKeysFromParam(params: BramblCliValidatedParams) = {
-        import cats.implicits._
-        for {
-          wallet <- readInputFile(params.someKeyFile)
-          keyPair <-
-            walletApi
-              .extractMainKey(wallet, params.password.getBytes())
-              .flatMap(
-                _.fold(
-                  _ =>
-                    Sync[F].raiseError[KeyPair](
-                      new Throwable("No input file (should not happen)")
-                    ),
-                  Sync[F].point(_)
-                )
-              )
-        } yield keyPair
-      }
 
       def createSimpleTransactionFromParams(
           params: BramblCliValidatedParams
@@ -171,7 +125,7 @@ object SimpleTransactionAlgebra {
         import TransactionBuilderApi.implicits._
         import cats.implicits._
         for {
-          keyPair <- loadKeysFromParam(params)
+          keyPair <- walletManagementUtils.loadKeysFromParam(params)
           someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
             params.fromParty,
             params.fromContract,

@@ -17,4 +17,29 @@ trait WalletValidationModule {
     ).sequence.map(_ => paramConfig)
   }
 
+  def validateExportVkParam(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateInputFile(
+        "Keyfile",
+        paramConfig.someKeyFile,
+        required = true
+      ),
+      validateInputFile(
+        "Wallet DB",
+        paramConfig.someWalletFile,
+        required = true
+      ),
+      validateOutputfile(
+        paramConfig.someOutputFile,
+        required = true
+      ),
+      validateNonEmpty("Party name", paramConfig.partyName),
+      validateNonEmpty("Contract name", paramConfig.contractName),
+      validateNonEmpty("Password", paramConfig.password)
+    ).sequence.map(_ => paramConfig)
+  }
+
 }

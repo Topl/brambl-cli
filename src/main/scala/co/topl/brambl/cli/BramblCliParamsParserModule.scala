@@ -199,7 +199,26 @@ object BramblCliParamsParserModule {
             ),
           cmd("current-address")
             .action((_, c) => c.copy(subcmd = "currentaddress"))
-            .text("Initialize wallet")
+            .text("Obtain current address"),
+          cmd("export-vk")
+            .action((_, c) => c.copy(subcmd = "exportvk"))
+            .text("Export verification key")
+            .children(
+              (keyfileAndPassword ++ Seq(
+                opt[String]('o', "output")
+                  .action((x, c) => c.copy(someOutputFile = Some(x)))
+                  .text("The output file."),
+                opt[Option[String]]("walletdb")
+                  .action((x, c) => c.copy(someWalletFile = x))
+                  .text("Wallet DB file. (mandatory)"),
+                opt[String]("party-name")
+                  .action((x, c) => c.copy(partyName = x))
+                  .text("Name of the party. (mandatory)"),
+                opt[String]("contract-name")
+                  .action((x, c) => c.copy(contractName = x))
+                  .text("Name of the contract. (mandatory)")
+              )): _*
+            )
         ),
       cmd("simpletransaction")
         .action((_, c) => c.copy(mode = "simpletransaction"))

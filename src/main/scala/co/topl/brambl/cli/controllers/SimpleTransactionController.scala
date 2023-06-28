@@ -14,6 +14,7 @@ import co.topl.brambl.wallet.WalletApi
 import io.grpc.ManagedChannel
 
 import java.sql.Connection
+import co.topl.brambl.cli.impl.WalletManagementUtils
 
 class SimpleTransactionController(
     walletResource: Resource[IO, Connection],
@@ -33,15 +34,17 @@ class SimpleTransactionController(
       transactionBuilderApi,
       walletApi
     )
+    val walletManagementUtils =
+      new WalletManagementUtils[IO](walletApi, dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
-        dataApi,
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
           genusChannelResource
         ),
         transactionBuilderApi,
+        walletManagementUtils,
         bifrostChannelResource
       )
     simplTransactionOps.broadcastSimpleTransactionFromParams(
@@ -61,15 +64,17 @@ class SimpleTransactionController(
       transactionBuilderApi,
       walletApi
     )
+    val walletManagementUtils =
+      new WalletManagementUtils[IO](walletApi, dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
-        dataApi,
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
           genusChannelResource
         ),
         transactionBuilderApi,
+        walletManagementUtils,
         bifrostChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(
@@ -102,15 +107,17 @@ class SimpleTransactionController(
       transactionBuilderApi,
       walletApi
     )
+    val walletManagementUtils =
+      new WalletManagementUtils[IO](walletApi, dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
-        dataApi,
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
           genusChannelResource
         ),
         transactionBuilderApi,
+        walletManagementUtils,
         bifrostChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(

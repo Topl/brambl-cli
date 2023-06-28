@@ -78,17 +78,18 @@ object Main extends IOApp {
 
   private def walletModeSubcmds(
       validateParams: BramblCliValidatedParams
-  ) = validateParams.subcmd match {
-    case BramblCliSubCmd.init =>
-      (new WalletController(
-        walletResource(validateParams.walletFile)
-      ))
-        .createWalletFromParams(validateParams)
-    case BramblCliSubCmd.currentaddress =>
-      (new WalletController(
-        walletResource(validateParams.walletFile)
-      ))
-        .currentaddress(validateParams)
+  ) = {
+    val walletController = new WalletController(
+      walletResource(validateParams.walletFile)
+    )
+    validateParams.subcmd match {
+      case BramblCliSubCmd.exportvk =>
+        walletController.exportVk(validateParams)
+      case BramblCliSubCmd.init =>
+        walletController.createWalletFromParams(validateParams)
+      case BramblCliSubCmd.currentaddress =>
+        walletController.currentaddress(validateParams)
+    }
   }
 
   private def simpleTransactionSubcmds(

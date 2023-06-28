@@ -6,7 +6,8 @@ import co.topl.brambl.models.LockAddress
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val wallet, genusquery, bifrostquery, simpletransaction, parties, contracts = Value
+  val wallet, genusquery, bifrostquery, simpletransaction, parties, contracts =
+    Value
 }
 
 object BramblCliSubCmd extends Enumeration {
