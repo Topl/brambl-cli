@@ -1,13 +1,15 @@
 package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Resource
-import co.topl.brambl.cli.model.WalletContract
 import cats.effect.kernel.Sync
-import io.circe.Json
+import co.topl.brambl.cli.model.WalletContract
 
 trait ContractStorageAlgebra[F[_]] {
 
   def findContracts(): F[Seq[WalletContract]]
+
+  def addContract(walletContract: WalletContract): F[Int]
+
 }
 
 object ContractStorageAlgebra {
@@ -15,6 +17,20 @@ object ContractStorageAlgebra {
   def make[F[_]: Sync](
       connection: Resource[F, java.sql.Connection]
   ): ContractStorageAlgebra[F] = new ContractStorageAlgebra[F] {
+
+    override def addContract(walletContract: WalletContract): F[Int] = {
+      connection.use { conn =>
+        import cats.implicits._
+        for {
+          stmnt <- Sync[F].blocking(conn.createStatement())
+          inserted <- Sync[F].blocking(
+            stmnt.executeUpdate(
+              s"INSERT INTO contracts (contract, lock) VALUES ('${walletContract.name}', '${walletContract.lockTemplate}')"
+            )
+          )
+        } yield inserted
+      }
+    }
 
     override def findContracts(): F[Seq[WalletContract]] = {
       connection.use { conn =>

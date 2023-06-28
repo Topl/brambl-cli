@@ -267,4 +267,19 @@ trait SimpleTransactionValidationModule {
     ).sequence.map(_ => paramConfig)
   }
 
+  def validateAddContractParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateInputFile(
+        "Wallet DB",
+        paramConfig.someWalletFile,
+        required = true
+      ),
+      validateNonEmpty("Contract name", paramConfig.contractName),
+      validateNonEmpty("Contract template", paramConfig.lockTemplate)
+    ).sequence.map(_ => paramConfig)
+  }
+
 }

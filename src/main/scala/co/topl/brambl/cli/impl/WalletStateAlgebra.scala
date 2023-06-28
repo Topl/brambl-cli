@@ -304,7 +304,7 @@ object WalletStateAlgebra {
             )
             _ <- Sync[F].delay(
               stmnt.execute(
-                "CREATE INDEX IF NOT EXISTS coonntract_names_idx ON contracts (contract)"
+                "CREATE UNIQUE INDEX IF NOT EXISTS contract_names_idx ON contracts (contract)"
               )
             )
             _ <- Sync[F].delay(

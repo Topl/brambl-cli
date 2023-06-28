@@ -31,6 +31,7 @@ libraryDependencies += logback
 libraryDependencies += grpcNetty
 libraryDependencies += grpcRuntime
 libraryDependencies += sqlite
+libraryDependencies += fastparse
 
 scalacOptions += "-Ymacro-annotations"
 

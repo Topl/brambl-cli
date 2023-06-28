@@ -54,6 +54,9 @@ object Main extends IOApp {
               case (BramblCliMode.contracts, BramblCliSubCmd.list) =>
                 new ContractsController(walletResource(validateParams.walletFile))
                   .listContracts()
+              case (BramblCliMode.contracts, BramblCliSubCmd.add) =>
+                new ContractsController(walletResource(validateParams.walletFile))
+                  .addContract(validateParams.contractName, validateParams.lockTemplate)
               case (BramblCliMode.parties, BramblCliSubCmd.add) =>
                 new PartiesController(walletResource(validateParams.walletFile))
                   .addParty(validateParams.partyName)

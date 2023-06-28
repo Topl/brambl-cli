@@ -71,6 +71,22 @@ object BramblCliParamsParserModule {
                   .action((x, c) => c.copy(someWalletFile = x))
                   .text("Wallet DB file. (mandatory)")
               ): _*
+            ),
+          cmd("add")
+            .action((_, c) => c.copy(subcmd = "add"))
+            .text("Add a new contracts")
+            .children(
+              hostPortNetwork ++ Seq(
+                opt[Option[String]]("walletdb")
+                  .action((x, c) => c.copy(someWalletFile = x))
+                  .text("Wallet DB file. (mandatory)"),
+                opt[String]("contract-name")
+                  .action((x, c) => c.copy(contractName = x))
+                  .text("Name of the contract. (mandatory)"),
+                opt[String]("contract-template")
+                  .action((x, c) => c.copy(lockTemplate = x))
+                  .text("Contract template. (mandatory)")
+              ): _*
             )
         ),
       cmd("parties")

@@ -50,6 +50,8 @@ object BramblCliParamsValidatorModule
         validateListParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.parties, BramblCliSubCmd.add) =>
         validateAddEntitiyParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.contracts, BramblCliSubCmd.add) =>
+        validateAddContractParams(paramConfig).map(_ => (mode, subcmd))
     }
   }
 
@@ -93,6 +95,8 @@ object BramblCliParamsValidatorModule
             someToParty = paramConfig.someToParty,
             someToContract = paramConfig.someToContract,
             partyName = paramConfig.partyName,
+            contractName = paramConfig.contractName,
+            lockTemplate = paramConfig.lockTemplate,
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),

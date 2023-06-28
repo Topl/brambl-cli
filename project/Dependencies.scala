@@ -23,4 +23,5 @@ object Dependencies {
   lazy val fs2IO = "co.fs2" %% "fs2-io" % "3.5.0"
   lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
   lazy val sqlite = "org.xerial" % "sqlite-jdbc" % "3.41.2.1"
+  lazy val fastparse = "com.lihaoyi" %% "fastparse" % "3.0.1"
 }

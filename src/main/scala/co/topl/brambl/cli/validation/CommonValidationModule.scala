@@ -118,6 +118,7 @@ trait CommonValidationModule {
           mode,
           subcmd,
           Set(
+            BramblCliSubCmd.add,
             BramblCliSubCmd.list
           )
         )
