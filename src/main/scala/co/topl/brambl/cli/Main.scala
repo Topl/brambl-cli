@@ -45,116 +45,155 @@ object Main extends IOApp {
       )
     )(conn => IO.delay(conn.close()))
 
+  private def contractModeSubcmds(
+      validateParams: BramblCliValidatedParams
+  ) =
+    validateParams.subcmd match {
+      case BramblCliSubCmd.list =>
+        new ContractsController(
+          walletResource(validateParams.walletFile)
+        )
+          .listContracts()
+      case BramblCliSubCmd.add =>
+        new ContractsController(
+          walletResource(validateParams.walletFile)
+        )
+          .addContract(
+            validateParams.contractName,
+            validateParams.lockTemplate
+          )
+    }
+
+  private def partiesModeSubcmds(
+      validateParams: BramblCliValidatedParams
+  ) =
+    validateParams.subcmd match {
+      case BramblCliSubCmd.add =>
+        new PartiesController(walletResource(validateParams.walletFile))
+          .addParty(validateParams.partyName)
+      case BramblCliSubCmd.list =>
+        new PartiesController(walletResource(validateParams.walletFile))
+          .listParties()
+    }
+
+  private def walletModeSubcmds(
+      validateParams: BramblCliValidatedParams
+  ) = validateParams.subcmd match {
+    case BramblCliSubCmd.init =>
+      (new WalletController(
+        walletResource(validateParams.walletFile)
+      ))
+        .createWalletFromParams(validateParams)
+    case BramblCliSubCmd.currentaddress =>
+      (new WalletController(
+        walletResource(validateParams.walletFile)
+      ))
+        .currentaddress(validateParams)
+  }
+
+  private def simpleTransactionSubcmds(
+      validateParams: BramblCliValidatedParams
+  ) = validateParams.subcmd match {
+    case BramblCliSubCmd.broadcast =>
+      new SimpleTransactionController(
+        walletResource(validateParams.walletFile),
+        channelResource(
+          validateParams.host,
+          validateParams.genusPort
+        ),
+        channelResource(
+          validateParams.host,
+          validateParams.bifrostPort
+        )
+      ).broadcastSimpleTransactionFromParams(validateParams)
+    case BramblCliSubCmd.prove =>
+      new SimpleTransactionController(
+        walletResource(validateParams.walletFile),
+        channelResource(
+          validateParams.host,
+          validateParams.genusPort
+        ),
+        channelResource(
+          validateParams.host,
+          validateParams.bifrostPort
+        )
+      ).proveSimpleTransactionFromParams(validateParams)
+    case BramblCliSubCmd.create =>
+      new SimpleTransactionController(
+        walletResource(validateParams.walletFile),
+        channelResource(
+          validateParams.host,
+          validateParams.genusPort
+        ),
+        channelResource(
+          validateParams.host,
+          validateParams.bifrostPort
+        )
+      ).createSimpleTransactionFromParams(validateParams)
+  }
+
+  private def genusQuerySubcmd(
+      validateParams: BramblCliValidatedParams
+  ) = validateParams.subcmd match {
+    case BramblCliSubCmd.utxobyaddress =>
+      new GenusQueryController(
+        walletResource(validateParams.walletFile),
+        channelResource(
+          validateParams.host,
+          validateParams.genusPort
+        )
+      ).queryUtxoFromParams(validateParams)
+  }
+
+  private def bifrostQuerySubcmd(
+      validateParams: BramblCliValidatedParams
+  ) = validateParams.subcmd match {
+    case BramblCliSubCmd.blockbyheight =>
+      new BifrostQueryController(
+        channelResource(
+          validateParams.host,
+          validateParams.bifrostPort
+        )
+      ).blockByHeight(validateParams)
+    case BramblCliSubCmd.blockbyid =>
+      new BifrostQueryController(
+        channelResource(
+          validateParams.host,
+          validateParams.bifrostPort
+        )
+      ).blockById(validateParams)
+    case BramblCliSubCmd.transactionbyid =>
+      new BifrostQueryController(
+        channelResource(
+          validateParams.host,
+          validateParams.bifrostPort
+        )
+      ).fetchTransaction(validateParams)
+  }
+
   override def run(args: List[String]): IO[ExitCode] = {
     OParser.parse(paramParser, args, BramblCliParams()) match {
       case Some(params) =>
         val op = validateParams(params) match {
           case Validated.Valid(validateParams) =>
-            (validateParams.mode, validateParams.subcmd) match {
-              case (BramblCliMode.contracts, BramblCliSubCmd.list) =>
-                new ContractsController(walletResource(validateParams.walletFile))
-                  .listContracts()
-              case (BramblCliMode.contracts, BramblCliSubCmd.add) =>
-                new ContractsController(walletResource(validateParams.walletFile))
-                  .addContract(validateParams.contractName, validateParams.lockTemplate)
-              case (BramblCliMode.parties, BramblCliSubCmd.add) =>
-                new PartiesController(walletResource(validateParams.walletFile))
-                  .addParty(validateParams.partyName)
-              case (BramblCliMode.parties, BramblCliSubCmd.list) =>
-                new PartiesController(walletResource(validateParams.walletFile))
-                  .listParties()
-              case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
-                (new WalletController(
-                  walletResource(validateParams.walletFile)
-                ))
-                  .createWalletFromParams(validateParams)
-              case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
-                (new WalletController(
-                  walletResource(validateParams.walletFile)
-                ))
-                  .currentaddress(validateParams)
-              case (
-                    BramblCliMode.simpletransaction,
-                    BramblCliSubCmd.broadcast
-                  ) =>
-                new SimpleTransactionController(
-                  walletResource(validateParams.walletFile),
-                  channelResource(
-                    validateParams.host,
-                    validateParams.genusPort
-                  ),
-                  channelResource(
-                    validateParams.host,
-                    validateParams.bifrostPort
-                  )
-                ).broadcastSimpleTransactionFromParams(validateParams)
-              case (BramblCliMode.simpletransaction, BramblCliSubCmd.prove) =>
-                new SimpleTransactionController(
-                  walletResource(validateParams.walletFile),
-                  channelResource(
-                    validateParams.host,
-                    validateParams.genusPort
-                  ),
-                  channelResource(
-                    validateParams.host,
-                    validateParams.bifrostPort
-                  )
-                ).proveSimpleTransactionFromParams(validateParams)
-              case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
-                new SimpleTransactionController(
-                  walletResource(validateParams.walletFile),
-                  channelResource(
-                    validateParams.host,
-                    validateParams.genusPort
-                  ),
-                  channelResource(
-                    validateParams.host,
-                    validateParams.bifrostPort
-                  )
-                ).createSimpleTransactionFromParams(validateParams)
-              case (BramblCliMode.genusquery, BramblCliSubCmd.utxobyaddress) =>
-                new GenusQueryController(
-                  walletResource(validateParams.walletFile),
-                  channelResource(
-                    validateParams.host,
-                    validateParams.genusPort
-                  )
-                ).queryUtxoFromParams(validateParams)
-              case (
-                    BramblCliMode.bifrostquery,
-                    BramblCliSubCmd.blockbyheight
-                  ) =>
-                new BifrostQueryController(
-                  channelResource(
-                    validateParams.host,
-                    validateParams.bifrostPort
-                  )
-                ).blockByHeight(validateParams)
-              case (
-                    BramblCliMode.bifrostquery,
-                    BramblCliSubCmd.blockbyid
-                  ) =>
-                new BifrostQueryController(
-                  channelResource(
-                    validateParams.host,
-                    validateParams.bifrostPort
-                  )
-                ).blockById(validateParams)
-              case (
-                    BramblCliMode.bifrostquery,
-                    BramblCliSubCmd.transactionbyid
-                  ) =>
-                new BifrostQueryController(
-                  channelResource(
-                    validateParams.host,
-                    validateParams.bifrostPort
-                  )
-                ).fetchTransaction(validateParams)
+            validateParams.mode match {
+              case BramblCliMode.contracts =>
+                contractModeSubcmds(validateParams)
+              case BramblCliMode.parties =>
+                partiesModeSubcmds(validateParams)
+              case BramblCliMode.wallet =>
+                walletModeSubcmds(validateParams)
+              case BramblCliMode.simpletransaction =>
+                simpleTransactionSubcmds(validateParams)
+              case BramblCliMode.genusquery =>
+                genusQuerySubcmd(validateParams)
+              case BramblCliMode.bifrostquery =>
+                bifrostQuerySubcmd(validateParams)
             }
           case Validated.Invalid(errors) =>
-            IO.println("Invalid params") *> IO.println(
-              errors.toList.mkString(", ")
-            ) *> IO.print(OParser.usage(paramParser))
+            IO.println("Invalid params") *>
+              IO.print(OParser.usage(paramParser)) *>
+              IO.println(errors.toList.mkString(", "))
         }
         for {
           _ <- op

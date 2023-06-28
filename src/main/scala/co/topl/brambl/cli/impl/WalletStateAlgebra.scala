@@ -430,10 +430,12 @@ object WalletStateAlgebra {
         } yield if (!rs.next()) None else parse(vks).toOption.flatMap(_.as[List[String]].toOption)
       }
 
+      // FIXME: use this method to get the lock template in the controller
       override def addNewLockTemplate(contract: String, lockTemplate: LockTemplate[F]): F[Unit] = connection.use { conn =>
         import cats.implicits._
         for {
           stmnt <- Sync[F].blocking(conn.createStatement())
+          // FIXME: do not use max, use autoincrement
           rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT MAX(y_contract) as y_index FROM contracts"))
           y <- Sync[F].delay(rs.getInt("y_index"))
           statement =

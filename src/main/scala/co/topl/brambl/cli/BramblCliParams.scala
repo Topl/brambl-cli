@@ -13,7 +13,7 @@ object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
   val init, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
-      prove, broadcast, currentaddress, list, add = Value
+      prove, broadcast, currentaddress, list, add, exportvk = Value
 }
 
 sealed abstract class NetworkIdentifiers(
