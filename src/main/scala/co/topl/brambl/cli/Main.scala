@@ -85,6 +85,8 @@ object Main extends IOApp {
     validateParams.subcmd match {
       case BramblCliSubCmd.exportvk =>
         walletController.exportVk(validateParams)
+      case BramblCliSubCmd.importvks =>
+        walletController.importVk(validateParams)
       case BramblCliSubCmd.init =>
         walletController.createWalletFromParams(validateParams)
       case BramblCliSubCmd.currentaddress =>
@@ -194,7 +196,7 @@ object Main extends IOApp {
           case Validated.Invalid(errors) =>
             IO.println("Invalid params") *>
               IO.print(OParser.usage(paramParser)) *>
-              IO.println(errors.toList.mkString(", "))
+              IO.println("\n" + errors.toList.mkString(", "))
         }
         for {
           _ <- op

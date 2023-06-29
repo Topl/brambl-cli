@@ -98,7 +98,8 @@ trait CommonValidationModule {
           Set(
             BramblCliSubCmd.init,
             BramblCliSubCmd.currentaddress,
-            BramblCliSubCmd.exportvk
+            BramblCliSubCmd.exportvk,
+            BramblCliSubCmd.importvks
           )
         )
       case BramblCliMode.genusquery =>

@@ -24,6 +24,8 @@ object BramblCliParamsValidatorModule
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.exportvk) =>
         validateExportVkParam(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.wallet, BramblCliSubCmd.importvks) =>
+        validateImportVksParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
         ((mode, subcmd)).validNel
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
@@ -99,6 +101,7 @@ object BramblCliParamsValidatorModule
             partyName = paramConfig.partyName,
             contractName = paramConfig.contractName,
             lockTemplate = paramConfig.lockTemplate,
+            inputVks = paramConfig.inputVks.map(new java.io.File(_)),
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),

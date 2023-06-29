@@ -299,7 +299,7 @@ object WalletStateAlgebra {
             _ <- Sync[F].delay(
               stmnt.execute(
                 "CREATE TABLE IF NOT EXISTS verification_keys (x_party INTEGER NOT NULL," +
-                  " y_contract INTEGER NOT NULL, vks TEXT NOT NULL)"
+                  " y_contract INTEGER NOT NULL, vks TEXT NOT NULL, PRIMARY KEY (x_party, y_contract))"
               )
             )
             _ <- Sync[F].delay(
@@ -410,7 +410,7 @@ object WalletStateAlgebra {
           y <- Sync[F].delay(rs.getInt("y_contract"))
           statement =
             s"INSERT INTO verification_keys (x_party, y_contract, vks) VALUES (${x}, ${y}, " +
-              s"'${entities.asJson.toString}'"
+              s"'${entities.asJson.toString}')"
           _ <- Sync[F].blocking(
             stmnt.executeUpdate(statement)
           )

@@ -12,11 +12,62 @@ import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
+import quivr.models.VerificationKey
 
 import java.io.PrintWriter
 import java.sql.Connection
 
 class WalletController(walletResource: Resource[IO, Connection]) {
+
+  def importVk(
+      params: BramblCliValidatedParams
+  ): IO[Unit] = {
+    val transactionBuilderApi = TransactionBuilderApi.make[IO](
+      params.network.networkId,
+      NetworkConstants.MAIN_LEDGER_ID
+    )
+    val dataApi = new DefaultWalletKeyApi[IO]()
+
+    val walletApi = WalletApi.make(dataApi)
+    val walletStateAlgebra = WalletStateAlgebra.make[IO](
+      walletResource,
+      transactionBuilderApi,
+      walletApi
+    )
+    import cats.implicits._
+    for {
+      keyAndEncodedKeys <- (params.inputVks
+        .map { file =>
+          Resource
+            .make(IO(scala.io.Source.fromFile(file)))(file => IO(file.close()))
+            .use { file =>
+              IO(file.getLines().toList.mkString)
+            }
+        })
+        .sequence
+        .map(
+          _.map(
+            // TODO: replace with proper serialization in TSDK-476
+            vk =>
+              (
+                VerificationKey.parseFrom(
+                  Encoding.decodeFromBase58(vk).toOption.get
+                ),
+                vk
+              )
+          )
+        )
+      lockTempl <- walletStateAlgebra
+        .getLockTemplate(params.contractName)
+        .map(_.get) // it exists because of the validation
+      _ <- walletStateAlgebra.addEntityVks(
+        params.partyName,
+        params.contractName,
+        keyAndEncodedKeys.toList.map(_._2)
+      )
+      _ <- lockTempl.build(keyAndEncodedKeys.toList.map(_._1))
+    } yield ()
+  }
 
   def exportVk(
       params: BramblCliValidatedParams

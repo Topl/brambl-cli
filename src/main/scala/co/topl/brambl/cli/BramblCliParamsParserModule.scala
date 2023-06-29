@@ -218,6 +218,23 @@ object BramblCliParamsParserModule {
                   .action((x, c) => c.copy(contractName = x))
                   .text("Name of the contract. (mandatory)")
               )): _*
+            ),
+          cmd("import-vks")
+            .action((_, c) => c.copy(subcmd = "importvks"))
+            .text("Import verification key")
+            .children(
+              opt[Option[String]]("walletdb")
+                .action((x, c) => c.copy(someWalletFile = x))
+                .text("Wallet DB file. (mandatory)"),
+              opt[String]("party-name")
+                .action((x, c) => c.copy(partyName = x))
+                .text("Name of the party. (mandatory)"),
+              opt[String]("contract-name")
+                .action((x, c) => c.copy(contractName = x))
+                .text("Name of the contract. (mandatory)"),
+              opt[Seq[String]]("input-vks")
+                .action((x, c) => c.copy(inputVks = x))
+                .text("The keys to import. (mandatory)")
             )
         ),
       cmd("simpletransaction")
