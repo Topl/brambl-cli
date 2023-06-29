@@ -16,6 +16,7 @@ import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
 import quivr.models.KeyPair
 import quivr.models.Proof
+import co.topl.brambl.Context
 
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -230,10 +231,10 @@ object SimpleTransactionAlgebra {
                   )
                   .sequence
                 _ <- walletStateApi.updateWalletState(
-                  lockAddress.toBase58(),
                   Encoding.encodeToBase58Check(
-                    lockPredicateForChange.toByteArray
+                    lockPredicateForChange.getPredicate.toByteArray
                   ),
+                  lockAddress.toBase58(),
                   vk.map(_ => "ExtendedEd25519"),
                   vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
                   someNextIndices.get

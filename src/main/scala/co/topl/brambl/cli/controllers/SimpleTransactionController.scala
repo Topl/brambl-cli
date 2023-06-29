@@ -17,8 +17,7 @@ import java.sql.Connection
 
 class SimpleTransactionController(
     walletResource: Resource[IO, Connection],
-    genusChannelResource: Resource[IO, ManagedChannel],
-    bifrostChannelResource: Resource[IO, ManagedChannel]
+    nodeChannelResource: Resource[IO, ManagedChannel]
 ) {
 
   def broadcastSimpleTransactionFromParams(params: BramblCliValidatedParams) = {
@@ -39,10 +38,10 @@ class SimpleTransactionController(
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
-          genusChannelResource
+          nodeChannelResource
         ),
         transactionBuilderApi,
-        bifrostChannelResource
+        nodeChannelResource
       )
     simplTransactionOps.broadcastSimpleTransactionFromParams(
       params
@@ -67,10 +66,10 @@ class SimpleTransactionController(
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
-          genusChannelResource
+          nodeChannelResource
         ),
         transactionBuilderApi,
-        bifrostChannelResource
+        nodeChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(
       params.fromParty,
@@ -108,10 +107,10 @@ class SimpleTransactionController(
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
-          genusChannelResource
+          nodeChannelResource
         ),
         transactionBuilderApi,
-        bifrostChannelResource
+        nodeChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(
       params.fromParty,
