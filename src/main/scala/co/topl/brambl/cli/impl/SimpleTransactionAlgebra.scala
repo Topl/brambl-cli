@@ -118,7 +118,6 @@ object SimpleTransactionAlgebra {
         } yield ()
       }
 
-
       def createSimpleTransactionFromParams(
           params: BramblCliValidatedParams
       ): F[Unit] = {
@@ -132,21 +131,28 @@ object SimpleTransactionAlgebra {
             params.someFromState
           )
           predicateFundsToUnlock <- someCurrentIndices
-            .map(currentIndices => walletStateApi.getLockByIndex(currentIndices))
+            .map(currentIndices =>
+              walletStateApi.getLockByIndex(currentIndices)
+            )
             .sequence
             .map(_.flatten.map(Lock().withPredicate(_)))
           someNextIndices <- walletStateApi.getNextIndicesForFunds(
-            "self",
-            "default"
+            if (params.fromParty == "noparty") "self" else params.fromParty,
+            if (params.fromParty == "noparty") "default"
+            else params.fromContract
           )
           // Generate a new lock for the change, if possible
-          changeLock <- someNextIndices.map(idx =>
-            walletStateApi.getLock(
-              "self",
-              "default",
-              idx.z
+          changeLock <- someNextIndices
+            .map(idx =>
+              walletStateApi.getLock(
+                if (params.fromParty == "noparty") "self" else params.fromParty,
+                if (params.fromParty == "noparty") "default"
+                else params.fromContract,
+                idx.z
+              )
             )
-          ).sequence.map(_.flatten)
+            .sequence
+            .map(_.flatten)
           fromAddress <- transactionBuilderApi.lockAddress(
             predicateFundsToUnlock.get
           )
@@ -155,58 +161,72 @@ object SimpleTransactionAlgebra {
             _.transactionOutput.value.value.isLvl
           )
           // either toAddress or both toContract and toParty must be defined
-          toAddressOpt <- (params.toAddress, params.someToParty, params.someToContract) match {
-            case (Some(address), _, _) =>  Sync[F].point(Some(address))
-            case (None, Some(party), Some(contract)) => walletStateApi.getAddress(party, contract, None).map(_.flatMap(
-              addrStr => AddressCodecs.decodeAddress(addrStr).toOption
-            ))
+          toAddressOpt <- (
+            params.toAddress,
+            params.someToParty,
+            params.someToContract
+          ) match {
+            case (Some(address), _, _) => Sync[F].point(Some(address))
+            case (None, Some(party), Some(contract)) =>
+              walletStateApi
+                .getAddress(party, contract, None)
+                .map(
+                  _.flatMap(addrStr =>
+                    AddressCodecs.decodeAddress(addrStr).toOption
+                  )
+                )
             case _ => Sync[F].point(None)
           }
           _ <-
             if (lvlTxos.isEmpty) {
               Sync[F].delay(println("No LVL txos found", someCurrentIndices))
-            }
-             else (changeLock, toAddressOpt) match {
-              case (Some(lockPredicateForChange), Some(toAddress)) => for {
-                ioTransaction <- transactionBuilderApi
-                  .buildSimpleLvlTransaction(
-                    lvlTxos,
-                    predicateFundsToUnlock.get.getPredicate,
-                    lockPredicateForChange.getPredicate,
-                    toAddress,
-                    params.amount
-                  )
-                lockAddress <- transactionBuilderApi.lockAddress(
-                  lockPredicateForChange
-                )
-                vk <- someNextIndices
-                  .map(nextIndices =>
-                    walletApi
-                      .deriveChildKeys(keyPair, nextIndices)
-                      .map(_.vk)
-                  )
-                  .sequence
-                _ <- walletStateApi.updateWalletState(
-                  lockAddress.toBase58(),
-                  Encoding.encodeToBase58Check(
-                    lockPredicateForChange.toByteArray
-                  ),
-                  vk.map(_ => "ExtendedEd25519"),
-                  vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
-                  someNextIndices.get
-                )
-                _ <- Resource
-                  .make(
-                    Sync[F]
-                      .delay(new FileOutputStream(params.someOutputFile.get))
-                  )(fos => Sync[F].delay(fos.close()))
-                  .use { fos =>
-                    Sync[F].delay(ioTransaction.writeTo(fos))
-                  }
-              } yield ()
-              case (None, _) => Sync[F].delay(println("Unable to generate change lock"))
-              case (_, _) => Sync[F].delay(println("Unable to derive recipient address"))
-            }
+            } else
+              (changeLock, toAddressOpt) match {
+                case (Some(lockPredicateForChange), Some(toAddress)) =>
+                  for {
+                    ioTransaction <- transactionBuilderApi
+                      .buildSimpleLvlTransaction(
+                        lvlTxos,
+                        predicateFundsToUnlock.get.getPredicate,
+                        lockPredicateForChange.getPredicate,
+                        toAddress,
+                        params.amount
+                      )
+                    lockAddress <- transactionBuilderApi.lockAddress(
+                      lockPredicateForChange
+                    )
+                    vk <- someNextIndices
+                      .map(nextIndices =>
+                        walletApi
+                          .deriveChildKeys(keyPair, nextIndices)
+                          .map(_.vk)
+                      )
+                      .sequence
+                    _ <- walletStateApi.updateWalletState(
+                      lockAddress.toBase58(),
+                      Encoding.encodeToBase58Check(
+                        lockPredicateForChange.toByteArray
+                      ),
+                      vk.map(_ => "ExtendedEd25519"),
+                      vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
+                      someNextIndices.get
+                    )
+                    _ <- Resource
+                      .make(
+                        Sync[F]
+                          .delay(
+                            new FileOutputStream(params.someOutputFile.get)
+                          )
+                      )(fos => Sync[F].delay(fos.close()))
+                      .use { fos =>
+                        Sync[F].delay(ioTransaction.writeTo(fos))
+                      }
+                  } yield ()
+                case (None, _) =>
+                  Sync[F].delay(println("Unable to generate change lock"))
+                case (_, _) =>
+                  Sync[F].delay(println("Unable to derive recipient address"))
+              }
         } yield ()
       }
     }
