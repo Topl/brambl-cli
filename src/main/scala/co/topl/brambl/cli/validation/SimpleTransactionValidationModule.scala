@@ -143,7 +143,6 @@ trait SimpleTransactionValidationModule {
       ),
       validateNoPassphrase(paramConfig.somePassphrase),
       validateNonEmpty("Password", paramConfig.password),
-      validatePort(paramConfig.genusPort),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
@@ -205,7 +204,6 @@ trait SimpleTransactionValidationModule {
       ),
       validateNoPassphrase(paramConfig.somePassphrase),
       validateNoPassword(paramConfig.password),
-      validatePort(paramConfig.genusPort),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,

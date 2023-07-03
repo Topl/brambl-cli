@@ -105,7 +105,6 @@ object BramblCliParamsValidatorModule
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),
-            genusPort = paramConfig.genusPort,
             bifrostPort = paramConfig.bifrostPort,
             host = paramConfig.host,
             amount = paramConfig.amount,

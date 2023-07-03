@@ -179,8 +179,8 @@ object SimpleTransactionAlgebra {
           }
           _ <-
             if (lvlTxos.isEmpty) {
-              Sync[F].delay(println("No LVL txos found", someCurrentIndices))
-            } else
+              Sync[F].delay(println("No LVL txos found " + someCurrentIndices))
+            } else {
               (changeLock, toAddressOpt) match {
                 case (Some(lockPredicateForChange), Some(toAddress)) =>
                   for {
@@ -203,10 +203,10 @@ object SimpleTransactionAlgebra {
                       )
                       .sequence
                     _ <- walletStateApi.updateWalletState(
-                      lockAddress.toBase58(),
                       Encoding.encodeToBase58Check(
-                        lockPredicateForChange.toByteArray
+                        lockPredicateForChange.getPredicate.toByteArray
                       ),
+                      lockAddress.toBase58(),
                       vk.map(_ => "ExtendedEd25519"),
                       vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
                       someNextIndices.get
@@ -227,6 +227,7 @@ object SimpleTransactionAlgebra {
                 case (_, _) =>
                   Sync[F].delay(println("Unable to derive recipient address"))
               }
+            }
         } yield ()
       }
     }

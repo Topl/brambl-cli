@@ -18,8 +18,7 @@ import co.topl.brambl.cli.impl.WalletManagementUtils
 
 class SimpleTransactionController(
     walletResource: Resource[IO, Connection],
-    genusChannelResource: Resource[IO, ManagedChannel],
-    bifrostChannelResource: Resource[IO, ManagedChannel]
+    nodeChannelResource: Resource[IO, ManagedChannel]
 ) {
 
   def broadcastSimpleTransactionFromParams(params: BramblCliValidatedParams) = {
@@ -41,11 +40,11 @@ class SimpleTransactionController(
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
-          genusChannelResource
+          nodeChannelResource
         ),
         transactionBuilderApi,
         walletManagementUtils,
-        bifrostChannelResource
+        nodeChannelResource
       )
     simplTransactionOps.broadcastSimpleTransactionFromParams(
       params
@@ -71,11 +70,11 @@ class SimpleTransactionController(
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
-          genusChannelResource
+          nodeChannelResource
         ),
         transactionBuilderApi,
         walletManagementUtils,
-        bifrostChannelResource
+        nodeChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(
       params.fromParty,
@@ -114,11 +113,11 @@ class SimpleTransactionController(
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
-          genusChannelResource
+          nodeChannelResource
         ),
         transactionBuilderApi,
         walletManagementUtils,
-        bifrostChannelResource
+        nodeChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(
       params.fromParty,

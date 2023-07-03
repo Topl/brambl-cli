@@ -102,10 +102,6 @@ object Main extends IOApp {
         walletResource(validateParams.walletFile),
         channelResource(
           validateParams.host,
-          validateParams.genusPort
-        ),
-        channelResource(
-          validateParams.host,
           validateParams.bifrostPort
         )
       ).broadcastSimpleTransactionFromParams(validateParams)
@@ -114,20 +110,12 @@ object Main extends IOApp {
         walletResource(validateParams.walletFile),
         channelResource(
           validateParams.host,
-          validateParams.genusPort
-        ),
-        channelResource(
-          validateParams.host,
           validateParams.bifrostPort
         )
       ).proveSimpleTransactionFromParams(validateParams)
     case BramblCliSubCmd.create =>
       new SimpleTransactionController(
         walletResource(validateParams.walletFile),
-        channelResource(
-          validateParams.host,
-          validateParams.genusPort
-        ),
         channelResource(
           validateParams.host,
           validateParams.bifrostPort
@@ -143,7 +131,7 @@ object Main extends IOApp {
         walletResource(validateParams.walletFile),
         channelResource(
           validateParams.host,
-          validateParams.genusPort
+          validateParams.bifrostPort
         )
       ).queryUtxoFromParams(validateParams)
   }
