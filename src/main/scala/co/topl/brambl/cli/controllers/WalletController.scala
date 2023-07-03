@@ -21,7 +21,7 @@ class WalletController(walletResource: Resource[IO, Connection]) {
 
   def importVk(
       params: BramblCliValidatedParams
-  ): IO[Unit] = {
+  ): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
@@ -66,12 +66,12 @@ class WalletController(walletResource: Resource[IO, Connection]) {
         keyAndEncodedKeys.toList.map(_._2)
       )
       _ <- lockTempl.build(keyAndEncodedKeys.toList.map(_._1))
-    } yield ()
+    } yield "Successfully imported verification keys"
   }
 
   def exportVk(
       params: BramblCliValidatedParams
-  ): IO[Unit] = {
+  ): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
@@ -116,12 +116,12 @@ class WalletController(walletResource: Resource[IO, Connection]) {
             )
           } yield ()
         }
-    }).value.map(_.get).flatten
+    }).value.map(_.get).flatten.map(_ => "Verification key exported")
   }
 
   def createWalletFromParams(
       params: BramblCliValidatedParams
-  ): IO[Unit] = {
+  ): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
@@ -141,11 +141,12 @@ class WalletController(walletResource: Resource[IO, Connection]) {
         walletStateAlgebra
       )
       .createWalletFromParams(params)
+      .map(_ => "Wallet created")
   }
 
   def currentaddress(
       params: BramblCliValidatedParams
-  ): IO[Unit] = {
+  ): IO[String] = {
     val dataApi = new DefaultWalletKeyApi[IO]()
 
     val walletApi = WalletApi.make(dataApi)
@@ -160,6 +161,6 @@ class WalletController(walletResource: Resource[IO, Connection]) {
         walletApi
       )
       .getCurrentAddress
-      .flatMap(address => IO(println(address)))
+      .map(address => address)
   }
 }

@@ -14,25 +14,25 @@ import co.topl.brambl.models.TransactionId
 class BifrostQueryController(channelResource: Resource[IO, ManagedChannel]) {
   def blockByHeight(
       params: BramblCliValidatedParams
-  ): IO[Unit] = {
+  ): IO[String] = {
     BifrostQueryAlgebra
       .make[IO](channelResource)
       .blockByHeight(
         params.height
       )
-      .flatMap { someResult =>
+      .map { someResult =>
         someResult match {
           case Some(((blockId, _, ioTransactions))) =>
-            IO.print(BlockDisplayOps.display(blockId, ioTransactions))
+            BlockDisplayOps.display(blockId, ioTransactions)
           case None =>
-            IO.println("No blocks found at that block id")
+            "No blocks found at that block id"
         }
       }
   }
 
   def blockById(
       params: BramblCliValidatedParams
-  ): IO[Unit] = BifrostQueryAlgebra
+  ): IO[String] = BifrostQueryAlgebra
     .make[IO](channelResource)
     .blockById(
       Encoding
@@ -41,16 +41,16 @@ class BifrostQueryController(channelResource: Resource[IO, ManagedChannel]) {
         .toOption // validation should ensure that this is a Some
         .get
     )
-    .flatMap { someResult =>
+    .map { someResult =>
       someResult match {
         case Some(((blockId, _, ioTransactions))) =>
-          IO.print(BlockDisplayOps.display(blockId, ioTransactions))
+          BlockDisplayOps.display(blockId, ioTransactions)
         case None =>
-          IO.println("No blocks found at that block id")
+          "No blocks found at that block id"
       }
     }
 
-  def fetchTransaction(params: BramblCliValidatedParams): IO[Unit] =
+  def fetchTransaction(params: BramblCliValidatedParams): IO[String] =
     BifrostQueryAlgebra
       .make[IO](channelResource)
       .fetchTransaction(
@@ -60,14 +60,12 @@ class BifrostQueryController(channelResource: Resource[IO, ManagedChannel]) {
           .toOption // validation should ensure that this is a Some
           .get
       )
-      .flatMap { someResult =>
+      .map { someResult =>
         someResult match {
           case Some(ioTransaction) =>
-            IO.print(BlockDisplayOps.display(ioTransaction))
+            BlockDisplayOps.display(ioTransaction)
           case None =>
-            IO.println(
-              s"No transaction found with id ${params.transactionId.get}"
-            )
+            s"No transaction found with id ${params.transactionId.get}"
         }
       }
 

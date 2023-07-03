@@ -200,7 +200,6 @@ object WalletStateAlgebra {
                 query
               )
             )
-            _ = println("Query: " + query)
             y <- Sync[F].delay(rs.getInt("y_contract"))
             query = s"SELECT address, x_party, y_contract, " + someState
               .map(_ => "z_state as z_index")

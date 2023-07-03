@@ -1,27 +1,29 @@
 package co.topl.brambl.cli.controllers
 
-import cats.effect.IO
-import cats.effect.kernel.Resource
+import cats.Applicative
 import co.topl.brambl.cli.impl.PartyStorageAlgebra
 import co.topl.brambl.cli.model.WalletEntity
 
-import java.sql.Connection
+class PartiesController[F[_]: Applicative](
+    partyStorageAlgebra: PartyStorageAlgebra[F]
+) {
 
-class PartiesController(walletResource: Resource[IO, Connection]) {
-
-  val partyStorageAlgebra = PartyStorageAlgebra.make(walletResource)
-
-  def addParty(name: String): IO[Int] = {
-    partyStorageAlgebra.addParty(WalletEntity(0, name))
+  def addParty(name: String): F[String] = {
+    import cats.implicits._
+    partyStorageAlgebra.addParty(WalletEntity(0, name)) *>
+      s"Party $name added successfully".pure[F]
   }
 
-  def listParties(): IO[Unit] = {
+  def listParties(): F[String] = {
     import co.topl.brambl.cli.views.WalletModelDisplayOps._
     import cats.implicits._
-    IO.println(displayWalletEntityHeader()) >>
-      partyStorageAlgebra
-        .findParties()
-        .flatMap(parties => parties.map(display).map(IO.println).sequence.void)
+    partyStorageAlgebra
+      .findParties()
+      .map(parties =>
+        displayWalletEntityHeader() + "\n" + parties
+          .map(display)
+          .mkString("\n")
+      )
   }
 
 }

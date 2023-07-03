@@ -17,6 +17,8 @@ import scopt.OParser
 import java.sql.DriverManager
 import co.topl.brambl.cli.controllers.PartiesController
 import co.topl.brambl.cli.controllers.ContractsController
+import co.topl.brambl.cli.impl.PartyStorageAlgebra
+import co.topl.brambl.cli.impl.ContractStorageAlgebra
 
 object Main extends IOApp {
 
@@ -47,34 +49,41 @@ object Main extends IOApp {
 
   private def contractModeSubcmds(
       validateParams: BramblCliValidatedParams
-  ) =
+  ): IO[String] = {
+    val contractStorageAlgebra = ContractStorageAlgebra.make[IO](
+      walletResource(validateParams.walletFile)
+    )
     validateParams.subcmd match {
       case BramblCliSubCmd.list =>
         new ContractsController(
-          walletResource(validateParams.walletFile)
+          contractStorageAlgebra
         )
           .listContracts()
       case BramblCliSubCmd.add =>
         new ContractsController(
-          walletResource(validateParams.walletFile)
+          contractStorageAlgebra
         )
           .addContract(
             validateParams.contractName,
             validateParams.lockTemplate
           )
     }
-
+  }
   private def partiesModeSubcmds(
       validateParams: BramblCliValidatedParams
-  ) =
+  ) = {
+    val partyStorageAlgebra = PartyStorageAlgebra.make[IO](
+      walletResource(validateParams.walletFile)
+    )
     validateParams.subcmd match {
       case BramblCliSubCmd.add =>
-        new PartiesController(walletResource(validateParams.walletFile))
+        new PartiesController(partyStorageAlgebra)
           .addParty(validateParams.partyName)
       case BramblCliSubCmd.list =>
-        new PartiesController(walletResource(validateParams.walletFile))
+        new PartiesController(partyStorageAlgebra)
           .listParties()
     }
+  }
 
   private def walletModeSubcmds(
       validateParams: BramblCliValidatedParams
@@ -96,7 +105,7 @@ object Main extends IOApp {
 
   private def simpleTransactionSubcmds(
       validateParams: BramblCliValidatedParams
-  ) = validateParams.subcmd match {
+  ): IO[String] = validateParams.subcmd match {
     case BramblCliSubCmd.broadcast =>
       new SimpleTransactionController(
         walletResource(validateParams.walletFile),
@@ -125,7 +134,7 @@ object Main extends IOApp {
 
   private def genusQuerySubcmd(
       validateParams: BramblCliValidatedParams
-  ) = validateParams.subcmd match {
+  ): IO[String] = validateParams.subcmd match {
     case BramblCliSubCmd.utxobyaddress =>
       new GenusQueryController(
         walletResource(validateParams.walletFile),
@@ -138,7 +147,7 @@ object Main extends IOApp {
 
   private def bifrostQuerySubcmd(
       validateParams: BramblCliValidatedParams
-  ) = validateParams.subcmd match {
+  ): IO[String] = validateParams.subcmd match {
     case BramblCliSubCmd.blockbyheight =>
       new BifrostQueryController(
         channelResource(
@@ -165,7 +174,7 @@ object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = {
     OParser.parse(paramParser, args, BramblCliParams()) match {
       case Some(params) =>
-        val op = validateParams(params) match {
+        val op: IO[String] = validateParams(params) match {
           case Validated.Valid(validateParams) =>
             validateParams.mode match {
               case BramblCliMode.contracts =>
@@ -182,12 +191,15 @@ object Main extends IOApp {
                 bifrostQuerySubcmd(validateParams)
             }
           case Validated.Invalid(errors) =>
-            IO.println("Invalid params") *>
-              IO.print(OParser.usage(paramParser)) *>
-              IO.println("\n" + errors.toList.mkString(", "))
+            IO(
+              "Invalid params\n" +
+                OParser.usage(paramParser) + "\n" +
+                errors.toList.mkString(", ")
+            )
         }
         for {
-          _ <- op
+          output <- op
+          _ <- IO(println(output))
         } yield ExitCode.Success
       case _ =>
         IO.pure(ExitCode.Error)

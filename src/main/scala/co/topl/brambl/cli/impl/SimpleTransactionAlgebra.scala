@@ -24,15 +24,15 @@ trait SimpleTransactionAlgebra[F[_]] {
 
   def proveSimpleTransactionFromParams(
       params: BramblCliValidatedParams
-  ): F[Unit]
+  ): F[String]
 
   def createSimpleTransactionFromParams(
       params: BramblCliValidatedParams
-  ): F[Unit]
+  ): F[String]
 
   def broadcastSimpleTransactionFromParams(
       params: BramblCliValidatedParams
-  ): F[Unit]
+  ): F[String]
 
 }
 object SimpleTransactionAlgebra {
@@ -49,7 +49,7 @@ object SimpleTransactionAlgebra {
 
       override def broadcastSimpleTransactionFromParams(
           params: BramblCliValidatedParams
-      ): F[Unit] = {
+      ): F[String] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
         (for {
@@ -76,12 +76,12 @@ object SimpleTransactionAlgebra {
           } yield {
             response
           }
-        }).flatten.map(_ => ())
+        }).flatten.map(_ => "Transaction broadcasted")
       }
 
       override def proveSimpleTransactionFromParams(
           params: BramblCliValidatedParams
-      ): F[Unit] = {
+      ): F[String] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
         for {
@@ -115,12 +115,12 @@ object SimpleTransactionAlgebra {
                 .delay(new FileOutputStream(params.someOutputFile.get))
             )(fos => Sync[F].delay(fos.close()))
             .use(fos => Sync[F].delay(provedTransaction.writeTo(fos)))
-        } yield ()
+        } yield "Transaction proved"
       }
 
       def createSimpleTransactionFromParams(
           params: BramblCliValidatedParams
-      ): F[Unit] = {
+      ): F[String] = {
         import TransactionBuilderApi.implicits._
         import cats.implicits._
         for {
@@ -177,9 +177,9 @@ object SimpleTransactionAlgebra {
                 )
             case _ => Sync[F].point(None)
           }
-          _ <-
+          res <-
             if (lvlTxos.isEmpty) {
-              Sync[F].delay(println("No LVL txos found " + someCurrentIndices))
+              Sync[F].delay("No LVL txos found")
             } else {
               (changeLock, toAddressOpt) match {
                 case (Some(lockPredicateForChange), Some(toAddress)) =>
@@ -221,14 +221,14 @@ object SimpleTransactionAlgebra {
                       .use { fos =>
                         Sync[F].delay(ioTransaction.writeTo(fos))
                       }
-                  } yield ()
+                  } yield "Transaction created successfully"
                 case (None, _) =>
-                  Sync[F].delay(println("Unable to generate change lock"))
+                  Sync[F].delay("Unable to generate change lock")
                 case (_, _) =>
-                  Sync[F].delay(println("Unable to derive recipient address"))
+                  Sync[F].delay("Unable to derive recipient address")
               }
             }
-        } yield ()
+        } yield res
       }
     }
 }
