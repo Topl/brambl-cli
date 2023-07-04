@@ -7,8 +7,10 @@ keyfile.json
 .bloop/
 target/
 *.json
-wallet.db
-derivedkey.txt
+*.db
+*_vk.txt
+vk.txt
 *.pbuf
 .idea/
 *.log
+*.worksheet.sc
