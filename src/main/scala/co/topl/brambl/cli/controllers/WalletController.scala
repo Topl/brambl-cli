@@ -24,7 +24,7 @@ class WalletController(walletResource: Resource[IO, Connection]) {
   ): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
+      NetworkConstants.MAIN_LEDGER_ID // TODO: this works because we do not use certain methods, maybe the fix is upstream
     )
     val dataApi = new DefaultWalletKeyApi[IO]()
 
