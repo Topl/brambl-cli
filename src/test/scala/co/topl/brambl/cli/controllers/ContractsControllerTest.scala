@@ -67,6 +67,8 @@ class ContractsControllerTest extends CatsEffectSuite {
         """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""
       )
   }
+
+
   test("Add or contract") {
     var addedContract = ""
     val simpleController = new ContractsController[IO](
@@ -97,6 +99,160 @@ class ContractsControllerTest extends CatsEffectSuite {
         """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"or"}],"type":"predicate"}"""
       )
 
+  }
+  test("Add lock contract empty") {
+    var addedContract = ""
+    val simpleController = new ContractsController[IO](
+      new ContractStorageAlgebra[IO] {
+        override def addContract(
+            walletContract: WalletContract
+        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+
+        override def findContracts(): IO[List[WalletContract]] =
+          IO(List.empty)
+      }
+    )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, locked())"""
+      )
+      .assertEquals(
+        "Contract added successfully"
+      )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, locked())"""
+      )
+      .map(_ => addedContract)
+      .assertEquals(
+        """{"threshold":1,"innerTemplates":[{"type":"locked"}],"type":"predicate"}"""
+      )
+  }
+
+  // FIXME: Diadem will fix this
+  test("Add lock contract with data".fail) {
+    var addedContract = ""
+    val simpleController = new ContractsController[IO](
+      new ContractStorageAlgebra[IO] {
+        override def addContract(
+            walletContract: WalletContract
+        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+
+        override def findContracts(): IO[List[WalletContract]] =
+          IO(List.empty)
+      }
+    )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, locked(72k1xXWG59fYdzSNoA))"""
+      )
+      .assertEquals(
+        "Contract added successfully"
+      )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, locked(72k1xXWG59fYdzSNoA))"""
+      )
+      .map(_ => addedContract)
+      .assertEquals(
+        """{"threshold":1,"innerTemplates":[{"data":"72k1xXWG59fYdzSNoA","type":"locked"}],"type":"predicate"}"""
+      )
+  }
+
+  test("Add height contract") {
+    var addedContract = ""
+    val simpleController = new ContractsController[IO](
+      new ContractStorageAlgebra[IO] {
+        override def addContract(
+            walletContract: WalletContract
+        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+
+        override def findContracts(): IO[List[WalletContract]] =
+          IO(List.empty)
+      }
+    )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, height(1, 1000))"""
+      )
+      .assertEquals(
+        "Contract added successfully"
+      )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, height(1, 1000))"""
+      )
+      .map(_ => addedContract)
+      .assertEquals(
+        """{"threshold":1,"innerTemplates":[{"chain":"header","min":1,"max":1000,"type":"height"}],"type":"predicate"}"""
+      )
+  }
+  test("Add tick contract") {
+    var addedContract = ""
+    val simpleController = new ContractsController[IO](
+      new ContractStorageAlgebra[IO] {
+        override def addContract(
+            walletContract: WalletContract
+        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+
+        override def findContracts(): IO[List[WalletContract]] =
+          IO(List.empty)
+      }
+    )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, tick(1, 1000))"""
+      )
+      .assertEquals(
+        "Contract added successfully"
+      )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, tick(1, 1000))"""
+      )
+      .map(_ => addedContract)
+      .assertEquals(
+        """{"threshold":1,"innerTemplates":[{"min":1,"max":1000,"type":"tick"}],"type":"predicate"}"""
+      )
+  }
+  // FIXME: Diadem will fix this
+  test("Add digest contract".fail) {
+    var addedContract = ""
+    val simpleController = new ContractsController[IO](
+      new ContractStorageAlgebra[IO] {
+        override def addContract(
+            walletContract: WalletContract
+        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+
+        override def findContracts(): IO[List[WalletContract]] =
+          IO(List.empty)
+      }
+    )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, digest(6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8))"""
+      )
+      .assertEquals(
+        "Contract added successfully"
+      )
+    simpleController
+      .addContract(
+        "myNewContract",
+        """threshold(1, digest(6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8))"""
+      )
+      .map(_ => addedContract)
+      .assertEquals(
+        """{"threshold":1,"innerTemplates":[{"min":1,"max":1000,"type":"tick"}],"type":"predicate"}"""
+      )
   }
 
   test("List contracts") {

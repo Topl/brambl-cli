@@ -6,19 +6,26 @@ import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
+import co.topl.brambl.builders.TransactionBuilderApi
+import co.topl.brambl.cli.BramblCliValidatedParams
+import co.topl.brambl.cli.DefaultWalletKeyApi
+import co.topl.brambl.cli.controllers.BifrostQueryController
+import co.topl.brambl.cli.controllers.ContractsController
 import co.topl.brambl.cli.controllers.GenusQueryController
+import co.topl.brambl.cli.controllers.PartiesController
 import co.topl.brambl.cli.controllers.SimpleTransactionController
 import co.topl.brambl.cli.controllers.WalletController
-import co.topl.brambl.cli.controllers.BifrostQueryController
+import co.topl.brambl.cli.impl.ContractStorageAlgebra
+import co.topl.brambl.cli.impl.PartyStorageAlgebra
+import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
+import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.wallet.WalletApi
 import io.grpc.ManagedChannelBuilder
 import scopt.OParser
 
 import java.sql.DriverManager
-import co.topl.brambl.cli.controllers.PartiesController
-import co.topl.brambl.cli.controllers.ContractsController
-import co.topl.brambl.cli.impl.PartyStorageAlgebra
-import co.topl.brambl.cli.impl.ContractStorageAlgebra
 
 object Main extends IOApp {
 
@@ -136,13 +143,32 @@ object Main extends IOApp {
       validateParams: BramblCliValidatedParams
   ): IO[String] = validateParams.subcmd match {
     case BramblCliSubCmd.utxobyaddress =>
-      new GenusQueryController(
-        walletResource(validateParams.walletFile),
-        channelResource(
-          validateParams.host,
-          validateParams.bifrostPort
+      val transactionBuilderApi = TransactionBuilderApi.make[IO](
+        validateParams.network.networkId,
+        NetworkConstants.MAIN_LEDGER_ID
+      )
+      val dataApi = new DefaultWalletKeyApi[IO]()
+      val walletApi = WalletApi.make(dataApi)
+      val walletStateAlgebra = WalletStateAlgebra
+        .make[IO](
+          walletResource(validateParams.walletFile),
+          transactionBuilderApi,
+          walletApi
         )
-      ).queryUtxoFromParams(validateParams)
+      new GenusQueryController(
+        walletStateAlgebra,
+        GenusQueryAlgebra
+          .make[IO](
+            channelResource(
+              validateParams.host,
+              validateParams.bifrostPort
+            )
+          )
+      ).queryUtxoFromParams(
+        validateParams.fromParty,
+        validateParams.fromContract,
+        validateParams.someFromState
+      )
   }
 
   private def bifrostQuerySubcmd(
