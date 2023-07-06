@@ -1,0 +1,31 @@
+package co.topl.brambl.cli
+
+import cats.effect.IO
+import co.topl.brambl.cli.BramblCliValidatedParams
+import co.topl.brambl.cli.controllers.ContractsController
+import co.topl.brambl.cli.impl.ContractStorageAlgebra
+
+trait ContractModeModule extends WalletResourceModule {
+  def contractModeSubcmds(
+      validateParams: BramblCliValidatedParams
+  ): IO[String] = {
+    val contractStorageAlgebra = ContractStorageAlgebra.make[IO](
+      walletResource(validateParams.walletFile)
+    )
+    validateParams.subcmd match {
+      case BramblCliSubCmd.list =>
+        new ContractsController(
+          contractStorageAlgebra
+        )
+          .listContracts()
+      case BramblCliSubCmd.add =>
+        new ContractsController(
+          contractStorageAlgebra
+        )
+          .addContract(
+            validateParams.contractName,
+            validateParams.lockTemplate
+          )
+    }
+  }
+}
