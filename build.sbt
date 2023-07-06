@@ -16,6 +16,8 @@ resolvers ++= Seq(
 
 configs(IntegrationTest)
 
+fork := true
+
 Defaults.itSettings
 
 libraryDependencies += bramblSdk
@@ -29,6 +31,8 @@ libraryDependencies += logback
 libraryDependencies += grpcNetty
 libraryDependencies += grpcRuntime
 libraryDependencies += sqlite
+libraryDependencies += munitCatsEffects
+libraryDependencies += fastparse
 
 scalacOptions += "-Ymacro-annotations"
 

@@ -13,8 +13,39 @@ to run Java applications without any setup. It is very easy to install.
 ## Using the CLI
 
 ```
-Usage:  [genus-query|bifrost-query|wallet|simpletransaction]
-
+Usage:  [contracts|parties|genus-query|bifrost-query|wallet|simpletransaction]
+Command: contracts [list|add] [options]
+Contract mode
+Command: contracts list
+List existing contracts
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --walletdb <value>       Wallet DB file. (mandatory)
+Command: contracts add
+Add a new contracts
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --walletdb <value>       Wallet DB file. (mandatory)
+  --contract-name <value>  Name of the contract. (mandatory)
+  --contract-template <value>
+                           Contract template. (mandatory)
+Command: parties [list|add] [options]
+Entity mode
+Command: parties list
+List existing parties
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --walletdb <value>       Wallet DB file. (mandatory)
+Command: parties add
+Add a new parties
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --walletdb <value>       Wallet DB file. (mandatory)
+  --party-name <value>     Name of the party. (mandatory)
 Command: genus-query [utxo-by-address] [options]
 Genus query mode
 Command: genus-query utxo-by-address
@@ -23,7 +54,7 @@ Query utxo
   --from-contract <value>  Contract where we are sending the funds from
   --from-state <value>     State from where we are sending the funds from
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the Genus node. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
 Command: bifrost-query [block-by-height|block-by-id|transaction-by-id] [options]
@@ -31,23 +62,23 @@ Bifrost query mode
 Command: bifrost-query block-by-height
 Get the block at a given height
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the Genus node. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --height <value>         The height of the block. (mandatory)
 Command: bifrost-query block-by-id
 Get the block with a given id
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the Genus node. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --block-id <value>       The id of the block in base 58. (mandatory)
 Command: bifrost-query transaction-by-id
 Get the transaction with a given id
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the Genus node. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --transaction-id <value>
                            The id of the transaction in base 58. (mandatory)
-Command: wallet [init|current-address] [options]
+Command: wallet [init|current-address|export-vk|import-vks] [options]
 Wallet mode
 Command: wallet init
 Initialize wallet
@@ -58,7 +89,22 @@ Initialize wallet
   -P, --passphrase <value>
                            Passphrase for the encrypted key. (optional))
 Command: wallet current-address
-Initialize wallet
+Obtain current address
+Command: wallet export-vk
+Export verification key
+  -k, --keyfile <value>    The key file.
+  -w, --password <value>   Password for the encrypted key. (mandatory)
+  --walletdb <value>       Wallet DB file. (mandatory)
+  -o, --output <value>     The output file.
+  --walletdb <value>       Wallet DB file. (mandatory)
+  --party-name <value>     Name of the party. (mandatory)
+  --contract-name <value>  Name of the contract. (mandatory)
+Command: wallet import-vks
+Import verification key
+  --walletdb <value>       Wallet DB file. (mandatory)
+  --party-name <value>     Name of the party. (mandatory)
+  --contract-name <value>  Name of the contract. (mandatory)
+  --input-vks <value>      The keys to import. (mandatory)
 Command: simpletransaction [create|broadcast|prove] [options]
 Simple transaction mode
 Command: simpletransaction create
@@ -67,7 +113,7 @@ Create transaction
   --from-contract <value>  Contract where we are sending the funds from
   --from-state <value>     State from where we are sending the funds from
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the Genus node. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   -k, --keyfile <value>    The key file.
   -w, --password <value>   Password for the encrypted key. (mandatory)
@@ -80,7 +126,7 @@ Create transaction
 Command: simpletransaction broadcast
 Broadcast transaction
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the Genus node. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   -i, --input <value>      The input file. (mandatory)
 Command: simpletransaction prove
@@ -192,3 +238,52 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- genus-query utxo-by-address --
 
 This will query the UXTOs for the address in the genus node. It uses the wallet to derive the right address to query.
 
+### Add a new party
+
+To add a new party to the wallet run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties add --party-name $PARTY_NAME --walletdb $WALLET -n private
+```
+
+### List all parties
+
+To list all parties in the wallet run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties list --walletdb $WALLET -n private
+```
+
+### Add a new contract
+
+To add a new contract to the wallet run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts add --walletdb $WALLET --contract-name $CONTRACT_NAME --contract-template $CONTRACT_TEMPLATE -n private
+```
+
+### List all contracts
+
+To list all contracts in the wallet run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts list --walletdb $WALLET -n private
+```
+
+### Export a base verification key
+
+To export a base verification key run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet export-vk -w test -o $OUTPUT_FILE --walletdb $WALLET --party-name $PARTY_NAME --contract-name $CONTRACT_NAME --keyfile $KEYFILE -n private
+```
+
+This will export the base verification key for the party `$PARTY_NAME` and contract `$CONTRACT_NAME` to the file `$OUTPUT_FILE`. The keyfile `$KEYFILE` is used to derive the exported key.
+
+### Import a base verification key
+
+To import one or many base verification keys run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet import-vks --input-vks $BASE_VK_1,$BASE_VK_2 --party-name $PARTY_NAME --contract-name $CONTRACT_NAME -n private --walletdb $WALLET
+```

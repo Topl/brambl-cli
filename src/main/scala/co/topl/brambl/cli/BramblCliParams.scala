@@ -2,18 +2,20 @@ package co.topl.brambl.cli
 
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.models.LockAddress
+import java.io.File
 
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val wallet, genusquery, bifrostquery, simpletransaction = Value
+  val wallet, genusquery, bifrostquery, simpletransaction, parties, contracts =
+    Value
 }
 
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
   val init, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
-      prove, broadcast, currentaddress = Value
+      prove, broadcast, currentaddress, list, add, exportvk, importvks = Value
 }
 
 sealed abstract class NetworkIdentifiers(
@@ -62,6 +64,10 @@ final case class BramblCliParams(
     host: String = "",
     bifrostPort: Int = 0,
     network: String = "",
+    partyName: String = "",
+    contractName: String = "",
+    lockTemplate: String = "",
+    inputVks: Seq[String] = Seq(),
     someWalletFile: Option[String] = None,
     toAddress: Option[String] = None,
     someToParty: Option[String] = None,
@@ -82,6 +88,10 @@ final case class BramblCliValidatedParams(
     mode: BramblCliMode.Value,
     subcmd: BramblCliSubCmd.Value,
     network: NetworkIdentifiers,
+    partyName: String = "",
+    contractName: String = "",
+    lockTemplate: String = "",
+    inputVks: Seq[File] = Seq(),
     host: String = "",
     bifrostPort: Int = 0,
     walletFile: String = "",

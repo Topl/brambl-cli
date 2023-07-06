@@ -3,13 +3,12 @@ package co.topl.brambl.cli.validation
 import cats.data.NonEmptyList
 import cats.data.ValidatedNel
 import cats.implicits.catsSyntaxValidatedId
+import cats.syntax.either._
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.utils.EncodingError
-import cats.syntax.either._
-import cats.syntax.validated._
 
 trait SimpleTransactionValidationModule {
   self: CommonValidationModule =>
@@ -49,14 +48,16 @@ trait SimpleTransactionValidationModule {
   }
 
   def validateAddressOrCoordinates(
-                                    someAddress: Option[String],
-                                    someToParty: Option[String],
-                                    someToContract: Option[String]
-                                  ): ValidatedNel[String, Unit] = (someAddress, someToParty, someToContract) match {
-    case (Some(addr), None, None) => validateAddress(Some(addr)).map(_ => ())
-    case (None, Some(_), Some(_)) => ().validNel
-    case _ => "Exactly toParty and toContract together or only toAddress must be specified".invalidNel
-  }
+      someAddress: Option[String],
+      someToParty: Option[String],
+      someToContract: Option[String]
+  ): ValidatedNel[String, Unit] =
+    (someAddress, someToParty, someToContract) match {
+      case (Some(addr), None, None) => validateAddress(Some(addr)).map(_ => ())
+      case (None, Some(_), Some(_)) => ().validNel
+      case _ =>
+        "Exactly toParty and toContract together or only toAddress must be specified".invalidNel
+    }
 
   def validateAmount(amount: Long) = {
     import cats.implicits._
@@ -135,9 +136,13 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateAddressOrCoordinates(paramConfig.toAddress, paramConfig.someToParty, paramConfig.someToContract),
+      validateAddressOrCoordinates(
+        paramConfig.toAddress,
+        paramConfig.someToParty,
+        paramConfig.someToContract
+      ),
       validateNoPassphrase(paramConfig.somePassphrase),
-      validatePassword(paramConfig.password),
+      validateNonEmpty("Password", paramConfig.password),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
@@ -156,7 +161,7 @@ trait SimpleTransactionValidationModule {
     import cats.implicits._
     List(
       validateNoPassphrase(paramConfig.somePassphrase),
-      validatePassword(paramConfig.password),
+      validateNonEmpty("Password", paramConfig.password),
       validateFromCoordinates(
         paramConfig.someFromParty,
         paramConfig.someFromContract,
@@ -192,7 +197,11 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNoAddressOrCoordinates(paramConfig.toAddress, paramConfig.someToParty, paramConfig.someToContract),
+      validateNoAddressOrCoordinates(
+        paramConfig.toAddress,
+        paramConfig.someToParty,
+        paramConfig.someToContract
+      ),
       validateNoPassphrase(paramConfig.somePassphrase),
       validateNoPassword(paramConfig.password),
       validateHost(paramConfig.host),
@@ -226,6 +235,48 @@ trait SimpleTransactionValidationModule {
     import cats.implicits._
     List(
       validateTransactionId(paramConfig.transactionId)
+    ).sequence.map(_ => paramConfig)
+  }
+
+  def validateListParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateInputFile(
+        "Wallet DB",
+        paramConfig.someWalletFile,
+        required = true
+      )
+    ).sequence.map(_ => paramConfig)
+  }
+
+  def validateAddEntitiyParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateInputFile(
+        "Wallet DB",
+        paramConfig.someWalletFile,
+        required = true
+      ),
+      validateNonEmpty("Party name", paramConfig.partyName)
+    ).sequence.map(_ => paramConfig)
+  }
+
+  def validateAddContractParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateInputFile(
+        "Wallet DB",
+        paramConfig.someWalletFile,
+        required = true
+      ),
+      validateNonEmpty("Contract name", paramConfig.contractName),
+      validateNonEmpty("Contract template", paramConfig.lockTemplate)
     ).sequence.map(_ => paramConfig)
   }
 

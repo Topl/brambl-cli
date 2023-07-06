@@ -95,7 +95,12 @@ trait CommonValidationModule {
         checkValidSubCmd(
           mode,
           subcmd,
-          Set(BramblCliSubCmd.init,BramblCliSubCmd.currentaddress)
+          Set(
+            BramblCliSubCmd.init,
+            BramblCliSubCmd.currentaddress,
+            BramblCliSubCmd.exportvk,
+            BramblCliSubCmd.importvks
+          )
         )
       case BramblCliMode.genusquery =>
         checkValidSubCmd(
@@ -113,15 +118,32 @@ trait CommonValidationModule {
             BramblCliSubCmd.transactionbyid
           )
         )
+      case BramblCliMode.contracts =>
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(
+            BramblCliSubCmd.add,
+            BramblCliSubCmd.list
+          )
+        )
+      case BramblCliMode.parties =>
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(
+            BramblCliSubCmd.list,
+            BramblCliSubCmd.add
+          )
+        )
     }
   }
-
-  def validatePassword(password: String) = {
-    if (password.trim().length > 0) {
-      Validated.validNel(password)
+  def validateNonEmpty(fieldName: String, s: String) = {
+    if (s.trim().length > 0) {
+      Validated.validNel(s)
     } else {
       Validated.invalidNel(
-        "Password must not be empty"
+        s"$fieldName must not be empty"
       )
     }
   }

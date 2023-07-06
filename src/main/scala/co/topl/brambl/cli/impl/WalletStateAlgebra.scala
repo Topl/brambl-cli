@@ -4,20 +4,24 @@ import cats.data.Validated
 import cats.data.ValidatedNel
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import cats.implicits.{toFunctorOps, toTraverseOps}
 import cats.implicits._
-import co.topl.brambl.builders.locks.{LockTemplate, PropositionTemplate}
+import cats.implicits.toFunctorOps
+import cats.implicits.toTraverseOps
+import co.topl.brambl.builders.TransactionBuilderApi
+import co.topl.brambl.builders.locks.LockTemplate
+import co.topl.brambl.builders.locks.PropositionTemplate
+import co.topl.brambl.codecs.LockTemplateCodecs.decodeLockTemplate
+import co.topl.brambl.codecs.LockTemplateCodecs.encodeLockTemplate
+import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
-import co.topl.brambl.dataApi.WalletStateAlgebra
-import co.topl.brambl.builders.TransactionBuilderApi
-import quivr.models.{Preimage, Proposition, VerificationKey}
-import co.topl.brambl.codecs.LockTemplateCodecs.{decodeLockTemplate, encodeLockTemplate}
 import io.circe.parser._
 import io.circe.syntax.EncoderOps
-import org.bouncycastle.util.Strings
+import quivr.models.Preimage
+import quivr.models.Proposition
+import quivr.models.VerificationKey
 
 object WalletStateAlgebra {
 
@@ -44,7 +48,7 @@ object WalletStateAlgebra {
           x <- Sync[F].delay(rs.getInt("x_party"))
           y <- Sync[F].delay(rs.getInt("y_contract"))
           z <- Sync[F].delay(rs.getInt("z_state"))
-        } yield if(rs.next()) Some(Indices(x, y, z)) else None
+        } yield if (rs.next()) Some(Indices(x, y, z)) else None
       }
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
@@ -189,21 +193,24 @@ object WalletStateAlgebra {
               )
             )
             x <- Sync[F].delay(rs.getInt("x_party"))
+            query =
+              s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
-                s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
+                query
               )
             )
             y <- Sync[F].delay(rs.getInt("y_contract"))
+            query = s"SELECT address, x_party, y_contract, " + someState
+              .map(_ => "z_state as z_index")
+              .getOrElse(
+                "MAX(z_state) as z_index"
+              ) + s" FROM cartesian WHERE x_party = ${x} AND y_contract = ${y}" + someState
+              .map(x => s" AND z_state = ${x}")
+              .getOrElse("")
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
-                s"SELECT address, x_party, y_contract, " + someState
-                  .map(_ => "z_state as z_index")
-                  .getOrElse(
-                    "MAX(z_state) as z_index"
-                  ) + s" FROM cartesian WHERE x_party = ${x} AND y_contract = ${y}" + someState
-                  .map(x => s" AND z_state = ${x}")
-                  .getOrElse("")
+                query
               )
             )
             address <- Sync[F].delay(rs.getString("address"))
@@ -226,9 +233,11 @@ object WalletStateAlgebra {
               )
             )
             x <- Sync[F].delay(rs.getInt("x_party"))
+            query =
+              s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
             rs <- Sync[F].blocking(
               stmnt.executeQuery(
-                s"SELECT y_contract, contract FROM contracts WHERE contract = '${contract}'"
+                query
               )
             )
             y <- Sync[F].delay(rs.getInt("y_contract"))
@@ -250,7 +259,7 @@ object WalletStateAlgebra {
         }
       }
 
-      override def getCurrentAddress(): F[String] = {
+      override def getCurrentAddress: F[String] = {
         connection.use { conn =>
           import cats.implicits._
           for {
@@ -282,20 +291,30 @@ object WalletStateAlgebra {
             )
             _ <- Sync[F].delay(
               stmnt.execute(
-                "CREATE TABLE IF NOT EXISTS parties (party TEXT PRIMARY KEY," +
-                  " x_party INTEGER NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS parties (party TEXT," +
+                  " x_party INTEGER PRIMARY KEY ASC)"
               )
             )
             _ <- Sync[F].delay(
               stmnt.execute(
-                "CREATE TABLE IF NOT EXISTS contracts (contract TEXT PRIMARY KEY," +
-                  " y_contract INTEGER NOT NULL,  lock TEXT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS contracts (contract TEXT NOT NULL," +
+                  " y_contract INTEGER PRIMARY KEY ASC,  lock TEXT NOT NULL)"
               )
             )
             _ <- Sync[F].delay(
               stmnt.execute(
                 "CREATE TABLE IF NOT EXISTS verification_keys (x_party INTEGER NOT NULL," +
-                  " y_contract INTEGER NOT NULL, vks TEXT NOT NULL)"
+                  " y_contract INTEGER NOT NULL, vks TEXT NOT NULL, PRIMARY KEY (x_party, y_contract))"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS contract_names_idx ON contracts (contract)"
+              )
+            )
+            _ <- Sync[F].delay(
+              stmnt.execute(
+                "CREATE INDEX IF NOT EXISTS party_names_idx ON parties (party)"
               )
             )
             _ <- Sync[F].delay(
@@ -312,14 +331,17 @@ object WalletStateAlgebra {
               LockTemplate.PredicateTemplate[F](
                 List(
                   PropositionTemplate.SignatureTemplate[F]("ExtendedEd25519", 0)
-                ), 1
+                ),
+                1
               )
             )
             genesisTemplate <- Sync[F].delay(
               LockTemplate.PredicateTemplate[F](
                 List(
-                  PropositionTemplate.HeightTemplate[F]("header", 1, Long.MaxValue)
-                ), 1
+                  PropositionTemplate
+                    .HeightTemplate[F]("header", 1, Long.MaxValue)
+                ),
+                1
               )
             )
             _ <- Sync[F].delay(
@@ -354,15 +376,21 @@ object WalletStateAlgebra {
               )
             )
             defaultSignatureLock <- getLock("self", "default", 1).map(_.get)
-            signatureLockAddress <- transactionBuilderApi.lockAddress(defaultSignatureLock)
+            signatureLockAddress <- transactionBuilderApi.lockAddress(
+              defaultSignatureLock
+            )
             childVk <- walletApi.deriveChildVerificationKey(vk, 1)
             genesisHeightLock <- getLock("noparty", "genesis", 1).map(_.get)
-            heightLockAddress <- transactionBuilderApi.lockAddress(genesisHeightLock)
+            heightLockAddress <- transactionBuilderApi.lockAddress(
+              genesisHeightLock
+            )
             _ <- Sync[F].delay(
               stmnt.executeUpdate(
                 "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES (1, 1, 1, '" +
                   Encoding
-                    .encodeToBase58Check(defaultSignatureLock.getPredicate.toByteArray) +
+                    .encodeToBase58Check(
+                      defaultSignatureLock.getPredicate.toByteArray
+                    ) +
                   "', '" +
                   signatureLockAddress.toBase58 + "', " + "'ExtendedEd25519', " + "'" +
                   Encoding.encodeToBase58(childVk.toByteArray)
@@ -373,7 +401,9 @@ object WalletStateAlgebra {
               stmnt.executeUpdate(
                 "INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address) VALUES (0, 2, 1, '" +
                   Encoding
-                    .encodeToBase58Check(genesisHeightLock.getPredicate.toByteArray) +
+                    .encodeToBase58Check(
+                      genesisHeightLock.getPredicate.toByteArray
+                    ) +
                   "', '" +
                   heightLockAddress.toBase58 + "')"
               )
@@ -383,74 +413,178 @@ object WalletStateAlgebra {
         }
       }
 
-      override def getPreimage(digestProposition: Proposition.Digest): F[Option[Preimage]] =
-        Sync[F].delay(None) // We are not yet supporting Digest Propositions in brambl-cli
+      override def getPreimage(
+          digestProposition: Proposition.Digest
+      ): F[Option[Preimage]] =
+        Sync[F].delay(
+          None
+        ) // We are not yet supporting Digest Propositions in brambl-cli
 
-      override def addEntityVks(party: String, contract: String, entities: List[String]): F[Unit] = connection.use { conn =>
+      override def addEntityVks(
+          party: String,
+          contract: String,
+          entities: List[String]
+      ): F[Unit] = connection.use { conn =>
         import cats.implicits._
+        import co.topl.brambl.codecs.AddressCodecs._
         for {
           stmnt <- Sync[F].blocking(conn.createStatement())
-          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT x_party FROM parties WHERE party = '${party}'"))
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT x_party FROM parties WHERE party = '${party}'"
+            )
+          )
           x <- Sync[F].delay(rs.getInt("x_party"))
-          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT y_contract FROM contracts WHERE contract = '${contract}'"))
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT y_contract FROM contracts WHERE contract = '${contract}'"
+            )
+          )
           y <- Sync[F].delay(rs.getInt("y_contract"))
           statement =
             s"INSERT INTO verification_keys (x_party, y_contract, vks) VALUES (${x}, ${y}, " +
-              s"'${entities.asJson.toString}'"
+              s"'${entities.asJson.toString}')"
           _ <- Sync[F].blocking(
             stmnt.executeUpdate(statement)
+          )
+          lockTempl <- getLockTemplate(contract)
+            .map(_.get)
+          lock <- lockTempl
+            .build(
+              entities
+                .map(
+                  // TODO: replace with proper serialization in TSDK-476
+                  vk =>
+                    (
+                      VerificationKey.parseFrom(
+                        Encoding.decodeFromBase58(vk).toOption.get
+                      ),
+                      vk
+                    )
+                )
+                .toList
+                .map(_._1)
+            )
+            .map(
+              _.getOrElse(throw new IllegalStateException("Should not happen"))
+            )
+          lockAddress <- transactionBuilderApi.lockAddress(lock)
+          _ <- Sync[F].delay(
+            stmnt.executeUpdate(
+              s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES ($x, $y, 1, '" +
+                Encoding
+                  .encodeToBase58Check(
+                    lock.getPredicate.toByteArray
+                  ) +
+                "', '" +
+                encodeAddress(
+                  lockAddress
+                ) + "', " + "'ExtendedEd25519', " + "''" + ")"
+            )
           )
         } yield ()
       }
 
-      override def getEntityVks(party: String, contract: String): F[Option[List[String]]] = connection.use { conn =>
+      override def getEntityVks(
+          party: String,
+          contract: String
+      ): F[Option[List[String]]] = connection.use { conn =>
         import cats.implicits._
         for {
           stmnt <- Sync[F].blocking(conn.createStatement())
-          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT x_party FROM parties WHERE party = '${party}'"))
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT x_party FROM parties WHERE party = '${party}'"
+            )
+          )
           x <- Sync[F].delay(rs.getInt("x_party"))
-          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT y_contract FROM contracts WHERE contract = '${contract}'"))
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT y_contract FROM contracts WHERE contract = '${contract}'"
+            )
+          )
           y <- Sync[F].delay(rs.getInt("y_contract"))
-          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT vks FROM verification_keys WHERE x_party = ${x} AND y_contract = ${y}"))
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT vks FROM verification_keys WHERE x_party = ${x} AND y_contract = ${y}"
+            )
+          )
           vks <- Sync[F].delay(rs.getString("vks"))
-        } yield if (!rs.next()) None else parse(vks).toOption.flatMap(_.as[List[String]].toOption)
+        } yield
+          if (!rs.next()) None
+          else parse(vks).toOption.flatMap(_.as[List[String]].toOption)
       }
 
-      override def addNewLockTemplate(contract: String, lockTemplate: LockTemplate[F]): F[Unit] = connection.use { conn =>
+      // FIXME: use this method to get the lock template in the controller
+      override def addNewLockTemplate(
+          contract: String,
+          lockTemplate: LockTemplate[F]
+      ): F[Unit] = connection.use { conn =>
         import cats.implicits._
         for {
           stmnt <- Sync[F].blocking(conn.createStatement())
-          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT MAX(y_contract) as y_index FROM contracts"))
+          // FIXME: do not use max, use autoincrement
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT MAX(y_contract) as y_index FROM contracts"
+            )
+          )
           y <- Sync[F].delay(rs.getInt("y_index"))
           statement =
-            s"INSERT INTO contracts (contract, y_contract, lock) VALUES ('${contract}', ${y+1}, '${encodeLockTemplate(lockTemplate).toString}'"
+            s"INSERT INTO contracts (contract, y_contract, lock) VALUES ('${contract}', ${y + 1}, '${encodeLockTemplate(lockTemplate).toString}'"
           _ <- Sync[F].blocking(
             stmnt.executeUpdate(statement)
           )
         } yield ()
       }
-      override def getLockTemplate(contract: String): F[Option[LockTemplate[F]]] = connection.use { conn =>
+      override def getLockTemplate(
+          contract: String
+      ): F[Option[LockTemplate[F]]] = connection.use { conn =>
         import cats.implicits._
         for {
           stmnt <- Sync[F].blocking(conn.createStatement())
-          rs <- Sync[F].blocking(stmnt.executeQuery(s"SELECT lock FROM contracts WHERE contract = '${contract}'"))
+          rs <- Sync[F].blocking(
+            stmnt.executeQuery(
+              s"SELECT lock FROM contracts WHERE contract = '${contract}'"
+            )
+          )
           lockStr <- Sync[F].delay(rs.getString("lock"))
-        } yield if(!rs.next()) None else parse(lockStr).toOption.flatMap(decodeLockTemplate[F](_).toOption)
+        } yield
+          if (!rs.next()) None
+          else
+            parse(lockStr).toOption.flatMap(decodeLockTemplate[F](_).toOption)
       }
 
       // Generate the next lock for a party and contract
-      override def getLock(party: String, contract: String, nextState: Int): F[Option[Lock]] = for {
+      override def getLock(
+          party: String,
+          contract: String,
+          nextState: Int
+      ): F[Option[Lock]] = for {
         changeTemplate <- getLockTemplate(contract)
         entityVks <- getEntityVks(party, contract)
-          .map(_.map(_.map(
-            // TODO: replace with proper serialization in TSDK-476
-            vk => VerificationKey.parseFrom(Encoding.decodeFromBase58(vk).toOption.get)
-          )))
-        childVks <- entityVks.map(vks => vks.map(
-          walletApi.deriveChildVerificationKey(_, nextState)).sequence).sequence
-        changeLock <- changeTemplate.flatMap(template => childVks.map(vks =>
-          template.build(vks).map(_.toOption)
-        )).sequence.map(_.flatten)
+          .map(
+            _.map(
+              _.map(
+                // TODO: replace with proper serialization in TSDK-476
+                vk =>
+                  VerificationKey.parseFrom(
+                    Encoding.decodeFromBase58(vk).toOption.get
+                  )
+              )
+            )
+          )
+        childVks <- entityVks
+          .map(vks =>
+            vks.map(walletApi.deriveChildVerificationKey(_, nextState)).sequence
+          )
+          .sequence
+        changeLock <- changeTemplate
+          .flatMap(template =>
+            childVks.map(vks => template.build(vks).map(_.toOption))
+          )
+          .sequence
+          .map(_.flatten)
       } yield changeLock
     }
 }

@@ -19,7 +19,7 @@ class GenusQueryController(
     genusChannelResource: Resource[IO, ManagedChannel]
 ) {
 
-  def queryUtxoFromParams(params: BramblCliValidatedParams): IO[Unit] = {
+  def queryUtxoFromParams(params: BramblCliValidatedParams): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
@@ -38,15 +38,12 @@ class GenusQueryController(
           GenusQueryAlgebra
             .make[IO](genusChannelResource)
             .queryUtxo(AddressCodecs.decodeAddress(address).toOption.get)
-            .flatMap { txos =>
-              import cats.implicits._
+            .map { txos =>
               (txos
                 .map { txo =>
                   BlockDisplayOps.display(txo)
                 })
-                .map(x => IO(println(x)))
-                .sequence
-                .map(_ => ())
+                .mkString
             }
         case None => IO.raiseError(new Exception("Address not found"))
       }

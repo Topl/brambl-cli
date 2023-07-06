@@ -22,6 +22,10 @@ object BramblCliParamsValidatorModule
     (mode, subcmd) match {
       case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.wallet, BramblCliSubCmd.exportvk) =>
+        validateExportVkParam(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.wallet, BramblCliSubCmd.importvks) =>
+        validateImportVksParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
         ((mode, subcmd)).validNel
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
@@ -44,6 +48,14 @@ object BramblCliParamsValidatorModule
         validateBlockByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.bifrostquery, BramblCliSubCmd.transactionbyid) =>
         validateTransactionByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.parties, BramblCliSubCmd.list) =>
+        validateListParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.contracts, BramblCliSubCmd.list) =>
+        validateListParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.parties, BramblCliSubCmd.add) =>
+        validateAddEntitiyParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.contracts, BramblCliSubCmd.add) =>
+        validateAddContractParams(paramConfig).map(_ => (mode, subcmd))
     }
   }
 
@@ -86,6 +98,10 @@ object BramblCliParamsValidatorModule
             ), // this was validated before
             someToParty = paramConfig.someToParty,
             someToContract = paramConfig.someToContract,
+            partyName = paramConfig.partyName,
+            contractName = paramConfig.contractName,
+            lockTemplate = paramConfig.lockTemplate,
+            inputVks = paramConfig.inputVks.map(new java.io.File(_)),
             fromParty = paramConfig.someFromParty.getOrElse("self"),
             fromContract = paramConfig.someFromContract.getOrElse("default"),
             someFromState = paramConfig.someFromState.map(_.toInt),

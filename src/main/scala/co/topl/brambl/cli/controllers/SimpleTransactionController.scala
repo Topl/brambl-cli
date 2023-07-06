@@ -14,13 +14,16 @@ import co.topl.brambl.wallet.WalletApi
 import io.grpc.ManagedChannel
 
 import java.sql.Connection
+import co.topl.brambl.cli.impl.WalletManagementUtils
 
 class SimpleTransactionController(
     walletResource: Resource[IO, Connection],
     nodeChannelResource: Resource[IO, ManagedChannel]
 ) {
 
-  def broadcastSimpleTransactionFromParams(params: BramblCliValidatedParams) = {
+  def broadcastSimpleTransactionFromParams(
+      params: BramblCliValidatedParams
+  ): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
@@ -32,15 +35,17 @@ class SimpleTransactionController(
       transactionBuilderApi,
       walletApi
     )
+    val walletManagementUtils =
+      new WalletManagementUtils[IO](walletApi, dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
-        dataApi,
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
           nodeChannelResource
         ),
         transactionBuilderApi,
+        walletManagementUtils,
         nodeChannelResource
       )
     simplTransactionOps.broadcastSimpleTransactionFromParams(
@@ -48,7 +53,9 @@ class SimpleTransactionController(
     )
   }
 
-  def proveSimpleTransactionFromParams(params: BramblCliValidatedParams) = {
+  def proveSimpleTransactionFromParams(
+      params: BramblCliValidatedParams
+  ): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
@@ -60,15 +67,17 @@ class SimpleTransactionController(
       transactionBuilderApi,
       walletApi
     )
+    val walletManagementUtils =
+      new WalletManagementUtils[IO](walletApi, dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
-        dataApi,
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
           nodeChannelResource
         ),
         transactionBuilderApi,
+        walletManagementUtils,
         nodeChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(
@@ -77,19 +86,22 @@ class SimpleTransactionController(
       params.someFromState
     ) flatMap {
       case Validated.Invalid(errors) =>
-        IO.println("Invalid params") *> IO.println(
-          errors.toList.mkString(", ")
+        IO(
+          "Invalid params" + "\n" +
+            errors.toList.mkString(", ")
         )
       case Validated.Valid(_) =>
-        simplTransactionOps.proveSimpleTransactionFromParams(
-          params
-        )
+        simplTransactionOps
+          .proveSimpleTransactionFromParams(
+            params
+          )
+          .map(_ => "Transaction successfully proved")
     }
   }
 
   def createSimpleTransactionFromParams(
       params: BramblCliValidatedParams
-  ): IO[Unit] = {
+  ): IO[String] = {
     val transactionBuilderApi = TransactionBuilderApi.make[IO](
       params.network.networkId,
       NetworkConstants.MAIN_LEDGER_ID
@@ -101,15 +113,17 @@ class SimpleTransactionController(
       transactionBuilderApi,
       walletApi
     )
+    val walletManagementUtils =
+      new WalletManagementUtils[IO](walletApi, dataApi)
     val simplTransactionOps = SimpleTransactionAlgebra
       .make[IO](
-        dataApi,
         walletApi,
         walletStateApi,
         GenusQueryAlgebra.make[IO](
           nodeChannelResource
         ),
         transactionBuilderApi,
+        walletManagementUtils,
         nodeChannelResource
       )
     walletStateApi.validateCurrentIndicesForFunds(
@@ -118,13 +132,13 @@ class SimpleTransactionController(
       params.someFromState
     ) flatMap {
       case Validated.Invalid(errors) =>
-        IO.println("Invalid params") *> IO.println(
-          errors.toList.mkString(", ")
-        )
+        IO("Invalid params\n" + errors.toList.mkString(", "))
       case Validated.Valid(_) =>
-        simplTransactionOps.createSimpleTransactionFromParams(
-          params
-        )
+        simplTransactionOps
+          .createSimpleTransactionFromParams(
+            params
+          )
+          .map(_ => "Transaction successfully created")
     }
   }
 }
