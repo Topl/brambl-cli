@@ -6,6 +6,12 @@ import cats.effect.IO
 import cats.effect.IOApp
 import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
 import scopt.OParser
+import co.topl.brambl.cli.modules.WalletModeModule
+import co.topl.brambl.cli.modules.SimpleTransactionModeModule
+import co.topl.brambl.cli.modules.GenusQueryModeModule
+import co.topl.brambl.cli.modules.PartiesModeModule
+import co.topl.brambl.cli.modules.ContractModeModule
+import co.topl.brambl.cli.modules.BifrostQueryModeModule
 
 object Main
     extends IOApp

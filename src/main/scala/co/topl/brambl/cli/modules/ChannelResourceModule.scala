@@ -1,4 +1,4 @@
-package co.topl.brambl.cli
+package co.topl.brambl.cli.modules
 
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync

@@ -1,7 +1,8 @@
-package co.topl.brambl.cli
+package co.topl.brambl.cli.modules
 
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.WalletController
+import co.topl.brambl.cli.BramblCliSubCmd
 
 trait WalletModeModule extends WalletResourceModule {
 

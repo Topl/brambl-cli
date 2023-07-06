@@ -1,12 +1,8 @@
-package co.topl.brambl.cli
+package co.topl.brambl.cli.modules
 
 import cats.effect.IO
-import cats.effect.IO
-import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.cli.controllers.GenusQueryController
 import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.constants.NetworkConstants
-import co.topl.brambl.dataApi.GenusQueryAlgebra
 
 trait WalletStateAlgebraModule
     extends WalletResourceModule

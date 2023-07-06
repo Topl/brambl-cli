@@ -1,9 +1,10 @@
-package co.topl.brambl.cli
+package co.topl.brambl.cli.modules
 
 import cats.effect.IO
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.ContractsController
 import co.topl.brambl.cli.impl.ContractStorageAlgebra
+import co.topl.brambl.cli.BramblCliSubCmd
 
 trait ContractModeModule extends WalletResourceModule {
   def contractModeSubcmds(

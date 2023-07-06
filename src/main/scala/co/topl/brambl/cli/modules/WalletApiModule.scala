@@ -1,4 +1,4 @@
-package co.topl.brambl.cli
+package co.topl.brambl.cli.modules
 
 import co.topl.brambl.wallet.WalletApi
 
