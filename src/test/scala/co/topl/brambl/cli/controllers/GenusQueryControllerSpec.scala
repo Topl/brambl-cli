@@ -2,21 +2,16 @@ package co.topl.brambl.cli.controllers
 
 import cats.Monad
 import cats.effect.IO
-import co.topl.brambl.cli.BaseWalletStateAlgebra
-import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.cli.mockbase.BaseWalletStateAlgebra
+import co.topl.brambl.cli.modules.DummyObjects
 import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.models.LockAddress
-import co.topl.brambl.models.TransactionId
-import co.topl.brambl.models.TransactionOutputAddress
-import co.topl.brambl.models.box.Value
-import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.genus.services.Txo
 import co.topl.genus.services.TxoState
-import com.google.protobuf.ByteString
 import munit.CatsEffectSuite
-import quivr.models.Int128
+import co.topl.brambl.cli.views.BlockDisplayOps
 
-class GenusQueryControllerTest extends CatsEffectSuite {
+class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
   def makeWalletStateAlgebraMock[F[_]: Monad] = new BaseWalletStateAlgebra[F] {
 
@@ -53,38 +48,8 @@ class GenusQueryControllerTest extends CatsEffectSuite {
           fromAddress: LockAddress,
           txoState: TxoState
       ): F[Seq[Txo]] = {
-        val lockAddress = AddressCodecs
-          .decodeAddress(
-            "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr"
-          )
-          .toOption
-          .get
         Monad[F].pure(
-          Seq(
-            Txo(
-              UnspentTransactionOutput(
-                lockAddress,
-                Value(
-                  Value.Value.Lvl(
-                    Value.LVL(
-                      Int128(ByteString.copyFrom(BigInt(100L).toByteArray))
-                    )
-                  )
-                )
-              ),
-              co.topl.genus.services.TxoState.UNSPENT,
-              TransactionOutputAddress(
-                lockAddress.network,
-                lockAddress.ledger,
-                1,
-                TransactionId(
-                  ByteString.copyFrom(
-                    Array.fill[Byte](32)(0)
-                  )
-                )
-              )
-            )
-          )
+          Seq(txo01)
         )
       }
     }
@@ -110,13 +75,8 @@ class GenusQueryControllerTest extends CatsEffectSuite {
     val result =
       genusQueryController.queryUtxoFromParams("party", "contract", None)
     assertIO(
-      result, 
-      """
-TxoAddress : 11111111111111111111111111111111#1
-LockAddress: ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
-Type       : LVL
-Value      : 100
-"""
+      result,
+      BlockDisplayOps.display(txo01)
     )
   }
 }

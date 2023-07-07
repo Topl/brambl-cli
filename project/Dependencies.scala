@@ -2,13 +2,11 @@ import sbt._
 
 object Dependencies {
 
-  lazy val toplOrg = "com.github.Topl"
+  lazy val toplOrg = "co.topl"
 
-  lazy val bramblVersion = "1bdc895"
-  val bramblSdk = toplOrg % "BramblSc" % bramblVersion
-  // val bramblCrypto = toplOrg % "crypto" % bramblVersion
-  lazy val pbVersion = "e03a093"
-  val protobufSpecs = s"$toplOrg.protobuf-specs" %% "protobuf-fs2" % pbVersion
+  lazy val bramblVersion = "2.0.0-alpha1+3-f2ac6925-SNAPSHOT"
+  val bramblSdk = toplOrg %% "brambl-sdk" % bramblVersion
+  val bramblCrypto = toplOrg %% "crypto" % bramblVersion
 
   val grpcNetty =
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
@@ -18,7 +16,7 @@ object Dependencies {
 
   lazy val catEffects = "org.typelevel" %% "cats-effect" % "3.3.12"
   lazy val scopt = "com.github.scopt" %% "scopt" % "4.0.1"
-  lazy val munit = "org.scalameta" %% "munit" % "0.7.29" % "it,test"
+  lazy val munit = "org.scalameta" %% "munit" % "1.0.0-M8" % "it,test"
   lazy val fs2Core = "co.fs2" %% "fs2-core" % "3.5.0"
   lazy val fs2IO = "co.fs2" %% "fs2-io" % "3.5.0"
   lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"

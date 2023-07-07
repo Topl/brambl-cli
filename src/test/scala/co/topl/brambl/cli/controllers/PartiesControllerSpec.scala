@@ -5,7 +5,7 @@ import co.topl.brambl.cli.impl.PartyStorageAlgebra
 import co.topl.brambl.cli.model.WalletEntity
 import munit.FunSuite
 
-class PartiesControllerTest extends FunSuite {
+class PartiesControllerSpec extends FunSuite {
 
   test("Party controller allows adding parties") {
     val controller = new PartiesController[Id](

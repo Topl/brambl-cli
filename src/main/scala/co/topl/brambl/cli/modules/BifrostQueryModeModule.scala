@@ -5,33 +5,33 @@ import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.BifrostQueryController
 import co.topl.brambl.cli.modules.ChannelResourceModule
 import co.topl.brambl.cli.BramblCliSubCmd
+import co.topl.brambl.dataApi.BifrostQueryAlgebra
 
 trait BifrostQueryModeModule extends ChannelResourceModule {
 
   def bifrostQuerySubcmd(
       validateParams: BramblCliValidatedParams
-  ): IO[String] = validateParams.subcmd match {
-    case BramblCliSubCmd.blockbyheight =>
-      new BifrostQueryController(
-        channelResource(
-          validateParams.host,
-          validateParams.bifrostPort
-        )
-      ).blockByHeight(validateParams)
-    case BramblCliSubCmd.blockbyid =>
-      new BifrostQueryController(
-        channelResource(
-          validateParams.host,
-          validateParams.bifrostPort
-        )
-      ).blockById(validateParams)
-    case BramblCliSubCmd.transactionbyid =>
-      new BifrostQueryController(
-        channelResource(
-          validateParams.host,
-          validateParams.bifrostPort
-        )
-      ).fetchTransaction(validateParams)
+  ): IO[String] = {
+    val bifrostQueryAlgebra = BifrostQueryAlgebra.make[IO](
+      channelResource(
+        validateParams.host,
+        validateParams.bifrostPort
+      )
+    )
+    validateParams.subcmd match {
+      case BramblCliSubCmd.blockbyheight =>
+        new BifrostQueryController(
+          bifrostQueryAlgebra
+        ).blockByHeight(validateParams.height)
+      case BramblCliSubCmd.blockbyid =>
+        new BifrostQueryController(
+          bifrostQueryAlgebra
+        ).blockById(validateParams.blockId.get)
+      case BramblCliSubCmd.transactionbyid =>
+        new BifrostQueryController(
+          bifrostQueryAlgebra
+        ).fetchTransaction(validateParams.transactionId.get)
+    }
   }
 
 }

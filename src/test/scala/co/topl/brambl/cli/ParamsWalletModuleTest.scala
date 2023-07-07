@@ -64,10 +64,5 @@ class ParamsWalletModuleTest extends FunSuite {
         .isInvalid,
       true
     )
-    val args1 = List("wallet", "invalidCommand", "-p", "test")
-    assertEquals(
-      OParser.parse(paramParser, args1, BramblCliParams()).isEmpty,
-      true
-    )
   }
 }

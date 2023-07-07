@@ -10,6 +10,7 @@ resolvers ++= Seq(
   "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/",
   "Sonatype Staging" at "https://s01.oss.sonatype.org/content/repositories/staging",
   "Sonatype Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/",
+  "Sonatype Releases s01" at "https://s01.oss.sonatype.org/content/repositories/releases/",
   "Bintray" at "https://jcenter.bintray.com/",
   "jitpack" at "https://jitpack.io"
 )
@@ -21,8 +22,7 @@ fork := true
 Defaults.itSettings
 
 libraryDependencies += bramblSdk
-dependencyOverrides += protobufSpecs // force pb version in case bramblSdk and quivr4s use a different version
-// libraryDependencies += bramblCrypto
+libraryDependencies += bramblCrypto
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core

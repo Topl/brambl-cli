@@ -5,7 +5,7 @@ import co.topl.brambl.cli.impl.ContractStorageAlgebra
 import co.topl.brambl.cli.model.WalletContract
 import munit.CatsEffectSuite
 
-class ContractsControllerTest extends CatsEffectSuite {
+class ContractsControllerSpec extends CatsEffectSuite {
 
   test("Add signature contract") {
     var addedContract = ""
