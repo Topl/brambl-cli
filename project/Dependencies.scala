@@ -2,13 +2,13 @@ import sbt._
 
 object Dependencies {
 
-  lazy val toplOrg = "com.github.Topl"
+  lazy val toplOrg = "co.topl"
 
-  lazy val bramblVersion = "1bdc895"
-  val bramblSdk = toplOrg % "BramblSc" % bramblVersion
-  // val bramblCrypto = toplOrg % "crypto" % bramblVersion
-  lazy val pbVersion = "e03a093"
-  val protobufSpecs = s"$toplOrg.protobuf-specs" %% "protobuf-fs2" % pbVersion
+  lazy val bramblVersion = "2.0.0-alpha1"
+  val bramblSdk = toplOrg %% "brambl-sdk" % bramblVersion
+  val bramblCrypto = toplOrg %% "crypto" % bramblVersion
+  lazy val pbVersion = "2.0.0-alpha2"
+  val protobufSpecs = toplOrg %% "protobuf-fs2" % pbVersion
 
   val grpcNetty =
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
