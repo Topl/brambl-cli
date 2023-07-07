@@ -1,142 +1,91 @@
 package co.topl.brambl.cli.controllers
 
+import cats.Monad
 import cats.data.Validated
-import cats.effect.IO
-import cats.effect.kernel.Resource
-import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.cli.DefaultWalletKeyApi
-import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebra
-import co.topl.brambl.builders.TransactionBuilderApi
-import co.topl.brambl.cli.impl.WalletStateAlgebra
-import co.topl.brambl.constants.NetworkConstants
-import co.topl.brambl.wallet.WalletApi
-import io.grpc.ManagedChannel
+import co.topl.brambl.dataApi.WalletStateAlgebra
+import co.topl.brambl.models.LockAddress
 
-import java.sql.Connection
-import co.topl.brambl.cli.impl.WalletManagementUtils
-
-class SimpleTransactionController(
-    walletResource: Resource[IO, Connection],
-    nodeChannelResource: Resource[IO, ManagedChannel]
+class SimpleTransactionController[F[_]: Monad](
+    walletStateAlgebra: WalletStateAlgebra[F],
+    simplTransactionOps: SimpleTransactionAlgebra[F]
 ) {
 
   def broadcastSimpleTransactionFromParams(
-      params: BramblCliValidatedParams
-  ): IO[String] = {
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
-    )
-    val dataApi = new DefaultWalletKeyApi[IO]()
-    val walletApi = WalletApi.make(dataApi)
-    val walletStateApi = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi,
-      walletApi
-    )
-    val walletManagementUtils =
-      new WalletManagementUtils[IO](walletApi, dataApi)
-    val simplTransactionOps = SimpleTransactionAlgebra
-      .make[IO](
-        walletApi,
-        walletStateApi,
-        GenusQueryAlgebra.make[IO](
-          nodeChannelResource
-        ),
-        transactionBuilderApi,
-        walletManagementUtils,
-        nodeChannelResource
-      )
+      provedTxFile: String
+  ): F[String] = {
     simplTransactionOps.broadcastSimpleTransactionFromParams(
-      params
+      provedTxFile
     )
   }
 
   def proveSimpleTransactionFromParams(
-      params: BramblCliValidatedParams
-  ): IO[String] = {
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
-    )
-    val dataApi = new DefaultWalletKeyApi[IO]()
-    val walletApi = WalletApi.make(dataApi)
-    val walletStateApi = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi,
-      walletApi
-    )
-    val walletManagementUtils =
-      new WalletManagementUtils[IO](walletApi, dataApi)
-    val simplTransactionOps = SimpleTransactionAlgebra
-      .make[IO](
-        walletApi,
-        walletStateApi,
-        GenusQueryAlgebra.make[IO](
-          nodeChannelResource
-        ),
-        transactionBuilderApi,
-        walletManagementUtils,
-        nodeChannelResource
-      )
-    walletStateApi.validateCurrentIndicesForFunds(
-      params.fromParty,
-      params.fromContract,
-      params.someFromState
-    ) flatMap {
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      inputFile: String,
+      keyFile: String,
+      password: String,
+      outputFile: String
+  ): F[String] = {
+    import cats.implicits._
+    walletStateAlgebra
+      .validateCurrentIndicesForFunds(
+        fromParty,
+        fromContract,
+        someFromState
+      ) flatMap {
       case Validated.Invalid(errors) =>
-        IO(
+        Monad[F].pure(
           "Invalid params" + "\n" +
             errors.toList.mkString(", ")
         )
       case Validated.Valid(_) =>
         simplTransactionOps
           .proveSimpleTransactionFromParams(
-            params
+            inputFile,
+            keyFile,
+            password,
+            outputFile
           )
           .map(_ => "Transaction successfully proved")
     }
   }
 
   def createSimpleTransactionFromParams(
-      params: BramblCliValidatedParams
-  ): IO[String] = {
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
-    )
-    val dataApi = new DefaultWalletKeyApi[IO]()
-    val walletApi = WalletApi.make(dataApi)
-    val walletStateApi = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi,
-      walletApi
-    )
-    val walletManagementUtils =
-      new WalletManagementUtils[IO](walletApi, dataApi)
-    val simplTransactionOps = SimpleTransactionAlgebra
-      .make[IO](
-        walletApi,
-        walletStateApi,
-        GenusQueryAlgebra.make[IO](
-          nodeChannelResource
-        ),
-        transactionBuilderApi,
-        walletManagementUtils,
-        nodeChannelResource
-      )
-    walletStateApi.validateCurrentIndicesForFunds(
-      params.fromParty,
-      params.fromContract,
-      params.someFromState
-    ) flatMap {
+      keyfile: String,
+      password: String,
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      someToAddress: Option[LockAddress],
+      someToParty: Option[String],
+      someToContract: Option[String],
+      amount: Long,
+      outputFile: String
+  ): F[String] = {
+    import cats.implicits._
+    walletStateAlgebra
+      .validateCurrentIndicesForFunds(
+        fromParty,
+        fromContract,
+        someFromState
+      ) flatMap {
       case Validated.Invalid(errors) =>
-        IO("Invalid params\n" + errors.toList.mkString(", "))
+        Monad[F].point("Invalid params\n" + errors.toList.mkString(", "))
       case Validated.Valid(_) =>
         simplTransactionOps
           .createSimpleTransactionFromParams(
-            params
+            keyfile,
+            password,
+            fromParty,
+            fromContract,
+            someFromState,
+            someToAddress,
+            someToParty,
+            someToContract,
+            amount,
+            outputFile
           )
           .map(_ => "Transaction successfully created")
     }

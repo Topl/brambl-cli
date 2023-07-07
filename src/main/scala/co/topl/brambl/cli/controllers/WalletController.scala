@@ -95,7 +95,9 @@ class WalletController(walletResource: Resource[IO, Connection]) {
         )
       )
       keypair <- OptionT(
-        walletManagementUtils.loadKeysFromParam(params).map(x => Option(x))
+        walletManagementUtils
+          .loadKeys(params.someKeyFile.get, params.password)
+          .map(x => Option(x))
       )
       deriveChildKey <- OptionT(
         walletApi

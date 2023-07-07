@@ -3,10 +3,10 @@ package co.topl.brambl.cli.impl
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.builders.TransactionBuilderApi
-import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
+import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.box.Attestation
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
@@ -23,15 +23,27 @@ import java.io.FileOutputStream
 trait SimpleTransactionAlgebra[F[_]] {
 
   def proveSimpleTransactionFromParams(
-      params: BramblCliValidatedParams
+        inputFile: String,
+        keyFile: String,
+        password: String,
+        outputFile: String
   ): F[String]
 
   def createSimpleTransactionFromParams(
-      params: BramblCliValidatedParams
+      keyfile: String,
+      password: String,
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      someToAddress: Option[LockAddress],
+      someToParty: Option[String],
+      someToContract: Option[String],
+      amount: Long,
+      outputFile: String
   ): F[String]
 
   def broadcastSimpleTransactionFromParams(
-      params: BramblCliValidatedParams
+      provedTxFile: String
   ): F[String]
 
 }
@@ -48,7 +60,7 @@ object SimpleTransactionAlgebra {
     new SimpleTransactionAlgebra[F] {
 
       override def broadcastSimpleTransactionFromParams(
-          params: BramblCliValidatedParams
+          provedTxFile: String
       ): F[String] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
@@ -56,7 +68,7 @@ object SimpleTransactionAlgebra {
           provedTransaction <- Resource
             .make {
               Sync[F]
-                .delay(new FileInputStream(params.someInputFile.get))
+                .delay(new FileInputStream(provedTxFile))
             }(fos => Sync[F].delay(fos.close()))
             .use(fis => Sync[F].blocking(IoTransaction.parseFrom(fis)))
 
@@ -80,7 +92,10 @@ object SimpleTransactionAlgebra {
       }
 
       override def proveSimpleTransactionFromParams(
-          params: BramblCliValidatedParams
+        inputFile: String,
+        keyFile: String,
+        password: String,
+        outputFile: String
       ): F[String] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
@@ -88,10 +103,13 @@ object SimpleTransactionAlgebra {
           ioTransaction <- Resource
             .make {
               Sync[F]
-                .delay(new FileInputStream(params.someInputFile.get))
+                .delay(new FileInputStream(inputFile))
             }(fos => Sync[F].delay(fos.close()))
             .use(fis => Sync[F].blocking(IoTransaction.parseFrom(fis)))
-          keyPair <- walletManagementUtils.loadKeysFromParam(params)
+          keyPair <- walletManagementUtils.loadKeys(
+            keyFile,
+            password
+          )
           credentialer <- Sync[F].delay(
             CredentiallerInterpreter.make[F](walletApi, walletStateApi, keyPair)
           )
@@ -112,23 +130,35 @@ object SimpleTransactionAlgebra {
           _ <- Resource
             .make(
               Sync[F]
-                .delay(new FileOutputStream(params.someOutputFile.get))
+                .delay(new FileOutputStream(outputFile))
             )(fos => Sync[F].delay(fos.close()))
             .use(fos => Sync[F].delay(provedTransaction.writeTo(fos)))
         } yield "Transaction proved"
       }
 
       def createSimpleTransactionFromParams(
-          params: BramblCliValidatedParams
+          keyfile: String,
+          password: String,
+          fromParty: String,
+          fromContract: String,
+          someFromState: Option[Int],
+          someToAddress: Option[LockAddress],
+          someToParty: Option[String],
+          someToContract: Option[String],
+          amount: Long,
+          outputFile: String
       ): F[String] = {
         import TransactionBuilderApi.implicits._
         import cats.implicits._
         for {
-          keyPair <- walletManagementUtils.loadKeysFromParam(params)
+          keyPair <- walletManagementUtils.loadKeys(
+            keyfile,
+            password
+          )
           someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
-            params.fromParty,
-            params.fromContract,
-            params.someFromState
+            fromParty,
+            fromContract,
+            someFromState
           )
           predicateFundsToUnlock <- someCurrentIndices
             .map(currentIndices =>
@@ -137,17 +167,17 @@ object SimpleTransactionAlgebra {
             .sequence
             .map(_.flatten.map(Lock().withPredicate(_)))
           someNextIndices <- walletStateApi.getNextIndicesForFunds(
-            if (params.fromParty == "noparty") "self" else params.fromParty,
-            if (params.fromParty == "noparty") "default"
-            else params.fromContract
+            if (fromParty == "noparty") "self" else fromParty,
+            if (fromParty == "noparty") "default"
+            else fromContract
           )
           // Generate a new lock for the change, if possible
           changeLock <- someNextIndices
             .map(idx =>
               walletStateApi.getLock(
-                if (params.fromParty == "noparty") "self" else params.fromParty,
-                if (params.fromParty == "noparty") "default"
-                else params.fromContract,
+                if (fromParty == "noparty") "self" else fromParty,
+                if (fromParty == "noparty") "default"
+                else fromContract,
                 idx.z
               )
             )
@@ -162,9 +192,9 @@ object SimpleTransactionAlgebra {
           )
           // either toAddress or both toContract and toParty must be defined
           toAddressOpt <- (
-            params.toAddress,
-            params.someToParty,
-            params.someToContract
+            someToAddress,
+            someToParty,
+            someToContract
           ) match {
             case (Some(address), _, _) => Sync[F].point(Some(address))
             case (None, Some(party), Some(contract)) =>
@@ -190,7 +220,7 @@ object SimpleTransactionAlgebra {
                         predicateFundsToUnlock.get.getPredicate,
                         lockPredicateForChange.getPredicate,
                         toAddress,
-                        params.amount
+                        amount
                       )
                     lockAddress <- transactionBuilderApi.lockAddress(
                       lockPredicateForChange
@@ -215,7 +245,7 @@ object SimpleTransactionAlgebra {
                       .make(
                         Sync[F]
                           .delay(
-                            new FileOutputStream(params.someOutputFile.get)
+                            new FileOutputStream(outputFile)
                           )
                       )(fos => Sync[F].delay(fos.close()))
                       .use { fos =>
