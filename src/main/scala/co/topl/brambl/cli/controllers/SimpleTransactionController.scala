@@ -87,7 +87,6 @@ class SimpleTransactionController[F[_]: Monad](
             amount,
             outputFile
           )
-          .map(_ => "Transaction successfully created")
     }
   }
 }

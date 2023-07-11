@@ -48,7 +48,7 @@ object Main
           case Validated.Invalid(errors) =>
             IO(
               "Invalid params\n" +
-                OParser.usage(paramParser) + "\n" +
+                // OParser.usage(paramParser) + "\n" +
                 errors.toList.mkString(", ")
             )
         }

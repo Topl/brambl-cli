@@ -15,7 +15,8 @@ trait WalletValidationModule {
     import cats.implicits._
     List(
       validateNonEmpty("Password", paramConfig.password),
-      validatePassphrase(paramConfig.somePassphrase)
+      validatePassphrase(paramConfig.somePassphrase),
+      validateWalletFile(paramConfig.someWalletFile)
     ).sequence.map(_ => paramConfig)
   }
 

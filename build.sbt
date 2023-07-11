@@ -23,7 +23,7 @@ Defaults.itSettings
 
 libraryDependencies += bramblSdk
 libraryDependencies += bramblCrypto
-dependencyOverrides += protobufSpecs // force pb version in case bramblSdk and quivr4s use a different version
+dependencyOverrides += protobufSpecs
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core
@@ -34,6 +34,8 @@ libraryDependencies += grpcRuntime
 libraryDependencies += sqlite
 libraryDependencies += munitCatsEffects
 libraryDependencies += fastparse
+
+dependencyOverrides += Dependencies.protobufSpec
 
 scalacOptions += "-Ymacro-annotations"
 

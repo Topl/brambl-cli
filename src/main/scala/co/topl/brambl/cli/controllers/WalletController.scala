@@ -1,47 +1,46 @@
 package co.topl.brambl.cli.controllers
 
 import cats.data.OptionT
-import cats.effect.IO
 import cats.effect.kernel.Resource
-import co.topl.brambl.builders.TransactionBuilderApi
+import cats.effect.kernel.Sync
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.cli.DefaultWalletKeyApi
 import co.topl.brambl.cli.impl.WalletAlgebra
 import co.topl.brambl.cli.impl.WalletManagementUtils
-import co.topl.brambl.cli.impl.WalletStateAlgebra
-import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.dataApi
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import quivr.models.VerificationKey
 
 import java.io.PrintWriter
-import java.sql.Connection
+import java.io.File
+import co.topl.brambl.builders.TransactionBuilderApi
 
-class WalletController(walletResource: Resource[IO, Connection]) {
+class WalletController[F[_]: Sync](
+    transactionBuilderApi: TransactionBuilderApi[F],
+    walletStateAlgebra: dataApi.WalletStateAlgebra[F],
+    walletManagementUtils: WalletManagementUtils[F],
+    walletApi: WalletApi[F],
+    walletAlgebra: WalletAlgebra[F]
+) {
 
   def importVk(
-      params: BramblCliValidatedParams
-  ): IO[String] = {
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID // TODO: this works because we do not use certain methods, maybe the fix is upstream
-    )
-    val dataApi = new DefaultWalletKeyApi[IO]()
-
-    val walletApi = WalletApi.make(dataApi)
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi,
-      walletApi
-    )
+      inputVks: Seq[File],
+      keyfile: String,
+      password: String,
+      contractName: String,
+      partyName: String
+  ): F[String] = {
     import cats.implicits._
+    import TransactionBuilderApi.implicits._
     for {
-      keyAndEncodedKeys <- (params.inputVks
+      keyAndEncodedKeys <- (inputVks
         .map { file =>
           Resource
-            .make(IO(scala.io.Source.fromFile(file)))(file => IO(file.close()))
+            .make(Sync[F].delay(scala.io.Source.fromFile(file)))(file =>
+              Sync[F].delay(file.close())
+            )
             .use { file =>
-              IO(file.getLines().toList.mkString)
+              Sync[F].blocking(file.getLines().toList.mkString)
             }
         })
         .sequence
@@ -58,12 +57,39 @@ class WalletController(walletResource: Resource[IO, Connection]) {
           )
         )
       lockTempl <- walletStateAlgebra
-        .getLockTemplate(params.contractName)
+        .getLockTemplate(contractName)
         .map(_.get) // it exists because of the validation
+      // we need to get the corresponding vk
+      indices <- walletStateAlgebra.getCurrentIndicesForFunds(
+        partyName,
+        contractName,
+        None
+      )
+      keypair <- walletManagementUtils.loadKeys(keyfile, password)
+      deriveChildKey <- walletApi.deriveChildKeys(keypair, indices.get)
+      deriveChildKeyString = Encoding.encodeToBase58Check(
+        deriveChildKey.vk.toByteArray
+      )
+      errorOrLock <- lockTempl.build(
+        deriveChildKey.vk :: keyAndEncodedKeys.toList.map(_._1)
+      )
+      // TODO: double check that this lock is validated
+      lockAddress <- transactionBuilderApi.lockAddress(
+        errorOrLock.toOption.get
+      )
+      _ <- walletStateAlgebra.updateWalletState(
+        Encoding.encodeToBase58Check(
+          errorOrLock.toOption.get.getPredicate.toByteArray
+        ), // lockPredicate
+        lockAddress.toBase58(), // lockAddress
+        Some("ExtendedEd25519"),
+        Some(Encoding.encodeToBase58Check(deriveChildKey.vk.toByteArray)),
+        indices.get
+      )
       _ <- walletStateAlgebra.addEntityVks(
-        params.partyName,
-        params.contractName,
-        keyAndEncodedKeys.toList.map(_._2)
+        partyName,
+        contractName,
+        deriveChildKeyString :: keyAndEncodedKeys.toList.map(_._2)
       )
       _ <- lockTempl.build(keyAndEncodedKeys.toList.map(_._1))
     } yield "Successfully imported verification keys"
@@ -71,21 +97,8 @@ class WalletController(walletResource: Resource[IO, Connection]) {
 
   def exportVk(
       params: BramblCliValidatedParams
-  ): IO[String] = {
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
-    )
-    val dataApi = new DefaultWalletKeyApi[IO]()
-
-    val walletApi = WalletApi.make(dataApi)
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi,
-      walletApi
-    )
-    val walletManagementUtils =
-      new WalletManagementUtils[IO](walletApi, dataApi)
+  ): F[String] = {
+    import cats.implicits._
     (for {
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
@@ -108,12 +121,12 @@ class WalletController(walletResource: Resource[IO, Connection]) {
       )
     } yield {
       Resource
-        .make(IO(new PrintWriter(params.someOutputFile.get)))(file =>
-          IO(file.close())
+        .make(Sync[F].delay(new PrintWriter(params.someOutputFile.get)))(file =>
+          Sync[F].delay(file.close())
         )
         .use { file =>
           for {
-            _ <- IO.blocking(
+            _ <- Sync[F].blocking(
               file.write(Encoding.encodeToBase58(deriveChildKey.vk.toByteArray))
             )
           } yield ()
@@ -123,46 +136,12 @@ class WalletController(walletResource: Resource[IO, Connection]) {
 
   def createWalletFromParams(
       params: BramblCliValidatedParams
-  ): IO[String] = {
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
-    )
-    val dataApi = new DefaultWalletKeyApi[IO]()
-
-    val walletApi = WalletApi.make(dataApi)
-    val walletStateAlgebra = WalletStateAlgebra.make[IO](
-      walletResource,
-      transactionBuilderApi,
-      walletApi
-    )
-
-    WalletAlgebra
-      .make[IO](
-        walletApi,
-        walletStateAlgebra
-      )
-      .createWalletFromParams(params)
-      .map(_ => "Wallet created")
+  ): F[String] = {
+    import cats.implicits._
+    walletAlgebra.createWalletFromParams(params).map(_ => "Wallet created")
   }
 
-  def currentaddress(
-      params: BramblCliValidatedParams
-  ): IO[String] = {
-    val dataApi = new DefaultWalletKeyApi[IO]()
+  def currentaddress(): F[String] =
+    walletStateAlgebra.getCurrentAddress
 
-    val walletApi = WalletApi.make(dataApi)
-    val transactionBuilderApi = TransactionBuilderApi.make[IO](
-      params.network.networkId,
-      NetworkConstants.MAIN_LEDGER_ID
-    )
-    WalletStateAlgebra
-      .make[IO](
-        walletResource,
-        transactionBuilderApi,
-        walletApi
-      )
-      .getCurrentAddress
-      .map(address => address)
-  }
 }
