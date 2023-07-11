@@ -250,7 +250,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
       )
       .map(_ => addedContract)
       .assertEquals(
-        """{"threshold":1,"innerTemplates":[{"min":1,"max":1000,"type":"tick"}],"type":"predicate"}"""
+        """{"threshold":1,"innerTemplates":[{"routine":"Blake2b256","digest":"6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8","type":"digest"}],"type":"predicate"}"""
       )
   }
 
