@@ -1,24 +1,30 @@
 name: deploy
+
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+    tags: ["*"]
 
 jobs:
   publish:
     runs-on: ubuntu-20.04
     steps:
-      - if: github.event.release
-        name: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 0
-      - if: github.event.release
-        name: Setup Scala
+      - name: Setup Scala
         uses: olafurpg/setup-scala@v13
+      - uses: olafurpg/setup-gpg@v3
       - name: Running unit tests
         run: sbt test
-      - if: github.event.release
-        name: Deploy (release only)
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: success()
+        with:
+          files: |
+            target/test-reports/**/*.xml
+      - name: Deploy (release only)
         run: sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}

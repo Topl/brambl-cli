@@ -34,7 +34,6 @@ class ContractsController[F[_]: Sync](
             if (added == 1) "Contract added successfully"
             else "Failed to add contract"
         case Validated.Invalid(e) =>
-          println("????: " + e)
           import cats.implicits._
           e.toList
             .traverse(x => Sync[F].delay(s"Error at ${x.location}: ${x.error}"))
