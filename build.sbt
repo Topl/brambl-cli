@@ -10,7 +10,7 @@ resolvers ++= Seq(
   "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/",
   "Sonatype Staging" at "https://s01.oss.sonatype.org/content/repositories/staging",
   "Sonatype Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/",
-  "Sonatype Releases s01" at "https://s01.oss.sonatype.org/content/repositories/releases/",
+  "Sonatype Releases" at "https://s01.oss.sonatype.org/content/repositories/releases/",
   "Bintray" at "https://jcenter.bintray.com/",
   "jitpack" at "https://jitpack.io"
 )
@@ -23,6 +23,7 @@ Defaults.itSettings
 
 libraryDependencies += bramblSdk
 libraryDependencies += bramblCrypto
+dependencyOverrides += protobufSpecs // force pb version in case bramblSdk and quivr4s use a different version
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core
@@ -44,7 +45,7 @@ semanticdbVersion := scalafixSemanticdb.revision
 
 homepage := Some(url("https://github.com/Topl/brambl-cli"))
 licenses := List("MPL2.0" -> url("https://www.mozilla.org/en-US/MPL/2.0/"))
-sonatypeCredentialHost := "s01.oss.sonatype.org"
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 developers := List(
   Developer(
