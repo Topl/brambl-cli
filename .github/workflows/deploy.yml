@@ -18,6 +18,12 @@ jobs:
       - uses: olafurpg/setup-gpg@v3
       - name: Running unit tests
         run: sbt test
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: success()
+        with:
+          files: |
+            target/test-reports/**/*.xml
       - name: Deploy (release only)
         run: sbt ci-release
         env:

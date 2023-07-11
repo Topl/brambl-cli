@@ -1,9 +1,13 @@
 package co.topl.brambl.cli.impl
 
-import co.topl.brambl.builders.locks.LockTemplate
 import cats.Monad
-import co.topl.brambl.builders.locks.PropositionTemplate
 import cats.data.ValidatedNel
+import co.topl.brambl.builders.locks.LockTemplate
+import co.topl.brambl.builders.locks.PropositionTemplate
+import co.topl.brambl.utils.Encoding
+import com.google.protobuf.ByteString
+import quivr.models.Data
+import quivr.models
 
 sealed trait ParseError {
   val location: Int
@@ -35,6 +39,15 @@ case class And(location: Int, left: TemplateAST, right: TemplateAST)
 
 case class Or(location: Int, left: TemplateAST, right: TemplateAST)
     extends TemplateAST
+
+case class Height(location: Int, minHeight: Long, maxHeight: Long)
+    extends TemplateAST
+
+case class Locked(location: Int, someData: Option[String]) extends TemplateAST
+
+case class Tick(location: Int, minTick: Long, maxTick: Long) extends TemplateAST
+
+case class Digest(location: Int, digest: String) extends TemplateAST
 
 object TemplateAST {
 
@@ -148,7 +161,94 @@ object TemplateAST {
         (compile[F](left), compile[F](right)).mapN((l, r) =>
           (l, r).mapN((l, r) => PropositionTemplate.OrTemplate(l, r))
         )
-
+      case Locked(location, someData) =>
+        State.pure(
+          someData
+            .map(data =>
+              Encoding.decodeFromBase58(data) match {
+                case Left(_) =>
+                  InvalidQuivrContract(
+                    location,
+                    "Invalid base58 encoding"
+                  ).invalidNel
+                case Right(decoded) =>
+                  PropositionTemplate
+                    .LockedTemplate[F](
+                      Some(
+                        Data.defaultInstance
+                          .withValue(ByteString.copyFrom(decoded))
+                      )
+                    )
+                    .validNel
+              }
+            )
+            .getOrElse(
+              PropositionTemplate
+                .LockedTemplate[F](None)
+                .validNel
+            )
+        )
+      case Height(location, min, max) =>
+        State.pure(
+          if (min < 0)
+            InvalidQuivrContract(
+              location,
+              "Min height cannot be less than 0"
+            ).invalidNel
+          else if (max < 0)
+            InvalidQuivrContract(
+              location,
+              "Max height cannot be less than 0"
+            ).invalidNel
+          else if (min > max)
+            InvalidQuivrContract(
+              location,
+              "Min height cannot be greater than max height"
+            ).invalidNel
+          else
+            PropositionTemplate
+              .HeightTemplate[F]("header", min, max)
+              .validNel
+        )
+      case Tick(location, min, max) =>
+        State.pure(
+          if (min < 0)
+            InvalidQuivrContract(
+              location,
+              "Min tick cannot be less than 0"
+            ).invalidNel
+          else if (max < 0)
+            InvalidQuivrContract(
+              location,
+              "Max tick cannot be less than 0"
+            ).invalidNel
+          else if (min > max)
+            InvalidQuivrContract(
+              location,
+              "Min tick cannot be greater than max tick"
+            ).invalidNel
+          else
+            PropositionTemplate
+              .TickTemplate[F](min, max)
+              .validNel
+        )
+      case Digest(location, digest) =>
+        State.pure(
+          Encoding.decodeFromBase58(digest) match {
+            case Left(_) =>
+              InvalidQuivrContract(
+                location,
+                "Invalid base58 encoding"
+              ).invalidNel
+            case Right(decoded) =>
+              PropositionTemplate
+                .DigestTemplate[F](
+                  "Blake2b256",
+                  new models.Digest(ByteString.copyFrom(decoded))
+                )
+                .validNel
+          }
+        )
     }
   }
 
@@ -174,13 +274,13 @@ trait QuivrFastParser[F[_]] {
   def exprSeq[$: P] = P(expr.rep(sep = P(",")))
 
   def expr[$: P]: P[TemplateAST] = P(
-     booleanExpr
+    booleanExpr
   )
 
   def parenthesisExpr[$: P]: P[TemplateAST] = P("(" ~/ expr ~ ")")
 
   def atomicExpr[$: P]: P[TemplateAST] = P(
-    threshold | signature | parenthesisExpr
+    threshold | signature | parenthesisExpr | locked | height | tick | digest
   )
   def booleanExpr[$: P]: P[TemplateAST] =
     P(Index ~ atomicExpr ~ (P(P("and") | P("or")).! ~/ atomicExpr).rep).map {
@@ -194,14 +294,51 @@ trait QuivrFastParser[F[_]] {
         }
     }
 
+  def digest[$: P]: P[TemplateAST] =
+    P(Index ~ P("digest") ~ P("(") ~ base58Chars ~ P(")")).map {
+      case (location, base58) =>
+        Digest(location, base58)
+    }
+
+  def locked[$: P]: P[TemplateAST] =
+    P(Index ~ P("locked") ~ P("(") ~ base58CharsOrEmpty ~ P(")")).map {
+      case (location, base58) =>
+        Locked(location, if (base58.trim().isEmpty()) None else Some(base58))
+    }
+
+  def base58Char[$:P] = P(CharIn(
+    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+  ))
+
+  def base58CharsOrEmpty[$: P]: P[String] =
+    base58Char.rep.!
+
+  def base58Chars[$: P]: P[String] =
+    base58Char.rep(1).!
+
   def signature[$: P]: P[TemplateAST] =
     P(Index ~ P("sign") ~ P("(") ~ decimal ~ P(")")).map {
       case (location, idx) =>
         Sign(location, idx)
     }
+  def height[$: P]: P[TemplateAST] =
+    P(
+      Index ~ P("height") ~ P("(") ~ decimalLong ~ P(",") ~ decimalLong ~ P(")")
+    ).map { case (location, min, max) =>
+      Height(location, min, max)
+    }
+  def tick[$: P]: P[TemplateAST] =
+    P(
+      Index ~ P("tick") ~ P("(") ~ decimalLong ~ P(",") ~ decimalLong ~ P(")")
+    ).map { case (location, min, max) =>
+      Tick(location, min, max)
+    }
 
   def decimal[$: P]: P[Int] =
     P(P("0") | (P(CharIn("1-9")) ~ P(CharIn("0-9")).rep)).!.map(_.toInt)
+
+  def decimalLong[$: P]: P[Long] =
+    P(P("0") | (P(CharIn("1-9")) ~ P(CharIn("0-9")).rep)).!.map(_.toLong)
 
 }
 
