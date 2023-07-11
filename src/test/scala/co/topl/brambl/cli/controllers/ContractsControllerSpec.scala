@@ -131,8 +131,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
       )
   }
 
-  // FIXME: Diadem will fix this
-  test("Add lock contract with data".fail) {
+  test("Add lock contract with data") {
     var addedContract = ""
     val simpleController = new ContractsController[IO](
       new ContractStorageAlgebra[IO] {
@@ -223,8 +222,8 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """{"threshold":1,"innerTemplates":[{"min":1,"max":1000,"type":"tick"}],"type":"predicate"}"""
       )
   }
-  // FIXME: Diadem will fix this
-  test("Add digest contract".fail) {
+
+  test("Add digest contract") {
     var addedContract = ""
     val simpleController = new ContractsController[IO](
       new ContractStorageAlgebra[IO] {
