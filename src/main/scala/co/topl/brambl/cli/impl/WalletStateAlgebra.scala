@@ -447,41 +447,6 @@ object WalletStateAlgebra {
           _ <- Sync[F].blocking(
             stmnt.executeUpdate(statement)
           )
-          // lockTempl <- getLockTemplate(contract)
-          //   .map(_.get)
-          // lock <- lockTempl
-          //   .build(
-          //     entities
-          //       .map(
-          //         // TODO: replace with proper serialization in TSDK-476
-          //         vk =>
-          //           (
-          //             VerificationKey.parseFrom(
-          //               Encoding.decodeFromBase58(vk).toOption.get
-          //             ),
-          //             vk
-          //           )
-          //       )
-          //       .toList
-          //       .map(_._1)
-          //   )
-          //   .map(
-          //     _.getOrElse(throw new IllegalStateException("Should not happen"))
-          //   )
-          // lockAddress <- transactionBuilderApi.lockAddress(lock)
-          // _ <- Sync[F].delay(
-          //   stmnt.executeUpdate(
-          //     s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES ($x, $y, 1, '" +
-          //       Encoding
-          //         .encodeToBase58Check(
-          //           lock.getPredicate.toByteArray
-          //         ) +
-          //       "', '" +
-          //       encodeAddress(
-          //         lockAddress
-          //       ) + "', " + "'ExtendedEd25519', " + "''" + ")"
-          //   )
-          // )
         } yield ()
       }
 
