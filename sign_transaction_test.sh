@@ -7,7 +7,7 @@ mkdir $TMP_DIR
 
 echo "Creating wallet for Edmundo"
 
-BRAMBL_CLI="cs launch -r https://s01.oss.sonatype.org/content/repositories/snapshots -V co.topl:protobuf-fs2_2.13:2.0.0-alpha2 co.topl:brambl-cli_2.13:2.0.0-demo-2023-07-07+0-02f5ce78+20230710-1631-SNAPSHOT --"
+BRAMBL_CLI="cs launch -r https://s01.oss.sonatype.org/content/repositories/snapshots -V co.topl:protobuf-fs2_2.13:2.0.0-alpha2 co.topl:brambl-cli_2.13:2.0.0-demo-2023-07-07+8-0e9522b4+20230711-1512-SNAPSHOT --"
 
 BASE_AMOUNT=1000
 SHARED_AMOUNT=500
@@ -94,7 +94,7 @@ $BRAMBL_CLI contracts add --walletdb $EDMUNDO_WALLET  -n private \
 
 $BRAMBL_CLI contracts add --walletdb $DANIELA_WALLET  -n private \
           --contract-name $CONTRACT_NAME \
-          --contract-template "threshold(1, sign(0) or sign(1))"
+          --contract-template "threshold(1, sign(1) or sign(0))"
 
 EDMUNDO_VK=$TMP_DIR/edmundo_vk.txt
 DANIELA_VK=$TMP_DIR/daniela_vk.txt
@@ -114,8 +114,9 @@ $BRAMBL_CLI wallet export-vk -w test -o $DANIELA_VK -n private \
 echo "Importing verification keys to Edmundo's wallet"
 
 $BRAMBL_CLI wallet import-vks -n private \
-          --input-vks $EDMUNDO_VK,$DANIELA_VK --party-name edmundo_daniela_0 \
-          --contract-name $CONTRACT_NAME  --walletdb $EDMUNDO_WALLET
+          --input-vks $DANIELA_VK --party-name edmundo_daniela_0 \
+          --contract-name $CONTRACT_NAME  --walletdb $EDMUNDO_WALLET\
+           --keyfile $EDMUNDO_MAIN_KEY -w $EDMUNDO_PASSWORD
 
 echo "Sending 500 to shared account"
 
@@ -159,8 +160,9 @@ echo "Spending 200 from shared account by Daniela"
 echo "Importing verification keys to Daniela's wallet"
 
 $BRAMBL_CLI wallet import-vks -n private \
-          --input-vks $EDMUNDO_VK,$DANIELA_VK --party-name edmundo_daniela_0 \
-          --contract-name $CONTRACT_NAME  --walletdb $DANIELA_WALLET
+          --input-vks $EDMUNDO_VK --party-name edmundo_daniela_0 \
+          --contract-name $CONTRACT_NAME  --walletdb $DANIELA_WALLET \
+           --keyfile $DANIELA_MAIN_KEY -w $DANIELA_PASSWORD
 
 EDMUNDO_TO_ADDRESS_2=$($BRAMBL_CLI wallet current-address -w $EDMUNDO_PASSWORD -n private --walletdb $EDMUNDO_WALLET)
 

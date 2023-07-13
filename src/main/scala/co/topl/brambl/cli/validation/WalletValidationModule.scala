@@ -65,8 +65,14 @@ trait WalletValidationModule {
         required = true
       )
     ) ++ List(
+      validateInputFile(
+        "Keyfile",
+        paramConfig.someKeyFile,
+        required = true
+      ),
       validateNonEmpty("Party name", paramConfig.partyName),
-      validateNonEmpty("Contract name", paramConfig.contractName)
+      validateNonEmpty("Contract name", paramConfig.contractName),
+      validateNonEmpty("Password", paramConfig.password)
     )).sequence.map(_ => paramConfig)
   }
 

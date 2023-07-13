@@ -23,10 +23,10 @@ import java.io.FileOutputStream
 trait SimpleTransactionAlgebra[F[_]] {
 
   def proveSimpleTransactionFromParams(
-        inputFile: String,
-        keyFile: String,
-        password: String,
-        outputFile: String
+      inputFile: String,
+      keyFile: String,
+      password: String,
+      outputFile: String
   ): F[String]
 
   def createSimpleTransactionFromParams(
@@ -92,10 +92,10 @@ object SimpleTransactionAlgebra {
       }
 
       override def proveSimpleTransactionFromParams(
-        inputFile: String,
-        keyFile: String,
-        password: String,
-        outputFile: String
+          inputFile: String,
+          keyFile: String,
+          password: String,
+          outputFile: String
       ): F[String] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._

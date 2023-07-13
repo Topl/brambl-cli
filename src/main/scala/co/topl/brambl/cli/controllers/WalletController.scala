@@ -14,13 +14,18 @@ import quivr.models.VerificationKey
 import java.io.PrintWriter
 import java.io.File
 import co.topl.brambl.builders.TransactionBuilderApi
+import co.topl.brambl.codecs.AddressCodecs
+import co.topl.genus.services.TxoState
+import co.topl.genus.services.Txo
+import co.topl.brambl.models.Indices
 
 class WalletController[F[_]: Sync](
     transactionBuilderApi: TransactionBuilderApi[F],
     walletStateAlgebra: dataApi.WalletStateAlgebra[F],
     walletManagementUtils: WalletManagementUtils[F],
     walletApi: WalletApi[F],
-    walletAlgebra: WalletAlgebra[F]
+    walletAlgebra: WalletAlgebra[F],
+    genusQueryAlgebra: dataApi.GenusQueryAlgebra[F]
 ) {
 
   def importVk(
@@ -44,34 +49,41 @@ class WalletController[F[_]: Sync](
             }
         })
         .sequence
-        .map(
+        .flatMap(
           _.map(
             // TODO: replace with proper serialization in TSDK-476
             vk =>
-              (
-                VerificationKey.parseFrom(
-                  Encoding.decodeFromBase58(vk).toOption.get
-                ),
-                vk
-              )
-          )
+              // we derive the key once
+              walletApi
+                .deriveChildVerificationKey(
+                  VerificationKey.parseFrom(
+                    Encoding.decodeFromBase58(vk).toOption.get
+                  ),
+                  1
+                )
+                .map(x => (x, vk))
+          ).sequence
         )
       lockTempl <- walletStateAlgebra
         .getLockTemplate(contractName)
         .map(_.get) // it exists because of the validation
       // we need to get the corresponding vk
-      indices <- walletStateAlgebra.getCurrentIndicesForFunds(
+      indices <- walletStateAlgebra.getNextIndicesForFunds(
         partyName,
-        contractName,
-        None
+        contractName
       )
       keypair <- walletManagementUtils.loadKeys(keyfile, password)
       deriveChildKey <- walletApi.deriveChildKeys(keypair, indices.get)
-      deriveChildKeyString = Encoding.encodeToBase58Check(
-        deriveChildKey.vk.toByteArray
+      deriveChildKeyBase <- walletApi.deriveChildKeysPartial(
+        keypair,
+        indices.get.x,
+        indices.get.y
+      )
+      deriveChildKeyString = Encoding.encodeToBase58(
+        deriveChildKeyBase.vk.toByteArray
       )
       errorOrLock <- lockTempl.build(
-        deriveChildKey.vk :: keyAndEncodedKeys.toList.map(_._1)
+        deriveChildKey.vk :: keyAndEncodedKeys.toList.map(x => x._1)
       )
       // TODO: double check that this lock is validated
       lockAddress <- transactionBuilderApi.lockAddress(
@@ -83,7 +95,7 @@ class WalletController[F[_]: Sync](
         ), // lockPredicate
         lockAddress.toBase58(), // lockAddress
         Some("ExtendedEd25519"),
-        Some(Encoding.encodeToBase58Check(deriveChildKey.vk.toByteArray)),
+        Some(Encoding.encodeToBase58(deriveChildKey.vk.toByteArray)),
         indices.get
       )
       _ <- walletStateAlgebra.addEntityVks(
@@ -138,10 +150,91 @@ class WalletController[F[_]: Sync](
       params: BramblCliValidatedParams
   ): F[String] = {
     import cats.implicits._
-    walletAlgebra.createWalletFromParams(params).map(_ => "Wallet created")
+    walletAlgebra
+      .createWalletFromParams(
+        params.password,
+        params.somePassphrase,
+        params.someOutputFile
+      )
+      .map(_ => "Wallet created")
   }
 
   def currentaddress(): F[String] =
     walletStateAlgebra.getCurrentAddress
+
+  def sync(
+      party: String,
+      contract: String
+  ): F[Unit] = {
+    import cats.implicits._
+    import TransactionBuilderApi.implicits._
+    (for {
+      // current indices
+      someIndices <- walletStateAlgebra.getCurrentIndicesForFunds(
+        party,
+        contract,
+        None
+      )
+      // current address
+      someAddress <- walletStateAlgebra.getAddress(
+        party,
+        contract,
+        someIndices.map(_.z)
+      )
+      // txos that are spent at current address
+      txos <- someAddress
+        .map(address =>
+          genusQueryAlgebra
+            .queryUtxo(
+              AddressCodecs.decodeAddress(address).toOption.get,
+              TxoState.SPENT
+            )
+        )
+        .getOrElse(Sync[F].pure(Seq.empty[Txo]))
+    } yield
+    // we have indices AND txos at current address are spent
+    if (someIndices.isDefined && !txos.isEmpty) {
+      // we need to update the wallet state with the next indices
+      val indices = someIndices.map(idx => Indices(idx.x, idx.y, idx.z + 1)).get
+      for {
+        vks <- walletStateAlgebra.getEntityVks(
+          party,
+          contract
+        )
+        vksDerived <- vks.get
+          .map(x =>
+            walletApi.deriveChildVerificationKey(
+              VerificationKey.parseFrom(
+                Encoding.decodeFromBase58(x).toOption.get
+              ),
+              indices.z
+            )
+          )
+          .sequence
+        lock <- walletStateAlgebra.getLock(party, contract, indices.z)
+        lockAddress <- transactionBuilderApi.lockAddress(
+          lock.get
+        )
+        _ <- walletStateAlgebra.updateWalletState(
+          Encoding.encodeToBase58Check(
+            lock.get.getPredicate.toByteArray
+          ), // lockPredicate
+          lockAddress.toBase58(), // lockAddress
+          Some("ExtendedEd25519"),
+          Some(Encoding.encodeToBase58(vksDerived.head.toByteArray)),
+          indices
+        )
+      } yield txos
+    } else {
+      Sync[F].delay(txos)
+    }).flatten.iterateUntil(x => x.isEmpty).void
+  }
+
+  def currentaddress(
+      party: String,
+      contract: String,
+      someState: Option[Int]
+  ): F[Option[String]] =
+    walletStateAlgebra.getAddress(party, contract, someState)
 
 }

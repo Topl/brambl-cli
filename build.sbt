@@ -35,7 +35,7 @@ libraryDependencies += sqlite
 libraryDependencies += munitCatsEffects
 libraryDependencies += fastparse
 
-dependencyOverrides += Dependencies.protobufSpec
+dependencyOverrides += Dependencies.protobufSpecs
 
 scalacOptions += "-Ymacro-annotations"
 

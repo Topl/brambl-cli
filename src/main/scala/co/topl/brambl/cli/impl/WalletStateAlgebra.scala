@@ -64,6 +64,7 @@ object WalletStateAlgebra {
                   s"z_state = ${indices.z}"
               )
             )
+            _ <- Sync[F].delay(rs.next())
             lock_predicate <- Sync[F].delay(rs.getString("lock_predicate"))
           } yield Some(
             Lock.Predicate.parseFrom(
@@ -319,7 +320,7 @@ object WalletStateAlgebra {
             )
             _ <- Sync[F].delay(
               stmnt.execute(
-                "CREATE INDEX IF NOT EXISTS cartesian_coordinates ON cartesian (x_party, y_contract, z_state)"
+                "CREATE UNIQUE INDEX IF NOT EXISTS cartesian_coordinates ON cartesian (x_party, y_contract, z_state)"
               )
             )
             _ <- Sync[F].delay(
@@ -426,7 +427,6 @@ object WalletStateAlgebra {
           entities: List[String]
       ): F[Unit] = connection.use { conn =>
         import cats.implicits._
-        import co.topl.brambl.codecs.AddressCodecs._
         for {
           stmnt <- Sync[F].blocking(conn.createStatement())
           rs <- Sync[F].blocking(
@@ -447,41 +447,41 @@ object WalletStateAlgebra {
           _ <- Sync[F].blocking(
             stmnt.executeUpdate(statement)
           )
-          lockTempl <- getLockTemplate(contract)
-            .map(_.get)
-          lock <- lockTempl
-            .build(
-              entities
-                .map(
-                  // TODO: replace with proper serialization in TSDK-476
-                  vk =>
-                    (
-                      VerificationKey.parseFrom(
-                        Encoding.decodeFromBase58(vk).toOption.get
-                      ),
-                      vk
-                    )
-                )
-                .toList
-                .map(_._1)
-            )
-            .map(
-              _.getOrElse(throw new IllegalStateException("Should not happen"))
-            )
-          lockAddress <- transactionBuilderApi.lockAddress(lock)
-          _ <- Sync[F].delay(
-            stmnt.executeUpdate(
-              s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES ($x, $y, 1, '" +
-                Encoding
-                  .encodeToBase58Check(
-                    lock.getPredicate.toByteArray
-                  ) +
-                "', '" +
-                encodeAddress(
-                  lockAddress
-                ) + "', " + "'ExtendedEd25519', " + "''" + ")"
-            )
-          )
+          // lockTempl <- getLockTemplate(contract)
+          //   .map(_.get)
+          // lock <- lockTempl
+          //   .build(
+          //     entities
+          //       .map(
+          //         // TODO: replace with proper serialization in TSDK-476
+          //         vk =>
+          //           (
+          //             VerificationKey.parseFrom(
+          //               Encoding.decodeFromBase58(vk).toOption.get
+          //             ),
+          //             vk
+          //           )
+          //       )
+          //       .toList
+          //       .map(_._1)
+          //   )
+          //   .map(
+          //     _.getOrElse(throw new IllegalStateException("Should not happen"))
+          //   )
+          // lockAddress <- transactionBuilderApi.lockAddress(lock)
+          // _ <- Sync[F].delay(
+          //   stmnt.executeUpdate(
+          //     s"INSERT INTO cartesian (x_party, y_contract, z_state, lock_predicate, address, routine, vk) VALUES ($x, $y, 1, '" +
+          //       Encoding
+          //         .encodeToBase58Check(
+          //           lock.getPredicate.toByteArray
+          //         ) +
+          //       "', '" +
+          //       encodeAddress(
+          //         lockAddress
+          //       ) + "', " + "'ExtendedEd25519', " + "''" + ")"
+          //   )
+          // )
         } yield ()
       }
 

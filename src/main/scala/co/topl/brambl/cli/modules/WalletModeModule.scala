@@ -4,13 +4,16 @@ import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.WalletController
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.dataApi.GenusQueryAlgebra
+import cats.effect.IO
 
 trait WalletModeModule
     extends WalletStateAlgebraModule
     with WalletManagementUtilsModule
     with WalletApiModule
     with WalletAlgebraModule
-    with TransactionBuilderApiModule {
+    with TransactionBuilderApiModule
+    with ChannelResourceModule {
 
   def walletModeSubcmds(
       validateParams: BramblCliValidatedParams
@@ -26,7 +29,17 @@ trait WalletModeModule
       ),
       walletManagementUtils,
       walletApi,
-      walletAlgebra(validateParams.walletFile, validateParams.network.networkId)
+      walletAlgebra(
+        validateParams.walletFile,
+        validateParams.network.networkId
+      ),
+      GenusQueryAlgebra
+        .make[IO](
+          channelResource(
+            validateParams.host,
+            validateParams.bifrostPort
+          )
+        )
     )
     validateParams.subcmd match {
       case BramblCliSubCmd.exportvk =>
