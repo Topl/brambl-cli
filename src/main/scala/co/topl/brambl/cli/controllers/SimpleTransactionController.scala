@@ -13,7 +13,7 @@ class SimpleTransactionController[F[_]: Monad](
 
   def broadcastSimpleTransactionFromParams(
       provedTxFile: String
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     simplTransactionOps.broadcastSimpleTransactionFromParams(
       provedTxFile
     )
@@ -27,7 +27,7 @@ class SimpleTransactionController[F[_]: Monad](
       keyFile: String,
       password: String,
       outputFile: String
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     walletStateAlgebra
       .validateCurrentIndicesForFunds(
@@ -37,8 +37,10 @@ class SimpleTransactionController[F[_]: Monad](
       ) flatMap {
       case Validated.Invalid(errors) =>
         Monad[F].pure(
-          "Invalid params" + "\n" +
-            errors.toList.mkString(", ")
+          Left(
+            "Invalid params" + "\n" +
+              errors.toList.mkString(", ")
+          )
         )
       case Validated.Valid(_) =>
         simplTransactionOps
@@ -48,7 +50,7 @@ class SimpleTransactionController[F[_]: Monad](
             password,
             outputFile
           )
-          .map(_ => "Transaction successfully proved")
+          .map(_ => Right("Transaction successfully proved"))
     }
   }
 
@@ -63,7 +65,7 @@ class SimpleTransactionController[F[_]: Monad](
       someToContract: Option[String],
       amount: Long,
       outputFile: String
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     walletStateAlgebra
       .validateCurrentIndicesForFunds(
@@ -72,7 +74,7 @@ class SimpleTransactionController[F[_]: Monad](
         someFromState
       ) flatMap {
       case Validated.Invalid(errors) =>
-        Monad[F].point("Invalid params\n" + errors.toList.mkString(", "))
+        Monad[F].point(Left("Invalid params\n" + errors.toList.mkString(", ")))
       case Validated.Valid(_) =>
         simplTransactionOps
           .createSimpleTransactionFromParams(

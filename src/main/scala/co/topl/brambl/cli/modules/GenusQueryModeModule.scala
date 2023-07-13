@@ -12,7 +12,7 @@ trait GenusQueryModeModule
 
   def genusQuerySubcmd(
       validateParams: BramblCliValidatedParams
-  ): IO[String] = validateParams.subcmd match {
+  ): IO[Either[String, String]] = validateParams.subcmd match {
     case BramblCliSubCmd.utxobyaddress =>
       new GenusQueryController(
         walletStateAlgebra(

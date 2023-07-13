@@ -27,7 +27,7 @@ trait SimpleTransactionAlgebra[F[_]] {
       keyFile: String,
       password: String,
       outputFile: String
-  ): F[String]
+  ): F[Either[String, String]]
 
   def createSimpleTransactionFromParams(
       keyfile: String,
@@ -40,11 +40,11 @@ trait SimpleTransactionAlgebra[F[_]] {
       someToContract: Option[String],
       amount: Long,
       outputFile: String
-  ): F[String]
+  ): F[Either[String, String]]
 
   def broadcastSimpleTransactionFromParams(
       provedTxFile: String
-  ): F[String]
+  ): F[Either[String, String]]
 
 }
 object SimpleTransactionAlgebra {
@@ -61,7 +61,7 @@ object SimpleTransactionAlgebra {
 
       override def broadcastSimpleTransactionFromParams(
           provedTxFile: String
-      ): F[String] = {
+      ): F[Either[String, String]] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
         (for {
@@ -88,7 +88,7 @@ object SimpleTransactionAlgebra {
           } yield {
             response
           }
-        }).flatten.map(_ => "Transaction broadcasted")
+        }).flatten.map(_ => Right("Transaction broadcasted"))
       }
 
       override def proveSimpleTransactionFromParams(
@@ -96,7 +96,7 @@ object SimpleTransactionAlgebra {
           keyFile: String,
           password: String,
           outputFile: String
-      ): F[String] = {
+      ): F[Either[String, String]] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
         for {
@@ -133,7 +133,7 @@ object SimpleTransactionAlgebra {
                 .delay(new FileOutputStream(outputFile))
             )(fos => Sync[F].delay(fos.close()))
             .use(fos => Sync[F].delay(provedTransaction.writeTo(fos)))
-        } yield "Transaction proved"
+        } yield Right("Transaction proved")
       }
 
       def createSimpleTransactionFromParams(
@@ -147,7 +147,7 @@ object SimpleTransactionAlgebra {
           someToContract: Option[String],
           amount: Long,
           outputFile: String
-      ): F[String] = {
+      ): F[Either[String, String]] = {
         import TransactionBuilderApi.implicits._
         import cats.implicits._
         for {
@@ -209,7 +209,7 @@ object SimpleTransactionAlgebra {
           }
           res <-
             if (lvlTxos.isEmpty) {
-              Sync[F].delay("No LVL txos found")
+              Sync[F].delay(Left("No LVL txos found"))
             } else {
               (changeLock, toAddressOpt) match {
                 case (Some(lockPredicateForChange), Some(toAddress)) =>
@@ -251,11 +251,11 @@ object SimpleTransactionAlgebra {
                       .use { fos =>
                         Sync[F].delay(ioTransaction.writeTo(fos))
                       }
-                  } yield "Transaction created successfully"
+                  } yield Right("Transaction created successfully")
                 case (None, _) =>
-                  Sync[F].delay("Unable to generate change lock")
+                  Sync[F].delay(Left("Unable to generate change lock"))
                 case (_, _) =>
-                  Sync[F].delay("Unable to derive recipient address")
+                  Sync[F].delay(Left("Unable to derive recipient address"))
               }
             }
         } yield res

@@ -11,7 +11,7 @@ trait SimpleTransactionModeModule
 
   def simpleTransactionSubcmds(
       validateParams: BramblCliValidatedParams
-  ): IO[String] = validateParams.subcmd match {
+  ): IO[Either[String, String]] = validateParams.subcmd match {
     case BramblCliSubCmd.broadcast =>
       new SimpleTransactionController(
         walletStateAlgebra(

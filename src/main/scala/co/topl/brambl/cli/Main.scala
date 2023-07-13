@@ -29,15 +29,15 @@ object Main
   override def run(args: List[String]): IO[ExitCode] = {
     OParser.parse(paramParser, args, BramblCliParams()) match {
       case Some(params) =>
-        val op: IO[String] = validateParams(params) match {
+        val op: IO[Either[String, String]] = validateParams(params) match {
           case Validated.Valid(validateParams) =>
             validateParams.mode match {
               case BramblCliMode.contracts =>
-                contractModeSubcmds(validateParams)
+                contractModeSubcmds(validateParams).map(Right(_))
               case BramblCliMode.parties =>
-                partiesModeSubcmds(validateParams)
+                partiesModeSubcmds(validateParams).map(Right(_))
               case BramblCliMode.wallet =>
-                walletModeSubcmds(validateParams)
+                walletModeSubcmds(validateParams).map(Right(_))
               case BramblCliMode.simpletransaction =>
                 simpleTransactionSubcmds(validateParams)
               case BramblCliMode.genusquery =>
@@ -48,14 +48,17 @@ object Main
           case Validated.Invalid(errors) =>
             IO(
               "Invalid params\n" +
-                // OParser.usage(paramParser) + "\n" +
                 errors.toList.mkString(", ")
-            )
+            ).map(Left(_))
         }
+        import cats.implicits._
         for {
           output <- op
-          _ <- IO(println(output))
-        } yield ExitCode.Success
+          res <- output.fold(
+            x => IO.consoleForIO.errorln(x).map(_ => (ExitCode.Error)),
+            x => IO.consoleForIO.println(x).map(_ => ExitCode.Success)
+          )
+        } yield res
       case _ =>
         IO.pure(ExitCode.Error)
     }
