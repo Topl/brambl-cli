@@ -41,7 +41,7 @@ class ComplexTransactionProveTest
             "noparty",
             "genesis",
             Some(1),
-            ALICE_TO_ADDRESS,
+            ALICE_TO_ADDRESS.toOption.get,
             BASE_AMOUNT,
             ALICE_FIRST_TX_RAW
           ).run(aliceContext),
@@ -195,7 +195,7 @@ class ComplexTransactionProveTest
             "alice_bob_0",
             "or_sign",
             None,
-            ALICE_TO_ADDRESS,
+            ALICE_TO_ADDRESS.toOption.get,
             200,
             BOB_SECOND_TX_RAW
           ).run(bobContext),
