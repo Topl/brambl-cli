@@ -62,7 +62,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
       new GenusQueryController[IO](walletStateAlgebra, genusQueryAlgebra)
     val result =
       genusQueryController.queryUtxoFromParams("party", "contract", None)
-    assertIO(result, "Address not found")
+    assertIO(result, Left("Address not found"))
   }
 
   test(
@@ -76,7 +76,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
       genusQueryController.queryUtxoFromParams("party", "contract", None)
     assertIO(
       result,
-      BlockDisplayOps.display(txo01)
+      Right(BlockDisplayOps.display(txo01))
     )
   }
 }

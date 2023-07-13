@@ -24,7 +24,7 @@ class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
     bifrostQueryController
       .blockByHeight(1)
       .assertEquals(
-        "No blocks found at that height"
+        Left("No blocks found at that height")
       )
   }
   test("blockByHeight should display a block when it is there") {
@@ -41,7 +41,7 @@ class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
     bifrostQueryController
       .blockByHeight(1)
       .assertEquals(
-        BlockDisplayOps.display(blockId01, Seq(iotransaction01))
+        Right(BlockDisplayOps.display(blockId01, Seq(iotransaction01)))
       )
   }
 
