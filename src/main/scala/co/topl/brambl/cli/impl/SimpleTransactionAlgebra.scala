@@ -192,25 +192,30 @@ object SimpleTransactionAlgebra {
                         toAddress,
                         params.amount
                       )
-                    lockAddress <- transactionBuilderApi.lockAddress(
-                      lockPredicateForChange
-                    )
-                    vk <- someNextIndices
-                      .map(nextIndices =>
-                        walletApi
-                          .deriveChildKeys(keyPair, nextIndices)
-                          .map(_.vk)
+                    // Only save to wallet state if there is a change output in the transaction
+                    _ <- if(ioTransaction.outputs.length >= 2) for {
+                      lockAddress <- transactionBuilderApi.lockAddress(
+                        lockPredicateForChange
                       )
-                      .sequence
-                    _ <- walletStateApi.updateWalletState(
-                      Encoding.encodeToBase58Check(
-                        lockPredicateForChange.getPredicate.toByteArray
-                      ),
-                      lockAddress.toBase58(),
-                      vk.map(_ => "ExtendedEd25519"),
-                      vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
-                      someNextIndices.get
-                    )
+                      vk <- someNextIndices
+                        .map(nextIndices =>
+                          walletApi
+                            .deriveChildKeys(keyPair, nextIndices)
+                            .map(_.vk)
+                        )
+                        .sequence
+                      _ <- walletStateApi.updateWalletState(
+                        Encoding.encodeToBase58Check(
+                          lockPredicateForChange.getPredicate.toByteArray
+                        ),
+                        lockAddress.toBase58(),
+                        vk.map(_ => "ExtendedEd25519"),
+                        vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
+                        someNextIndices.get
+                      )
+                    } yield () else {
+                      Sync[F].delay(println("No change to save"))
+                    }
                     _ <- Resource
                       .make(
                         Sync[F]

@@ -21,9 +21,9 @@ echo "Broadcasting transaction"
 
 sbt "run simpletransaction broadcast -n private -i $TX_PROVED_FILE -h localhost --bifrost-port 9084 --walletdb $WALLET"
 
-echo "Sleeping for 40 seconds"
+echo "Sleeping for 30 seconds"
 
-sleep 40
+sleep 30
 
 TO_ADDRESS=ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
 TX1_FILE=tmp/tx1.pbuf
@@ -40,9 +40,9 @@ echo "Broadcasting transaction"
 
 sbt "run simpletransaction broadcast -n private -i $TX1_PROVED_FILE -h localhost --bifrost-port 9084 --walletdb $WALLET"
 
-echo "Sleeping for 40 seconds"
+echo "Sleeping for 30 seconds"
 
-sleep 40
+sleep 30
 
 TO_PARTY=noparty
 TO_CONTRACT=genesis
@@ -61,9 +61,9 @@ echo "Broadcasting transaction"
 
 sbt "run simpletransaction broadcast -n private -i $TX2_PROVED_FILE -h localhost --bifrost-port 9084 --walletdb $WALLET"
 
-echo "Sleeping for 40 seconds"
+echo "Sleeping for 30 seconds"
 
-sleep 40
+sleep 30
 
 TO_PARTY=noparty
 TO_CONTRACT=genesis
@@ -72,7 +72,7 @@ TX3_PROVED_FILE=tmp/tx3_proved.pbuf
 
 echo "Creating transaction"
 
-sbt "run simpletransaction create --from-party self --from-contract default --to-party $TO_PARTY --to-contract $TO_CONTRACT -w test --bifrost-port 9084 -o $TX3_FILE -n private -a 50 -h localhost --keyfile $MAIN_KEY --walletdb $WALLET"
+sbt "run simpletransaction create --from-party self --from-contract default --to-party $TO_PARTY --to-contract $TO_CONTRACT -w test --bifrost-port 9084 -o $TX3_FILE -n private -a 9999700 -h localhost --keyfile $MAIN_KEY --walletdb $WALLET"
 
 echo "Proving transaction"
 
