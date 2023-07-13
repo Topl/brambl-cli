@@ -17,7 +17,7 @@ trait WalletModeModule
 
   def walletModeSubcmds(
       validateParams: BramblCliValidatedParams
-  ) = {
+  ): IO[Either[String, String]] = {
     val walletController = new WalletController(
       transactionBuilderApi(
         validateParams.network.networkId,

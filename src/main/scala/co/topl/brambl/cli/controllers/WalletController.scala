@@ -34,7 +34,7 @@ class WalletController[F[_]: Sync](
       password: String,
       contractName: String,
       partyName: String
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
     for {
@@ -104,12 +104,12 @@ class WalletController[F[_]: Sync](
         deriveChildKeyString :: keyAndEncodedKeys.toList.map(_._2)
       )
       _ <- lockTempl.build(keyAndEncodedKeys.toList.map(_._1))
-    } yield "Successfully imported verification keys"
+    } yield Right("Successfully imported verification keys")
   }
 
   def exportVk(
       params: BramblCliValidatedParams
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
       indices <- OptionT(
@@ -143,12 +143,12 @@ class WalletController[F[_]: Sync](
             )
           } yield ()
         }
-    }).value.map(_.get).flatten.map(_ => "Verification key exported")
+    }).value.map(_.get).flatten.map(_ => Right("Verification key exported"))
   }
 
   def createWalletFromParams(
       params: BramblCliValidatedParams
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     walletAlgebra
       .createWalletFromParams(
@@ -156,11 +156,13 @@ class WalletController[F[_]: Sync](
         params.somePassphrase,
         params.someOutputFile
       )
-      .map(_ => "Wallet created")
+      .map(_ => Right("Wallet created"))
   }
 
-  def currentaddress(): F[String] =
-    walletStateAlgebra.getCurrentAddress
+  def currentaddress(): F[Either[String, String]] = {
+    import cats.implicits._
+    walletStateAlgebra.getCurrentAddress.map(Right(_))
+  }
 
   def sync(
       party: String,

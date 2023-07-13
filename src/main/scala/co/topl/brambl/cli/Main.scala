@@ -33,11 +33,11 @@ object Main
           case Validated.Valid(validateParams) =>
             validateParams.mode match {
               case BramblCliMode.contracts =>
-                contractModeSubcmds(validateParams).map(Right(_))
+                contractModeSubcmds(validateParams)
               case BramblCliMode.parties =>
-                partiesModeSubcmds(validateParams).map(Right(_))
+                partiesModeSubcmds(validateParams)
               case BramblCliMode.wallet =>
-                walletModeSubcmds(validateParams).map(Right(_))
+                walletModeSubcmds(validateParams)
               case BramblCliMode.simpletransaction =>
                 simpleTransactionSubcmds(validateParams)
               case BramblCliMode.genusquery =>
