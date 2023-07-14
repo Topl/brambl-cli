@@ -165,7 +165,11 @@ trait CommonTxOperations
       )
     )
 
-  def queryAccount(partyName: String, contractName: String) =
+  def queryAccount(
+      partyName: String,
+      contractName: String,
+      someFromState: Option[Int] = None
+  ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
@@ -183,7 +187,9 @@ trait CommonTxOperations
           "9084",
           "--walletdb",
           c.walletFile
-        )
+        ) ++ someFromState
+          .map(s => List("--from-state", s.toString()))
+          .getOrElse(List.empty)
       )
     )
 

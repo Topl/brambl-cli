@@ -17,14 +17,17 @@ class ComplexTransactionProveTest
 
   val tmpDirectory = FunFixture[Path](
     setup = { _ =>
-      Paths.get(TMP_DIR).toFile().listFiles().map(_.delete()).mkString("\n")
-      Files.deleteIfExists(Paths.get(TMP_DIR))
+      val tmpDir = Paths.get(TMP_DIR).toFile()
+      if (tmpDir.exists()) {
+        Paths.get(TMP_DIR).toFile().listFiles().map(_.delete()).mkString("\n")
+        Files.deleteIfExists(Paths.get(TMP_DIR))
+      }
       Files.createDirectory(Paths.get("./tmp"))
     },
     teardown = { _ => () }
   )
 
-  override val munitTimeout = Duration(120, "s")
+  override val munitTimeout = Duration(180, "s")
 
   tmpDirectory.test(
     "Move funds from genesis to alice"
@@ -33,6 +36,16 @@ class ComplexTransactionProveTest
     assertIO(
       for {
         _ <- createWallet().run(aliceContext)
+        _ <- IO.asyncForIO.timeout(
+          (for {
+            _ <- IO.println("Querying genesis to start")
+            queryRes <- queryAccount("noparty", "genesis", Some(1))
+              .run(aliceContext)
+            _ <- IO.sleep(5.seconds)
+          } yield queryRes)
+            .iterateUntil(_ == ExitCode.Success),
+          60.seconds
+        )
         ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress()
         _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")
         _ <- IO.println("Moving funds from genesis to alice")
