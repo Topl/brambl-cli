@@ -24,6 +24,8 @@ object BramblCliParamsValidatorModule
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.exportvk) =>
         validateExportVkParam(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.wallet, BramblCliSubCmd.sync) =>
+        validateSyncParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.importvks) =>
         validateImportVksParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>

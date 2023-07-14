@@ -230,8 +230,7 @@ class ComplexTransactionProveTest
           60.seconds
         )
         _ <- IO.println("Sync alice's account")
-        _ <- walletController(ALICE_WALLET)
-          .sync("alice_bob_0", "or_sign")
+        _ <- syncWallet("alice_bob_0", "or_sign").run(aliceContext)
         res <- IO.asyncForIO.timeout(
           (for {
             _ <- IO.println("Querying alice's shared account")

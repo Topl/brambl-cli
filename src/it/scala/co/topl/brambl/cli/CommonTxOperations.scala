@@ -19,6 +19,35 @@ trait CommonTxOperations
     with WalletAlgebraModule
     with ChannelResourceModule {
 
+  def syncWallet(
+      contractName: String,
+      partyName: String
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "wallet",
+          "sync",
+          "--contract-name",
+          contractName,
+          "--party-name",
+          partyName,
+          "--walletdb",
+          c.walletFile,
+          "-n",
+          "private",
+          "-h",
+          "localhost",
+          "--bifrost-port",
+          "9084",
+          "--keyfile",
+          c.keyFile,
+          "-w",
+          c.password
+        )
+      )
+    )
+
   def proveSimpleTransaction(
       fromParty: String,
       fromContract: String,

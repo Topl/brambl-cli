@@ -76,6 +76,24 @@ trait WalletValidationModule {
     )).sequence.map(_ => paramConfig)
   }
 
+  def validateSyncParam(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    (
+      List(
+        validateInputFile(
+          "Wallet DB",
+          paramConfig.someWalletFile,
+          required = true
+        ),
+        validateHost(paramConfig.host),
+        validateNonEmpty("Party name", paramConfig.partyName),
+        validateNonEmpty("Contract name", paramConfig.contractName)
+      )
+    ).sequence.map(_ => paramConfig)
+  }
+
   def validateExportVkParam(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {

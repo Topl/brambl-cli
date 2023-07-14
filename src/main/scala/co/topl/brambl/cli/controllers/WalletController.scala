@@ -167,7 +167,7 @@ class WalletController[F[_]: Sync](
   def sync(
       party: String,
       contract: String
-  ): F[Unit] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
     (for {
@@ -229,7 +229,7 @@ class WalletController[F[_]: Sync](
       } yield txos
     } else {
       Sync[F].delay(txos)
-    }).flatten.iterateUntil(x => x.isEmpty).void
+    }).flatten.iterateUntil(x => x.isEmpty).map(_ => Right("Wallet synced"))
   }
 
   def currentaddress(
