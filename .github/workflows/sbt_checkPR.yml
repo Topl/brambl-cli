@@ -36,3 +36,4 @@ jobs:
         with:
           files: |
             target/test-reports/**/*.xml
+            target/it-reports/**/*.xml
