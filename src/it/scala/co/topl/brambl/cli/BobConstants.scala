@@ -16,7 +16,13 @@ trait BobConstants extends BaseConstants {
 
   val BOB_SECOND_TX_PROVED = s"$TMP_DIR/bob_second_tx_proved.pbuf"
 
+  val BOB_THIRD_TX_RAW = s"$TMP_DIR/bob_third_tx.pbuf"
+
+  val BOB_THIRD_TX_PROVED = s"$TMP_DIR/bob_third_tx_proved.pbuf"
+
   val BOB_VK = s"$TMP_DIR/bob_vk.json"
+
+  val BOB_VK_AND = s"$TMP_DIR/bob_vk_and.json"
 
   val bobContext = WalletKeyConfig(
     BOB_WALLET,

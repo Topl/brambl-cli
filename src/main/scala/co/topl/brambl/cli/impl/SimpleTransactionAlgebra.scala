@@ -7,7 +7,6 @@ import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.LockAddress
-import co.topl.brambl.models.box.Attestation
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.CredentiallerInterpreter
@@ -15,7 +14,6 @@ import co.topl.brambl.wallet.WalletApi
 import co.topl.node.services.BroadcastTransactionReq
 import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
-import quivr.models.Proof
 
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -113,20 +111,7 @@ object SimpleTransactionAlgebra {
           credentialer <- Sync[F].delay(
             CredentiallerInterpreter.make[F](walletApi, walletStateApi, keyPair)
           )
-          unprovenTransaction = ioTransaction.copy(
-            inputs = ioTransaction.inputs.map(x =>
-              x.copy(attestation =
-                x.attestation.copy(value =
-                  Attestation.Value.Predicate(
-                    x.attestation.value.predicate
-                      .map(_.copy(responses = List(Proof(Proof.Value.Empty))))
-                      .get
-                  )
-                )
-              )
-            )
-          )
-          provedTransaction <- credentialer.prove(unprovenTransaction)
+          provedTransaction <- credentialer.prove(ioTransaction)
           _ <- Resource
             .make(
               Sync[F]
