@@ -78,8 +78,16 @@ Get the transaction with a given id
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --transaction-id <value>
                            The id of the transaction in base 58. (mandatory)
-Command: wallet [init|current-address|export-vk|import-vks] [options]
+Command: wallet [sync|init|current-address|export-vk|import-vks] [options]
 Wallet mode
+Command: wallet sync
+Sync wallet
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --party-name <value>     Name of the party. (mandatory)
+  --contract-name <value>  Name of the contract. (mandatory)
+  --walletdb <value>       Wallet DB file. (mandatory)
 Command: wallet init
 Initialize wallet
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
@@ -287,3 +295,13 @@ To import one or many base verification keys run the following command:
 ```bash
 cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet import-vks --input-vks $BASE_VK_1,$BASE_VK_2 --party-name $PARTY_NAME --contract-name $CONTRACT_NAME -n private --walletdb $WALLET
 ```
+
+### Sync the wallet
+
+To sync the wallet run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet sync --contract-name $CONTRACT_NAME --party-name $PARTY_NAME --walletdb $WALLET -n private -h localhost --bifrost-port 9084 --keyfile $KEYFILE -w $PASSWORD
+```
+
+This will sync the wallet for the party `$PARTY_NAME` and contract `$CONTRACT_NAME` with the bifrost node running on `localhost` on port `9084`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`.
