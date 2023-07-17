@@ -23,7 +23,6 @@ Defaults.itSettings
 
 libraryDependencies += bramblSdk
 libraryDependencies += bramblCrypto
-dependencyOverrides += protobufSpecs
 libraryDependencies += scopt
 libraryDependencies += munit
 libraryDependencies += fs2Core
