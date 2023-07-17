@@ -9,7 +9,7 @@ import co.topl.brambl.cli.BramblCliSubCmd
 trait ContractModeModule extends WalletResourceModule {
   def contractModeSubcmds(
       validateParams: BramblCliValidatedParams
-  ): IO[String] = {
+  ): IO[Either[String, String]] = {
     val contractStorageAlgebra = ContractStorageAlgebra.make[IO](
       walletResource(validateParams.walletFile)
     )

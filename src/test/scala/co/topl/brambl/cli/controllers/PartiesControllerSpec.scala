@@ -20,7 +20,7 @@ class PartiesControllerSpec extends FunSuite {
     )
     assertEquals(
       controller.addParty("myNewParty"),
-      "Party myNewParty added successfully"
+      Right("Party myNewParty added successfully")
     )
   }
 
@@ -40,9 +40,11 @@ class PartiesControllerSpec extends FunSuite {
     )
     assertEquals(
       controller.listParties(),
-      "X Coordinate\tParty Name\n" +
-        "1\tparty1\n" +
-        "2\tparty2".stripMargin
+      Right(
+        "X Coordinate\tParty Name\n" +
+          "1\tparty1\n" +
+          "2\tparty2".stripMargin
+      )
     )
   }
 

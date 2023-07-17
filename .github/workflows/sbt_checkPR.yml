@@ -8,6 +8,15 @@ on:
 jobs:
   unit-test:
     runs-on: ubuntu-20.04
+    # Service containers to run with `runner-job`
+    services:
+      # Label used to access the service container
+      bifrost:
+        # Docker Hub image
+        image: docker.io/toplprotocol/bifrost-node:2.0.0-alpha6
+        #
+        ports:
+          - 9084:9084 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.0.2
@@ -15,11 +24,16 @@ jobs:
           fetch-depth: 0
       - name: Setup Scala
         uses: olafurpg/setup-scala@v13
+        with:
+          java-version: adopt@1.11
       - name: Run unit tests
         run: sbt test
+      - name: Run integration tests
+        run: sbt "IntegrationTest / test"
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: success()
         with:
           files: |
             target/test-reports/**/*.xml
+            target/it-reports/**/*.xml

@@ -1,10 +1,9 @@
 package co.topl.brambl.cli.impl
 
-import co.topl.crypto.encryption.VaultStore
 import cats.effect.kernel.Sync
 import co.topl.brambl.dataApi.WalletKeyApiAlgebra
-import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.wallet.WalletApi
+import co.topl.crypto.encryption.VaultStore
 import quivr.models.KeyPair
 
 class WalletManagementUtils[F[_]: Sync](
@@ -12,13 +11,13 @@ class WalletManagementUtils[F[_]: Sync](
     dataApi: WalletKeyApiAlgebra[F]
 ) {
 
-  def loadKeysFromParam(params: BramblCliValidatedParams) = {
+  def loadKeys(keyfile: String, password: String) = {
     import cats.implicits._
     for {
-      wallet <- readInputFile(params.someKeyFile)
+      wallet <- readInputFile(keyfile)
       keyPair <-
         walletApi
-          .extractMainKey(wallet, params.password.getBytes())
+          .extractMainKey(wallet, password.getBytes())
           .flatMap(
             _.fold(
               _ =>
@@ -32,28 +31,21 @@ class WalletManagementUtils[F[_]: Sync](
   }
 
   def readInputFile(
-      someInputFile: Option[String]
+      inputFile: String
   ): F[VaultStore[F]] = {
-    someInputFile match {
-      case Some(inputFile) =>
-        import cats.implicits._
-        dataApi
-          .getMainKeyVaultStore(inputFile)
-          .flatMap(
-            _.fold(
-              x =>
-                Sync[F].raiseError[VaultStore[F]](
-                  new Throwable("Error reading input file: " + x)
-                ),
-              Sync[F].point(_)
-            )
-          )
-
-      case None =>
-        Sync[F].raiseError(
-          (new Throwable("No input file (should not happen)"))
+    import cats.implicits._
+    dataApi
+      .getMainKeyVaultStore(inputFile)
+      .flatMap(
+        _.fold(
+          x =>
+            Sync[F].raiseError[VaultStore[F]](
+              new Throwable("Error reading input file: " + x)
+            ),
+          Sync[F].point(_)
         )
-    }
+      )
+
   }
 
 }

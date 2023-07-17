@@ -6,35 +6,69 @@ import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.SimpleTransactionController
 
 trait SimpleTransactionModeModule
-    extends WalletResourceModule
-    with ChannelResourceModule {
+    extends SimpleTransactionAlgebraModule
+    with WalletStateAlgebraModule {
 
   def simpleTransactionSubcmds(
       validateParams: BramblCliValidatedParams
-  ): IO[String] = validateParams.subcmd match {
+  ): IO[Either[String, String]] = validateParams.subcmd match {
     case BramblCliSubCmd.broadcast =>
       new SimpleTransactionController(
-        walletResource(validateParams.walletFile),
-        channelResource(
+        walletStateAlgebra(
+          validateParams.walletFile,
+          validateParams.network.networkId
+        ),
+        simplTransactionOps(
+          validateParams.walletFile,
+          validateParams.network.networkId,
           validateParams.host,
           validateParams.bifrostPort
         )
-      ).broadcastSimpleTransactionFromParams(validateParams)
+      ).broadcastSimpleTransactionFromParams(validateParams.someInputFile.get)
     case BramblCliSubCmd.prove =>
       new SimpleTransactionController(
-        walletResource(validateParams.walletFile),
-        channelResource(
+        walletStateAlgebra(
+          validateParams.walletFile,
+          validateParams.network.networkId
+        ),
+        simplTransactionOps(
+          validateParams.walletFile,
+          validateParams.network.networkId,
           validateParams.host,
           validateParams.bifrostPort
         )
-      ).proveSimpleTransactionFromParams(validateParams)
+      ).proveSimpleTransactionFromParams(
+        validateParams.fromParty,
+        validateParams.fromContract,
+        validateParams.someFromState,
+        validateParams.someInputFile.get,
+        validateParams.someKeyFile.get,
+        validateParams.password,
+        validateParams.someOutputFile.get
+      )
     case BramblCliSubCmd.create =>
       new SimpleTransactionController(
-        walletResource(validateParams.walletFile),
-        channelResource(
+        walletStateAlgebra(
+          validateParams.walletFile,
+          validateParams.network.networkId
+        ),
+        simplTransactionOps(
+          validateParams.walletFile,
+          validateParams.network.networkId,
           validateParams.host,
           validateParams.bifrostPort
         )
-      ).createSimpleTransactionFromParams(validateParams)
+      ).createSimpleTransactionFromParams(
+        validateParams.someKeyFile.get,
+        validateParams.password,
+        validateParams.fromParty,
+        validateParams.fromContract,
+        validateParams.someFromState,
+        validateParams.toAddress,
+        validateParams.someToParty,
+        validateParams.someToContract,
+        validateParams.amount,
+        validateParams.someOutputFile.get
+      )
   }
 }

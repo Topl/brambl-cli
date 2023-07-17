@@ -25,7 +25,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, sign(0))"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -55,7 +55,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, sign(0) and sign(1))"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -67,7 +67,6 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""
       )
   }
-
 
   test("Add or contract") {
     var addedContract = ""
@@ -87,7 +86,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, sign(0) or sign(1))"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -118,7 +117,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, locked())"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -149,7 +148,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, locked(72k1xXWG59fYdzSNoA))"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -180,7 +179,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, height(1, 1000))"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -210,7 +209,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, tick(1, 1000))"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -241,7 +240,7 @@ class ContractsControllerSpec extends CatsEffectSuite {
         """threshold(1, digest(6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8))"""
       )
       .assertEquals(
-        "Contract added successfully"
+        Right("Contract added successfully")
       )
     simpleController
       .addContract(
@@ -286,10 +285,12 @@ class ContractsControllerSpec extends CatsEffectSuite {
     simpleController
       .listContracts()
       .assertEquals(
-        "Y Coordinate\tContract Name\tLock Template\n" +
-          "1\tsign\t" + """{"threshold":1,"innerTemplates":[{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"}],"type":"predicate"}""" + "\n" +
-          "2\tor\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"or"}],"type":"predicate"}""" + "\n" +
-          "3\tand\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""
+        Right(
+          "Y Coordinate\tContract Name\tLock Template\n" +
+            "1\tsign\t" + """{"threshold":1,"innerTemplates":[{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"}],"type":"predicate"}""" + "\n" +
+            "2\tor\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"or"}],"type":"predicate"}""" + "\n" +
+            "3\tand\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""
+        )
       )
   }
 

@@ -170,6 +170,22 @@ object BramblCliParamsParserModule {
     .action((_, c) => c.copy(mode = "wallet"))
     .text("Wallet mode")
     .children(
+      cmd("sync")
+        .action((_, c) => c.copy(subcmd = "sync"))
+        .text("Sync wallet")
+        .children(
+          (hostPortNetwork ++ (Seq(
+            opt[String]("party-name")
+              .action((x, c) => c.copy(partyName = x))
+              .text("Name of the party. (mandatory)"),
+            opt[String]("contract-name")
+              .action((x, c) => c.copy(contractName = x))
+              .text("Name of the contract. (mandatory)"),
+            opt[Option[String]]("walletdb")
+              .action((x, c) => c.copy(someWalletFile = x))
+              .text("Wallet DB file. (mandatory)")
+          ))): _*
+        ),
       cmd("init")
         .action((_, c) => c.copy(subcmd = "init"))
         .text("Initialize wallet")

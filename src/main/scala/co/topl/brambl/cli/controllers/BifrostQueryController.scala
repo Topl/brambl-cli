@@ -13,7 +13,7 @@ class BifrostQueryController[F[_]: Functor](
 ) {
   def blockByHeight(
       height: Long
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     bifrostQueryAlgebra
       .blockByHeight(
@@ -22,16 +22,16 @@ class BifrostQueryController[F[_]: Functor](
       .map { someResult =>
         someResult match {
           case Some(((blockId, _, ioTransactions))) =>
-            BlockDisplayOps.display(blockId, ioTransactions)
+            Right(BlockDisplayOps.display(blockId, ioTransactions))
           case None =>
-            "No blocks found at that height"
+            Left("No blocks found at that height")
         }
       }
   }
 
   def blockById(
       pBlockId: String
-  ): F[String] = {
+  ): F[Either[String, String]] = {
     import cats.implicits._
     bifrostQueryAlgebra
       .blockById(
@@ -44,14 +44,14 @@ class BifrostQueryController[F[_]: Functor](
       .map { someResult =>
         someResult match {
           case Some(((blockId, _, ioTransactions))) =>
-            BlockDisplayOps.display(blockId, ioTransactions)
+            Right(BlockDisplayOps.display(blockId, ioTransactions))
           case None =>
-            "No blocks found at that block id"
+            Left("No blocks found at that block id")
         }
       }
   }
 
-  def fetchTransaction(transactionId: String): F[String] = {
+  def fetchTransaction(transactionId: String): F[Either[String, String]] = {
     import cats.implicits._
     bifrostQueryAlgebra
       .fetchTransaction(
@@ -64,9 +64,9 @@ class BifrostQueryController[F[_]: Functor](
       .map { someResult =>
         someResult match {
           case Some(ioTransaction) =>
-            BlockDisplayOps.display(ioTransaction)
+            Right(BlockDisplayOps.display(ioTransaction))
           case None =>
-            s"No transaction found with id ${transactionId}"
+            Left(s"No transaction found with id ${transactionId}")
         }
       }
   }

@@ -11,7 +11,7 @@ trait BifrostQueryModeModule extends ChannelResourceModule {
 
   def bifrostQuerySubcmd(
       validateParams: BramblCliValidatedParams
-  ): IO[String] = {
+  ): IO[Either[String, String]] = {
     val bifrostQueryAlgebra = BifrostQueryAlgebra.make[IO](
       channelResource(
         validateParams.host,

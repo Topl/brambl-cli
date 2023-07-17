@@ -1,7 +1,6 @@
 package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Sync
-import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
@@ -9,7 +8,11 @@ import quivr.models.KeyPair
 
 trait WalletAlgebra[F[_]] {
 
-  def createWalletFromParams(params: BramblCliValidatedParams): F[Unit]
+  def createWalletFromParams(
+      password: String,
+      somePassphrase: Option[String],
+      someOutputFile: Option[String]
+  ): F[Unit]
 
 }
 
@@ -20,10 +23,13 @@ object WalletAlgebra {
   ) = new WalletAlgebra[F] {
     import cats.implicits._
 
-    private def createNewWallet(params: BramblCliValidatedParams) = walletApi
+    private def createNewWallet(
+        password: String,
+        somePassphrase: Option[String]
+    ) = walletApi
       .createNewWallet(
-        params.password.getBytes(),
-        params.somePassphrase
+        password.getBytes(),
+        somePassphrase
       )
       .map(_.fold(throw _, identity))
 
@@ -58,14 +64,18 @@ object WalletAlgebra {
         .map(_.fold(throw _, identity))
     }
 
-    def createWalletFromParams(params: BramblCliValidatedParams) = {
+    def createWalletFromParams(
+        password: String,
+        somePassphrase: Option[String],
+        someOutputFile: Option[String]
+    ) = {
       import io.circe.syntax._
       import co.topl.crypto.encryption.VaultStore.Codecs._
 
       for {
-        wallet <- createNewWallet(params)
-        keyPair <- extractMainKey(wallet.mainKeyVaultStore, params.password)
-        _ <- params.someOutputFile
+        wallet <- createNewWallet(password, somePassphrase)
+        keyPair <- extractMainKey(wallet.mainKeyVaultStore, password)
+        _ <- someOutputFile
           .map { outputFile =>
             saveWallet(
               wallet.mainKeyVaultStore,

@@ -4,11 +4,9 @@ object Dependencies {
 
   lazy val toplOrg = "co.topl"
 
-  lazy val bramblVersion = "2.0.0-alpha1+4-f3e6ced1-SNAPSHOT"
+  lazy val bramblVersion = "2.0.0-alpha2"
   val bramblSdk = toplOrg %% "brambl-sdk" % bramblVersion
   val bramblCrypto = toplOrg %% "crypto" % bramblVersion
-  lazy val pbVersion = "2.0.0-alpha2"
-  val protobufSpecs = toplOrg %% "protobuf-fs2" % pbVersion
 
   val grpcNetty =
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
@@ -24,5 +22,5 @@ object Dependencies {
   lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
   lazy val sqlite = "org.xerial" % "sqlite-jdbc" % "3.41.2.1"
   lazy val fastparse = "com.lihaoyi" %% "fastparse" % "3.0.1"
-  lazy val munitCatsEffects =  "org.typelevel" %% "munit-cats-effect" % "2.0.0-M1" % "test"
+  lazy val munitCatsEffects =  "org.typelevel" %% "munit-cats-effect" % "2.0.0-M1" % "it,test"
 }

@@ -8,21 +8,26 @@ class PartiesController[F[_]: Applicative](
     partyStorageAlgebra: PartyStorageAlgebra[F]
 ) {
 
-  def addParty(name: String): F[String] = {
+  def addParty(name: String): F[Either[String, String]] = {
     import cats.implicits._
-    partyStorageAlgebra.addParty(WalletEntity(0, name)) *>
-      s"Party $name added successfully".pure[F]
+    for {
+      added <- partyStorageAlgebra.addParty(WalletEntity(0, name))
+    } yield
+      if (added == 1) Right(s"Party $name added successfully")
+      else Left("Failed to add party")
   }
 
-  def listParties(): F[String] = {
+  def listParties(): F[Either[String, String]] = {
     import co.topl.brambl.cli.views.WalletModelDisplayOps._
     import cats.implicits._
     partyStorageAlgebra
       .findParties()
       .map(parties =>
-        displayWalletEntityHeader() + "\n" + parties
-          .map(display)
-          .mkString("\n")
+        Right(
+          displayWalletEntityHeader() + "\n" + parties
+            .map(display)
+            .mkString("\n")
+        )
       )
   }
 

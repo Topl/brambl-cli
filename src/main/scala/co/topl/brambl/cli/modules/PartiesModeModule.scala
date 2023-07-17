@@ -9,7 +9,7 @@ import co.topl.brambl.cli.BramblCliSubCmd
 trait PartiesModeModule extends WalletResourceModule {
   def partiesModeSubcmds(
       validateParams: BramblCliValidatedParams
-  ) = {
+  ): IO[Either[String, String]] = {
     val partyStorageAlgebra = PartyStorageAlgebra.make[IO](
       walletResource(validateParams.walletFile)
     )
