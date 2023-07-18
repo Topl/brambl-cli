@@ -119,7 +119,7 @@ object BramblCliParamsValidatorModule
             somePassphrase = paramConfig.somePassphrase,
             someOutputFile = someOutputFile,
             someInputFile = paramConfig.someInputFile,
-            mnemonic = paramConfig.mnemonic.trim.split(" ").toIndexedSeq,
+            mnemonic = paramConfig.mnemonic.toIndexedSeq,
             someMnemonicFile = paramConfig.someMnemonicFile
           ).validNel
         }

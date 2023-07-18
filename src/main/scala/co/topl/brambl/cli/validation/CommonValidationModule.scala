@@ -185,23 +185,6 @@ trait CommonValidationModule {
     }
   }
 
-  def validateMnemonicFile(
-                          someMnemonicFile: Option[String]
-                        ): ValidatedNel[String, String] = {
-    someMnemonicFile match {
-      case Some(mnemonicFile) =>
-        if (mnemonicFile.trim().length >= 0) {
-          Validated.validNel(mnemonicFile)
-        } else {
-          Validated.invalidNel(
-            "Mnemonic output file is mandatory"
-          )
-        }
-      case None =>
-        Validated.invalidNel("Mnemonic output file is mandatory")
-    }
-  }
-
   def validateInputFile(
       fileType: String,
       someInputFile: Option[String],
@@ -264,17 +247,11 @@ trait CommonValidationModule {
   }
 
   def validateMnemonic(
-      mnemonic: String
-  ): ValidatedNel[String, String] =
-    if (mnemonic.trim().length >= 0) {
-      if(List(12, 15, 18, 21, 24).contains(mnemonic.trim.split(" ").length))
-        Validated.validNel(mnemonic)
-      else Validated.invalidNel(
-        "Mnemonic must be 12, 15, 18, 21 or 24 words"
-      )
-    } else {
-      Validated.invalidNel(
-        "Mnemonic must not be empty"
-      )
-    }
+      mnemonic: Seq[String]
+  ): ValidatedNel[String, Seq[String]] =
+    if (List(12, 15, 18, 21, 24).contains(mnemonic.length))
+      Validated.validNel(mnemonic)
+    else Validated.invalidNel(
+      "Mnemonic must be 12, 15, 18, 21 or 24 words"
+    )
 }

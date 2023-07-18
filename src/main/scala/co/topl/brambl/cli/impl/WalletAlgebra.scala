@@ -99,7 +99,7 @@ object WalletAlgebra {
             )
         )(fos => Sync[F].delay(fos.close()))
         .use { fos =>
-          Sync[F].delay(fos.write(mnemonic.mkString(" ").getBytes))
+          Sync[F].delay(fos.write(mnemonic.mkString(",").getBytes))
         }
     }
 
@@ -136,7 +136,7 @@ object WalletAlgebra {
           }
           .getOrElse {
             Sync[F].delay(
-              println(wallet.mnemonic.mkString(" "))
+              println(wallet.mnemonic.mkString(","))
             )
           }
         derivedKey <- walletApi.deriveChildKeysPartial(keyPair, 1, 1)

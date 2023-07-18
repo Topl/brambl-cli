@@ -85,7 +85,7 @@ final case class BramblCliParams(
     someKeyFile: Option[String] = None,
     someInputFile: Option[String] = None,
     someOutputFile: Option[String] = None,
-    mnemonic: String = "",
+    mnemonic: Seq[String] = Seq(),
     someMnemonicFile: Option[String] = None
 )
 final case class BramblCliValidatedParams(

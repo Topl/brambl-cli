@@ -17,7 +17,7 @@ trait WalletValidationModule {
       validateNonEmpty("Password", paramConfig.password),
       validatePassphrase(paramConfig.somePassphrase),
       validateWalletFile(paramConfig.someWalletFile),
-      validateMnemonicFile(paramConfig.someMnemonicFile)
+      validateOutputfile(paramConfig.someMnemonicFile, required = true)
     ).sequence.map(_ => paramConfig)
   }
  def validateKeyRecoveryParams(

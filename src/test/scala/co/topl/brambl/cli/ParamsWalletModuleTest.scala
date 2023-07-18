@@ -86,7 +86,7 @@ class ParamsWalletModuleTest extends FunSuite {
       "--passphrase",
       "test-passphrase",
       "--mnemonic",
-      "this is an example of a mnemonic string that contains 12 words"
+      "this,is,an,example,of,a,mnemonic,string,that,contains,12,words"
     )
     assert(
       OParser

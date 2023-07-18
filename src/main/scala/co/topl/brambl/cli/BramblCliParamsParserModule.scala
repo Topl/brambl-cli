@@ -225,7 +225,7 @@ object BramblCliParamsParserModule {
               .text(
                 "Network name: Possible values: mainnet, testnet, private. (mandatory)"
               ),
-            opt[String]('m', "mnemonic")
+            opt[Seq[String]]('m', "mnemonic")
               .action((x, c) => c.copy(mnemonic = x))
               .text("Mnemonic for the key. (mandatory)"),
             opt[String]('w', "password")

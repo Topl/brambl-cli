@@ -16,4 +16,4 @@ MNEMONIC=$(cat $MNEMONIC_FILE)
 
 
 echo "Recover wallet key"
-sbt "run wallet recover-keys -w test -n private -o $MAIN_KEY_2 --walletdb $WALLET --passphrase $PASSPHRASE --mnemonic \"$MNEMONIC\""
+sbt "run wallet recover-keys -w test -n private -o $MAIN_KEY_2 --walletdb $WALLET --passphrase $PASSPHRASE --mnemonic $MNEMONIC"
