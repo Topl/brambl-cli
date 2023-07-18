@@ -297,6 +297,25 @@ trait CommonTxOperations
         )
       )
     )
+  def recoverWallet(mnemonic: String) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "wallet",
+          "recover-keys",
+          "-w",
+          c.password,
+          "-n",
+          "private",
+          "-o",
+          c.keyFile,
+          "--walletdb",
+          c.walletFile,
+          "--mnemonic",
+          mnemonic
+        )
+      )
+    )
 
   def walletController(walletFile: String) = new WalletController(
     transactionBuilderApi(
