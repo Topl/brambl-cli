@@ -16,6 +16,18 @@ trait WalletValidationModule {
     List(
       validateNonEmpty("Password", paramConfig.password),
       validatePassphrase(paramConfig.somePassphrase),
+      validateWalletFile(paramConfig.someWalletFile),
+      validateMnemonicFile(paramConfig.someMnemonicFile)
+    ).sequence.map(_ => paramConfig)
+  }
+ def validateKeyRecoveryParams(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateNonEmpty("Password", paramConfig.password),
+      validateMnemonic(paramConfig.mnemonic),
+      validatePassphrase(paramConfig.somePassphrase),
       validateWalletFile(paramConfig.someWalletFile)
     ).sequence.map(_ => paramConfig)
   }

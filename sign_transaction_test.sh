@@ -17,9 +17,10 @@ EDMUNDO_MAIN_KEY=$TMP_DIR/edmundo_mainkey.json
 EDMUNDO_PASSWORD=test
 EDMUNDO_FIRST_TX_RAW=$TMP_DIR/edmundo_first_tx.pbuf
 EDMUNDO_FIRST_TX_PROVED=$TMP_DIR/edmundo_first_tx_proved.pbuf
+EDMUNDO_MNEMONIC=$TMP_DIR/edmundo_mnemonic.txt
 
 $BRAMBL_CLI wallet init -w $EDMUNDO_PASSWORD \
-                  -n private -o $EDMUNDO_MAIN_KEY --walletdb $EDMUNDO_WALLET
+                  -n private -o $EDMUNDO_MAIN_KEY --walletdb $EDMUNDO_WALLET --mnemonicfile $EDMUNDO_MNEMONIC
 
 echo "Creating transaction for Edmundo"
 
@@ -54,9 +55,10 @@ DANIELA_MAIN_KEY=$TMP_DIR/daniela_mainkey.json
 DANIELA_PASSWORD=test
 DANIELA_FIRST_TX_RAW=$TMP_DIR/daniela_first_tx.pbuf
 DANIELA_FIRST_TX_PROVED=$TMP_DIR/daniela_first_tx_proved.pbuf
+DANIELA_MNEMONIC=$TMP_DIR/daniela_mnemonic.txt
 
 $BRAMBL_CLI wallet init -w $DANIELA_PASSWORD \
-                  -n private -o $DANIELA_MAIN_KEY --walletdb $DANIELA_WALLET
+                  -n private -o $DANIELA_MAIN_KEY --walletdb $DANIELA_WALLET --mnemonicfile $DANIELA_MNEMONIC
 
 # echo "Creating transaction for Daniela"
 

@@ -5,11 +5,12 @@ MAIN_KEY=tmp/mainkey.json
 TO_ADDRESS=ptetP7jshHVnMuaLETgEvQdncWQrr4hCojtmU9q195Q2RHs7pkU6mdycQ2oc
 TX_FILE=tmp/tx.pbuf
 TX_PROVED_FILE=tmp/tx_proved.pbuf
+MNEMONIC_FILE=tmp/mnemonic.txt
 rm -rf ./tmp
 mkdir ./tmp
 echo "Creating wallet"
 
-sbt "run wallet init -w test -n private -o $MAIN_KEY --walletdb $WALLET"
+sbt "run wallet init -w test -n private -o $MAIN_KEY --walletdb $WALLET --mnemonicfile $MNEMONIC_FILE"
 echo "Creating transaction"
 sbt "run simpletransaction create --from-party noparty --from-contract genesis --from-state 1 -t $TO_ADDRESS -w test --bifrost-port 9084 -o $TX_FILE -n private -a 100 -h localhost --keyfile $MAIN_KEY --walletdb $WALLET"
 

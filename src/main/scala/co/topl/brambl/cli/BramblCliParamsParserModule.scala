@@ -204,6 +204,38 @@ object BramblCliParamsParserModule {
               .text("The output file. (optional)"),
             opt[Option[String]]("walletdb")
               .action((x, c) => c.copy(someWalletFile = x))
+              .text("Wallet DB file. (mandatory)"),
+            opt[Option[String]]("mnemonicfile")
+              .action((x, c) => c.copy(someMnemonicFile = x))
+              .text("Mnemonic output file. (mandatory)")
+          ) ++
+            Seq(
+              opt[String]('P', "passphrase")
+                .action((x, c) => c.copy(somePassphrase = Some(x)))
+                .text("Passphrase for the encrypted key. (optional))")
+            )): _*
+        ),
+      cmd("recover-keys")
+        .action((_, c) => c.copy(subcmd = "recoverkeys"))
+        .text("Recover Wallet Main Key")
+        .children(
+          (Seq(
+            opt[String]('n', "network")
+              .action((x, c) => c.copy(network = x))
+              .text(
+                "Network name: Possible values: mainnet, testnet, private. (mandatory)"
+              ),
+            opt[String]('m', "mnemonic")
+              .action((x, c) => c.copy(mnemonic = x))
+              .text("Mnemonic for the key. (mandatory)"),
+            opt[String]('w', "password")
+              .action((x, c) => c.copy(password = x))
+              .text("Password for the encrypted key. (mandatory)"),
+            opt[String]('o', "output")
+              .action((x, c) => c.copy(someOutputFile = Some(x)))
+              .text("The output file. (optional)"),
+            opt[Option[String]]("walletdb")
+              .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)")
           ) ++
             Seq(

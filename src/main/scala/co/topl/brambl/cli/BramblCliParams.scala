@@ -2,7 +2,9 @@ package co.topl.brambl.cli
 
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.models.LockAddress
+
 import java.io.File
+import scala.collection.immutable.IndexedSeq
 
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
@@ -14,7 +16,7 @@ object BramblCliMode extends Enumeration {
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
-  val init, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
+  val init, recoverkeys, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
       prove, broadcast, currentaddress, list, add, exportvk, importvks, sync = Value
 }
 
@@ -82,7 +84,9 @@ final case class BramblCliParams(
     somePassphrase: Option[String] = None,
     someKeyFile: Option[String] = None,
     someInputFile: Option[String] = None,
-    someOutputFile: Option[String] = None
+    someOutputFile: Option[String] = None,
+    mnemonic: String = "",
+    someMnemonicFile: Option[String] = None
 )
 final case class BramblCliValidatedParams(
     mode: BramblCliMode.Value,
@@ -109,5 +113,7 @@ final case class BramblCliValidatedParams(
     somePassphrase: Option[String],
     someKeyFile: Option[String] = None,
     someInputFile: Option[String] = None,
-    someOutputFile: Option[String]
+    someOutputFile: Option[String],
+    mnemonic: IndexedSeq[String] = IndexedSeq(),
+    someMnemonicFile: Option[String] = None
 )

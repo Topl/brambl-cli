@@ -3,7 +3,8 @@ package co.topl.brambl.cli
 case class WalletKeyConfig(
     walletFile: String,
     keyFile: String,
-    password: String
+    password: String,
+    mnemonicFile: String
 )
 
 trait BaseConstants {

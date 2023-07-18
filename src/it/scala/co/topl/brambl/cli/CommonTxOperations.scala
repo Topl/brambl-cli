@@ -291,7 +291,9 @@ trait CommonTxOperations
           "-o",
           c.keyFile,
           "--walletdb",
-          c.walletFile
+          c.walletFile,
+          "--mnemonicfile",
+          c.mnemonicFile
         )
       )
     )
