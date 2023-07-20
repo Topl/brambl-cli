@@ -13,4 +13,8 @@ trait BaseConstants {
 
   val BASE_AMOUNT = 1000
 
+  val HOST = "localhost"
+
+  val BIFROST_PORT = 9084
+
 }

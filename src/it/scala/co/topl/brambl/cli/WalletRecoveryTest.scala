@@ -14,6 +14,7 @@ import java.io.FileInputStream
 class WalletRecoveryTest
     extends CatsEffectSuite
     with WalletConstants
+    with IntegrationTearDown
     with CommonTxOperations {
 
   val tmpDirectory = FunFixture[Path](
@@ -152,4 +153,10 @@ class WalletRecoveryTest
     )
   }
 
+  test("Send Wallet Change back to HeightLock") {
+    assertIO(
+      tearDown(walletContext),
+      ExitCode.Success
+    )
+  }
 }

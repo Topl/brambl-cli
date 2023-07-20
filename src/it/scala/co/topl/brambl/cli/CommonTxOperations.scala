@@ -11,13 +11,15 @@ import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.dataApi.GenusQueryAlgebra
 import cats.data.Kleisli
 import cats.effect.ExitCode
+import co.topl.brambl.models.LockAddress
 
 trait CommonTxOperations
     extends TransactionBuilderApiModule
     with WalletStateAlgebraModule
     with WalletManagementUtilsModule
     with WalletAlgebraModule
-    with ChannelResourceModule {
+    with ChannelResourceModule
+    with BaseConstants {
 
   def syncWallet(
       contractName: String,
@@ -37,9 +39,9 @@ trait CommonTxOperations
           "-n",
           "private",
           "-h",
-          "localhost",
+          HOST,
           "--bifrost-port",
-          "9084",
+          s"$BIFROST_PORT",
           "--keyfile",
           c.keyFile,
           "-w",
@@ -106,7 +108,7 @@ trait CommonTxOperations
           "-w",
           c.password,
           "--bifrost-port",
-          "9084",
+          s"$BIFROST_PORT",
           "-o",
           outputFile, // BOB_SECOND_TX_RAW,
           "-n",
@@ -114,7 +116,7 @@ trait CommonTxOperations
           "-a",
           amount.toString(),
           "-h",
-          "localhost",
+          HOST,
           "--keyfile",
           c.keyFile,
           "--walletdb",
@@ -146,7 +148,7 @@ trait CommonTxOperations
           "-w",
           c.password,
           "--bifrost-port",
-          "9084",
+          s"$BIFROST_PORT",
           "-o",
           outputFile, // BOB_SECOND_TX_RAW,
           "-n",
@@ -154,7 +156,7 @@ trait CommonTxOperations
           "-a",
           amount.toString(),
           "-h",
-          "localhost",
+          HOST,
           "--keyfile",
           c.keyFile,
           "--walletdb",
@@ -182,9 +184,9 @@ trait CommonTxOperations
           "-n",
           "private",
           "-h",
-          "localhost",
+          HOST,
           "--bifrost-port",
-          "9084",
+          s"$BIFROST_PORT",
           "--walletdb",
           c.walletFile
         ) ++ someFromState
@@ -332,8 +334,8 @@ trait CommonTxOperations
     GenusQueryAlgebra
       .make[IO](
         channelResource(
-          "localhost",
-          9084
+          HOST,
+          BIFROST_PORT
         )
       )
   )
@@ -347,9 +349,9 @@ trait CommonTxOperations
       "-i",
       provedTx,
       "-h",
-      "localhost",
+      HOST,
       "--bifrost-port",
-      "9084",
+      s"$BIFROST_PORT",
       "--walletdb",
       wallet
     )
