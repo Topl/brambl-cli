@@ -97,6 +97,7 @@ trait CommonValidationModule {
           subcmd,
           Set(
             BramblCliSubCmd.init,
+            BramblCliSubCmd.recoverkeys,
             BramblCliSubCmd.currentaddress,
             BramblCliSubCmd.exportvk,
             BramblCliSubCmd.importvks,
@@ -245,4 +246,12 @@ trait CommonValidationModule {
     }
   }
 
+  def validateMnemonic(
+      mnemonic: Seq[String]
+  ): ValidatedNel[String, Seq[String]] =
+    if (List(12, 15, 18, 21, 24).contains(mnemonic.length))
+      Validated.validNel(mnemonic)
+    else Validated.invalidNel(
+      "Mnemonic must be 12, 15, 18, 21 or 24 words"
+    )
 }

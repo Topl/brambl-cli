@@ -20,7 +20,9 @@ class ParamsWalletModuleTest extends FunSuite {
       "--walletdb",
       "wallet.db",
       "-n",
-      "private"
+      "private",
+      "--mnemonicfile",
+      "mnemonic.txt"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assertEquals(validateParams(params0).isValid, true)
@@ -34,7 +36,9 @@ class ParamsWalletModuleTest extends FunSuite {
       "--walletdb",
       "wallet.db",
       "-n",
-      "private"
+      "private",
+      "--mnemonicfile",
+      "mnemonic.txt"
     )
     val params1 = OParser.parse(paramParser, args1, BramblCliParams()).get
     assertEquals(validateParams(params1).isValid, true)
@@ -48,7 +52,9 @@ class ParamsWalletModuleTest extends FunSuite {
       "--walletdb",
       "wallet.db",
       "-n",
-      "private"
+      "private",
+      "--mnemonicfile",
+      "mnemonic.txt"
     )
     val params2 = OParser.parse(paramParser, args2, BramblCliParams()).get
     assertEquals(validateParams(params2).isValid, true)
@@ -63,6 +69,31 @@ class ParamsWalletModuleTest extends FunSuite {
         .get
         .isInvalid,
       true
+    )
+  }
+  test("Test valid key recovery") {
+    val args0 = List(
+      "wallet",
+      "recover-keys",
+      "-w",
+      "test",
+      "-o",
+      "outputFile.json",
+      "--walletdb",
+      "wallet.db",
+      "-n",
+      "private",
+      "--passphrase",
+      "test-passphrase",
+      "--mnemonic",
+      "this,is,an,example,of,a,mnemonic,string,that,contains,12,words"
+    )
+    assert(
+      OParser
+        .parse(paramParser, args0, BramblCliParams())
+        .map(validateKeyRecoveryParams)
+        .get
+        .isValid
     )
   }
 }

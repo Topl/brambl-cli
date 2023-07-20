@@ -22,6 +22,8 @@ object BramblCliParamsValidatorModule
     (mode, subcmd) match {
       case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
         validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
+      case (BramblCliMode.wallet, BramblCliSubCmd.recoverkeys) =>
+        validateKeyRecoveryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.exportvk) =>
         validateExportVkParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.sync) =>
@@ -116,7 +118,9 @@ object BramblCliParamsValidatorModule
             someKeyFile = paramConfig.someKeyFile,
             somePassphrase = paramConfig.somePassphrase,
             someOutputFile = someOutputFile,
-            someInputFile = paramConfig.someInputFile
+            someInputFile = paramConfig.someInputFile,
+            mnemonic = paramConfig.mnemonic.toIndexedSeq,
+            someMnemonicFile = paramConfig.someMnemonicFile
           ).validNel
         }
       )

@@ -154,9 +154,24 @@ class WalletController[F[_]: Sync](
       .createWalletFromParams(
         params.password,
         params.somePassphrase,
-        params.someOutputFile
+        params.someOutputFile,
+        params.someMnemonicFile
       )
       .map(_ => Right("Wallet created"))
+  }
+
+  def recoverKeysFromParams(
+      params: BramblCliValidatedParams
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    walletAlgebra
+      .recoverKeysFromParams(
+        params.mnemonic,
+        params.password,
+        params.somePassphrase,
+        params.someOutputFile
+      )
+      .map(_ => Right("Wallet Main Key Recovered"))
   }
 
   def currentaddress(): F[Either[String, String]] = {
