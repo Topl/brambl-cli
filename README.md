@@ -161,11 +161,21 @@ Prove transaction
 
 ### Initialize a wallet
 
-To create a keyfile for the valhalla network, with password `test` and to store it in the file `mainkey.json`, and initialize a `wallet.db` file run the following command:
+To create a keyfile for the valhalla network and a new mnemonic, with password `test` and passphrase `passphrase`, and to store the keyfile in the file `mainkey.json` and the mnemonic in the file `mnemonic.txt`, and initialize a `wallet.db` file run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet init -w test -n private -o mainkey.json --walletdb wallet.db
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet init -w test --passphrase passphrase -n private -o mainkey.json --walletdb wallet.db --mnemonicfile mnemonic.txt
 ```
+
+### Recover a wallet keyfile
+
+To recover a keyfile for the valhalla network using a mnemonic, with password `test`, passphrase `passphrase` and an existing mnemonic consisting of a comma-separated list of words, and to store the recovered keyfile in the file `mainkey.json` run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet recover-keys -w test --passphrase passphrase -n private -o mainkey.json --walletdb wallet.db --mnemonic this,is,an,example,of,a,mnemonic,string,that,contains,12,words
+```
+
+Note that the passphrase **must** be the same passphrase used to initially generate the mnemonic. The password can be different.
 
 ### Get the current address
 
