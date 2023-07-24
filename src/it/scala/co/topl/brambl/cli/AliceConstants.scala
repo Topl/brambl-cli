@@ -26,9 +26,12 @@ trait AliceConstants extends BaseConstants {
 
   val ALICE_FOURTH_TX_PROVED = s"$TMP_DIR/alice_fourth_tx_proved.pbuf"
 
+  val ALICE_MNEMONIC = s"$TMP_DIR/alice_mnemonic.txt"
+
   val aliceContext = WalletKeyConfig(
     ALICE_WALLET,
     ALICE_MAIN_KEY,
-    ALICE_PASSWORD
+    ALICE_PASSWORD,
+    ALICE_MNEMONIC
   )
 }

@@ -73,6 +73,8 @@ trait WalletModeModule
         )
       case BramblCliSubCmd.init =>
         walletController.createWalletFromParams(validateParams)
+      case BramblCliSubCmd.recoverkeys =>
+        walletController.recoverKeysFromParams(validateParams)
       case BramblCliSubCmd.sync =>
         walletController.sync(
           validateParams.contractName,

@@ -24,10 +24,13 @@ trait BobConstants extends BaseConstants {
 
   val BOB_VK_AND = s"$TMP_DIR/bob_vk_and.json"
 
+  val BOB_MNEMONIC = s"$TMP_DIR/bob_mnemonic.txt"
+
   val bobContext = WalletKeyConfig(
     BOB_WALLET,
     BOB_MAIN_KEY,
-    BOB_PASSWORD
+    BOB_PASSWORD,
+    BOB_MNEMONIC
   )
 
 }

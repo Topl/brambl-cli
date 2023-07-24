@@ -14,4 +14,5 @@ vk.txt
 .idea/
 *.log
 *.worksheet.sc
+tmp/
 *.vk

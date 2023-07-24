@@ -13,6 +13,7 @@ class ComplexTransactionProveTest
     extends CatsEffectSuite
     with AliceConstants
     with CommonTxOperations
+    with IntegrationTearDown
     with BobConstants {
 
   val tmpDirectory = FunFixture[Path](
@@ -449,4 +450,10 @@ class ComplexTransactionProveTest
 
   }
 
+  test("Send Alice Change back to HeightLock") {
+    assertIO(
+      tearDown(aliceContext),
+      ExitCode.Success
+    )
+  }
 }
