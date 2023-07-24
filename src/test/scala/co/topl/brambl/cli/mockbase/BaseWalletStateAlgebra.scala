@@ -9,7 +9,7 @@ import quivr.models.Preimage
 import quivr.models.Proposition
 import quivr.models.VerificationKey
 
-abstract class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
+class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
   override def initWalletState(vk: VerificationKey): F[Unit] = ???
 

@@ -43,7 +43,26 @@ trait WalletModeModule
     )
     validateParams.subcmd match {
       case BramblCliSubCmd.exportvk =>
-        walletController.exportVk(validateParams)
+        validateParams.someFromState
+          .map(x =>
+            walletController.exportFinalVk(
+              validateParams.someKeyFile.get,
+              validateParams.password,
+              validateParams.someOutputFile.get,
+              validateParams.contractName,
+              validateParams.partyName,
+              x
+            )
+          )
+          .getOrElse(
+            walletController.exportVk(
+              validateParams.someKeyFile.get,
+              validateParams.password,
+              validateParams.someOutputFile.get,
+              validateParams.contractName,
+              validateParams.partyName
+            )
+          )
       case BramblCliSubCmd.importvks =>
         walletController.importVk(
           validateParams.inputVks,

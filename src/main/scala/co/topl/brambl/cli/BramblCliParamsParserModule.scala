@@ -231,7 +231,10 @@ object BramblCliParamsParserModule {
               .text("Name of the party. (mandatory)"),
             opt[String]("contract-name")
               .action((x, c) => c.copy(contractName = x))
-              .text("Name of the contract. (mandatory)")
+              .text("Name of the contract. (mandatory)"),
+            opt[Option[String]]("state")
+              .action((x, c) => c.copy(someFromState = x))
+              .text("State from where we are sending the funds from")
           )): _*
         ),
       cmd("import-vks")
