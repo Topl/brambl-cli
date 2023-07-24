@@ -1,0 +1,37 @@
+package co.topl.brambl.cli.controllers
+
+import cats.effect.kernel.Sync
+import co.topl.brambl.cli.impl.TxParserAlgebra
+import cats.effect.kernel.Resource
+import java.io.FileOutputStream
+import co.topl.brambl.cli.impl.TxParserError
+import cats.data.EitherT
+import co.topl.brambl.models.transaction.IoTransaction
+
+class TxController[F[_]: Sync](
+    txParserAlgebra: TxParserAlgebra[F]
+) {
+
+  def createComplexTransaction(
+      inputFile: String,
+      outputFile: String
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    (for {
+      tx <- EitherT[F, TxParserError, IoTransaction](
+        txParserAlgebra.parseComplexTransaction(inputFile)
+      )
+      _ <- EitherT.liftF[F, TxParserError, Unit](
+        Resource
+          .make(
+            Sync[F]
+              .delay(new FileOutputStream(outputFile))
+          )(fos => Sync[F].delay(fos.close()))
+          .use(fos => Sync[F].delay(tx.writeTo(fos)))
+      )
+    } yield {
+      "Transaction created"
+    }).value.map(_.leftMap(_.description))
+  }
+
+}

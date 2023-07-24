@@ -443,6 +443,10 @@ class ComplexTransactionProveTest
       } yield res,
       ExitCode.Success
     )
+
+  test("Move funds from alice's account to c") {
+  }
+
   }
 
 }

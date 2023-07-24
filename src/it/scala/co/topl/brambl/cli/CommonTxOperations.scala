@@ -81,6 +81,34 @@ trait CommonTxOperations
     )
   )
 
+
+  def proveComplexTransaction(
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      inputTx: String,
+      outputFile: String
+  ) = Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+    Main.run(
+      List(
+        "tx",
+        "prove",
+        "--coordinates",
+        "X,Y,Z",
+        "-w",
+        c.password,
+        "--keyfile",
+        c.keyFile,
+        "-n",
+        "private",
+        "-i",
+        inputTx,
+        "-o",
+        outputFile
+      )
+    )
+  )
+
   def createSimpleTransactionToCartesianIdx(
       fromParty: String,
       fromContract: String,
@@ -122,6 +150,33 @@ trait CommonTxOperations
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)
+      )
+    )
+
+  def createComplexTransactionToAddress(
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      aliceAddress: String,
+      amount: Int,
+      outputFile: String
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "tx",
+          "create",
+          "-i",
+          "txFile.yaml",
+          "--bifrost-port",
+          "9084",
+          "-o",
+          outputFile, // BOB_SECOND_TX_RAW,
+          "-n",
+          "private",
+          "-h",
+          "localhost"
+        )
       )
     )
   def createSimpleTransactionToAddress(

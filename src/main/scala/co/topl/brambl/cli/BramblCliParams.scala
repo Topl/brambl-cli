@@ -7,7 +7,7 @@ import java.io.File
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val wallet, genusquery, bifrostquery, simpletransaction, parties, contracts =
+  val wallet, genusquery, bifrostquery, simpletransaction, parties, contracts, tx =
     Value
 }
 

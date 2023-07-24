@@ -21,19 +21,22 @@ fork := true
 
 Defaults.itSettings
 
-libraryDependencies += bramblSdk
-libraryDependencies += bramblCrypto
-libraryDependencies += scopt
-libraryDependencies += munit
-libraryDependencies += fs2Core
-libraryDependencies += fs2IO
-libraryDependencies += logback
-libraryDependencies += grpcNetty
-libraryDependencies += grpcRuntime
-libraryDependencies += sqlite
-libraryDependencies += munitCatsEffects
-libraryDependencies += fastparse
-
+libraryDependencies := Seq(
+  bramblSdk,
+  bramblCrypto,
+  scopt,
+  munit,
+  fs2Core,
+  fs2IO,
+  logback,
+  grpcNetty,
+  grpcRuntime,
+  sqlite,
+  munitCatsEffects,
+  fastparse,
+  circeYaml,
+  circeGeneric
+)
 
 scalacOptions += "-Ymacro-annotations"
 
@@ -61,4 +64,3 @@ developers := List(
     url("https://github.com/scasplte2")
   )
 )
-

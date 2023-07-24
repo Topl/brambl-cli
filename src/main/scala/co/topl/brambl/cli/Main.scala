@@ -32,6 +32,8 @@ object Main
         val op: IO[Either[String, String]] = validateParams(params) match {
           case Validated.Valid(validateParams) =>
             validateParams.mode match {
+              case BramblCliMode.tx =>
+                ???
               case BramblCliMode.contracts =>
                 contractModeSubcmds(validateParams)
               case BramblCliMode.parties =>

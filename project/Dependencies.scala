@@ -23,4 +23,6 @@ object Dependencies {
   lazy val sqlite = "org.xerial" % "sqlite-jdbc" % "3.41.2.1"
   lazy val fastparse = "com.lihaoyi" %% "fastparse" % "3.0.1"
   lazy val munitCatsEffects =  "org.typelevel" %% "munit-cats-effect" % "2.0.0-M1" % "it,test"
+  lazy val circeYaml = "io.circe" %% "circe-yaml-v12" % "0.14.3-RC3"
+  lazy val circeGeneric = "io.circe" %% "circe-generic" % "0.15.0-M1"
 }
