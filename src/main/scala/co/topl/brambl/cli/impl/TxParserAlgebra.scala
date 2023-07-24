@@ -27,11 +27,19 @@ import quivr.models.VerificationKey
 
 case class Tx(
     network: String,
-    keys: List[String],
+    keys: List[GlobalKeyEntry],
     inputs: List[Stxo],
     outputs: List[Utxo]
 )
-case class Stxo(address: String, proposition: String, value: Long)
+
+case class GlobalKeyEntry(id: String, vk: String)
+case class IdxMapping(idx: Int, identifier: String)
+case class Stxo(
+    address: String,
+    keyMap: List[IdxMapping],
+    proposition: String,
+    value: Long
+)
 case class Utxo(address: String, value: Long)
 
 sealed trait TxParserError {
@@ -53,15 +61,14 @@ case class InvalidVerificationKey(description: String) extends TxParserError
 trait TxParserAlgebra[F[_]] {
 
   def parseComplexTransaction(
-      inputFile: String
+      inputFileRes: Resource[F, BufferedSource]
   ): F[Either[TxParserError, IoTransaction]]
 
 }
 
 object TxParserAlgebra {
   def make[F[_]: Sync](
-      transactionBuilderApi: TransactionBuilderApi[F],
-      inputFileRes: Resource[F, BufferedSource]
+      transactionBuilderApi: TransactionBuilderApi[F]
   ) =
     new TxParserAlgebra[F] {
 
@@ -128,6 +135,24 @@ object TxParserAlgebra {
         }
       } yield res)
 
+      private def parseKeys(keys: List[GlobalKeyEntry]) =
+        keys
+          .traverse(key =>
+            EitherT[F, TxParserError, (String, VerificationKey)](
+              Sync[F].delay(
+                Encoding
+                  .decodeFromBase58(key.vk)
+                  .leftMap(_ =>
+                    InvalidVerificationKey(
+                      "Error decoding verification key: " + key.vk
+                    ): TxParserError
+                  )
+                  .map(vk => (key.id, VerificationKey.parseFrom(vk)))
+              )
+            )
+          )
+          .map(Map(_: _*))
+
       private def parseUnspentTransactionOutput(
           lockAddressString: String,
           value: Long
@@ -158,29 +183,28 @@ object TxParserAlgebra {
       private def parseSpentTransactionOutput(
           networkId: Int,
           address: String,
-          encodedVks: List[String],
+          keyMap: List[IdxMapping],
+          encodedVks: Map[String, VerificationKey],
           proposition: String,
           value: Long
       ): EitherT[F, TxParserError, SpentTransactionOutput] = for {
         toa <- parseTransactionOuputAddress(networkId, address)
         lockTemplate <- parsePropositionTemaplate(proposition)
-        aBytes <-
-          encodedVks.traverse(vk =>
-            EitherT[F, TxParserError, Array[Byte]](
-              Sync[F].delay(
-                Encoding
-                  .decodeFromBase58(vk)
-                  .leftMap(_ =>
+        vks <- EitherT(
+          Sync[F].delay(
+            keyMap
+              .traverse({ x =>
+                encodedVks
+                  .get(x.identifier)
+                  .toRight(
                     InvalidVerificationKey(
-                      "Error decoding verification key: " + vk
+                      "Verification key not found for identifier: " + x.identifier
                     ): TxParserError
                   )
-              )
-            )
-          )
-        vks <- aBytes.traverse(b =>
-          EitherT[F, TxParserError, VerificationKey](
-            Sync[F].delay(Right(VerificationKey.parseFrom(b)))
+                  .map(vk => (vk, x.idx))
+
+              })
+              .map(_.sortBy(_._2).map(_._1))
           )
         )
         lock <- EitherT(
@@ -220,15 +244,17 @@ object TxParserAlgebra {
               NetworkIdentifiers
                 .fromString(tx.network)
                 .map(_.networkId)
-                .toRight(InvalidNetwork)
+                .toRight(InvalidNetwork: TxParserError)
             )
           )
+          keys <- parseKeys(tx.keys)
           inputs <- tx.inputs
             .traverse(stxo =>
               parseSpentTransactionOutput(
                 network,
                 stxo.address,
-                tx.keys,
+                stxo.keyMap,
+                keys,
                 stxo.proposition,
                 stxo.value
               )
@@ -244,7 +270,7 @@ object TxParserAlgebra {
         )
 
       def parseComplexTransaction(
-          inputFile: String
+          inputFileRes: Resource[F, BufferedSource]
       ): F[Either[TxParserError, IoTransaction]] = (for {
         inputString <- EitherT[F, TxParserError, String](
           inputFileRes.use(file =>

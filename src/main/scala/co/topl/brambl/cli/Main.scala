@@ -12,6 +12,7 @@ import co.topl.brambl.cli.modules.GenusQueryModeModule
 import co.topl.brambl.cli.modules.PartiesModeModule
 import co.topl.brambl.cli.modules.ContractModeModule
 import co.topl.brambl.cli.modules.BifrostQueryModeModule
+import co.topl.brambl.cli.modules.TxModeModule
 
 object Main
     extends IOApp
@@ -20,7 +21,8 @@ object Main
     with ContractModeModule
     with PartiesModeModule
     with WalletModeModule
-    with SimpleTransactionModeModule {
+    with SimpleTransactionModeModule
+    with TxModeModule {
 
   import BramblCliParamsValidatorModule._
 
@@ -33,7 +35,7 @@ object Main
           case Validated.Valid(validateParams) =>
             validateParams.mode match {
               case BramblCliMode.tx =>
-                ???
+                txModeSubcmds(validateParams)
               case BramblCliMode.contracts =>
                 contractModeSubcmds(validateParams)
               case BramblCliMode.parties =>

@@ -19,7 +19,11 @@ class TxController[F[_]: Sync](
     import cats.implicits._
     (for {
       tx <- EitherT[F, TxParserError, IoTransaction](
-        txParserAlgebra.parseComplexTransaction(inputFile)
+        txParserAlgebra.parseComplexTransaction(
+          Resource.make(
+            Sync[F].delay(scala.io.Source.fromFile(inputFile))
+          )(source => Sync[F].delay(source.close()))
+        )
       )
       _ <- EitherT.liftF[F, TxParserError, Unit](
         Resource

@@ -38,8 +38,6 @@ libraryDependencies := Seq(
   circeGeneric
 )
 
-scalacOptions += "-Ymacro-annotations"
-
 scalacOptions += "-Ywarn-unused"
 
 semanticdbEnabled := true
