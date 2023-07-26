@@ -213,18 +213,15 @@ Alternatively, instead of providing an output address, the party and contract of
 cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction create --from-party noparty --from-contract genesis --from-state 1 --from-party self --from-contract default -w test -p 9091 -o $TX_FILE -n private -a 100 -h localhost -i $MAIN_KEY --walletdb $WALLET
 ```
 
-
-```bash 
-
 ### Prove a simple transaction
 
 To prove a simple transaction run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction prove --from-party self --from-contract default -w test --keyfile $MAIN_KEY -n private -i $TX_FILE -o $TX_PROVED_FILE --walletdb $WALLET
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction prove -w test --keyfile $MAIN_KEY -n private -i $TX_FILE -o $TX_PROVED_FILE --walletdb $WALLET
 ```
 
-This will prove the transaction in the file `$TX_FILE` and store the result in the file `$TX_PROVED_FILE`.
+This will prove the transaction in the file `$TX_FILE` and store the result in the file `$TX_PROVED_FILE`. The right indexes to derive the keys are taken from the wallet database.
 
 ### Broadcast a simple transaction
 

@@ -20,41 +20,23 @@ class SimpleTransactionController[F[_]: Monad](
   }
 
   def proveSimpleTransactionFromParams(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
       inputFile: String,
       keyFile: String,
       password: String,
       outputFile: String
   ): F[Either[String, String]] = {
     import cats.implicits._
-    walletStateAlgebra
-      .validateCurrentIndicesForFunds(
-        fromParty,
-        fromContract,
-        someFromState
-      ) flatMap {
-      case Validated.Invalid(errors) =>
-        Monad[F].pure(
-          Left(
-            "Invalid params" + "\n" +
-              errors.toList.mkString(", ")
-          )
-        )
-      case Validated.Valid(_) =>
-        simplTransactionOps
-          .proveSimpleTransactionFromParams(
-            inputFile,
-            keyFile,
-            password,
-            outputFile
-          )
-          .map(_ match {
-            case Right(_)    => Right("Transaction successfully proved")
-            case Left(value) => Left(value)
-          })
-    }
+    simplTransactionOps
+      .proveSimpleTransactionFromParams(
+        inputFile,
+        keyFile,
+        password,
+        outputFile
+      )
+      .map(_ match {
+        case Right(_)    => Right("Transaction successfully proved")
+        case Left(value) => Left(value)
+      })
   }
 
   def createSimpleTransactionFromParams(

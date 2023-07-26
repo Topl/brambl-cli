@@ -38,9 +38,6 @@ trait SimpleTransactionModeModule
           validateParams.bifrostPort
         )
       ).proveSimpleTransactionFromParams(
-        validateParams.fromParty,
-        validateParams.fromContract,
-        validateParams.someFromState,
         validateParams.someInputFile.get,
         validateParams.someKeyFile.get,
         validateParams.password,

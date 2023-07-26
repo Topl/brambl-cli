@@ -50,9 +50,6 @@ trait CommonTxOperations
     )
 
   def proveSimpleTransaction(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
       inputTx: String,
       outputFile: String
   ) = Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -60,10 +57,6 @@ trait CommonTxOperations
       List(
         "simpletransaction",
         "prove",
-        "--from-party",
-        fromParty,
-        "--from-contract",
-        fromContract,
         "-w",
         c.password,
         "--keyfile",
@@ -76,35 +69,6 @@ trait CommonTxOperations
         outputFile,
         "--walletdb",
         c.walletFile
-      ) ++ someFromState
-        .map(s => List("--from-state", s.toString()))
-        .getOrElse(List.empty)
-    )
-  )
-
-  def proveComplexTransaction(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
-      inputTx: String,
-      outputFile: String
-  ) = Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
-    Main.run(
-      List(
-        "tx",
-        "prove",
-        "--coordinates",
-        "X,Y,Z",
-        "-w",
-        c.password,
-        "--keyfile",
-        c.keyFile,
-        "-n",
-        "private",
-        "-i",
-        inputTx,
-        "-o",
-        outputFile
       )
     )
   )

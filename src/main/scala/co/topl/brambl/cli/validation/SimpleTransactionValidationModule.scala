@@ -162,11 +162,6 @@ trait SimpleTransactionValidationModule {
     List(
       validateNoPassphrase(paramConfig.somePassphrase),
       validateNonEmpty("Password", paramConfig.password),
-      validateFromCoordinates(
-        paramConfig.someFromParty,
-        paramConfig.someFromContract,
-        paramConfig.someFromState
-      ),
       validateOutputfile(paramConfig.someOutputFile, required = true),
       validateInputFile("Key file", paramConfig.someKeyFile, required = true),
       validateInputFile(

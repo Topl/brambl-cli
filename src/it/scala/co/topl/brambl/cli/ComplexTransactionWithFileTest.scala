@@ -81,9 +81,6 @@ class ComplexTransactionWithFileTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "noparty",
-            "genesis",
-            Some(1),
             ALICE_FIRST_COMPLEX_TX_RAW,
             ALICE_FIRST_COMPLEX_TX_PROVED
           ).run(aliceContext),
@@ -262,9 +259,6 @@ class ComplexTransactionWithFileTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "self",
-            "default",
-            Some(1),
             ALICE_SECOND_COMPLEX_TX_RAW,
             ALICE_SECOND_COMPLEX_TX_PROVED
           ).run(aliceContext),
@@ -387,9 +381,6 @@ class ComplexTransactionWithFileTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "alice_bob_0",
-            "or_sign",
-            Some(1),
             ALICE_THIRD_COMPLEX_TX_RAW,
             ALICE_THIRD_COMPLEX_TX_PROVED
           ).run(aliceContext),
@@ -397,9 +388,6 @@ class ComplexTransactionWithFileTest
         )
         _ <- assertIO(
           proveSimpleTransaction(
-            "alice_bob_0",
-            "or_sign",
-            Some(1),
             ALICE_THIRD_COMPLEX_TX_PROVED,
             ALICE_THIRD_COMPLEX_TX_PROVED_BY_BOTH
           ).run(bobContext),
