@@ -288,6 +288,24 @@ object BramblCliParamsParserModule {
         )
     )
 
+  val transactionMode = cmd("tx")
+    .action((_, c) => c.copy(mode = "tx"))
+    .text("Transaction mode")
+    .children(
+      cmd("create")
+        .action((_, c) => c.copy(subcmd = "create"))
+        .text("Create transaction")
+        .children(
+          ((hostPortNetwork ++ Seq(
+            opt[String]('o', "output")
+              .action((x, c) => c.copy(someOutputFile = Some(x)))
+              .text("The output file. (mandatory)"),
+            opt[String]('i', "input")
+              .action((x, c) => c.copy(someInputFile = Some(x)))
+              .text("The input file. (mandatory)")
+          ))): _*
+        )
+    )
   val simpleTransactionMode = cmd("simpletransaction")
     .action((_, c) => c.copy(mode = "simpletransaction"))
     .text("Simple transaction mode")
@@ -354,6 +372,7 @@ object BramblCliParamsParserModule {
       genusQueryMode,
       bifrostQueryMode,
       walletMode,
+      transactionMode,
       simpleTransactionMode
     )
   }

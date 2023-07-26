@@ -20,10 +20,10 @@ import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import com.google.protobuf.ByteString
 import quivr.models.Int128
+import quivr.models.VerificationKey
 
 import scala.io.BufferedSource
 import scala.util.Try
-import quivr.models.VerificationKey
 
 case class Tx(
     network: String,
@@ -33,7 +33,7 @@ case class Tx(
 )
 
 case class GlobalKeyEntry(id: String, vk: String)
-case class IdxMapping(idx: Int, identifier: String)
+case class IdxMapping(index: Int, identifier: String)
 case class Stxo(
     address: String,
     keyMap: List[IdxMapping],
@@ -201,7 +201,7 @@ object TxParserAlgebra {
                       "Verification key not found for identifier: " + x.identifier
                     ): TxParserError
                   )
-                  .map(vk => (vk, x.idx))
+                  .map(vk => (vk, x.index))
 
               })
               .map(_.sortBy(_._2).map(_._1))
@@ -262,11 +262,14 @@ object TxParserAlgebra {
           outputs <- tx.outputs.traverse(utxo =>
             parseUnspentTransactionOutput(utxo.address, utxo.value)
           )
+          datum <- EitherT[F, TxParserError, Datum.IoTransaction](
+            transactionBuilderApi.datum().map(Right(_))
+          )
         } yield IoTransaction(
           None,
           inputs,
           outputs,
-          Datum.IoTransaction.defaultInstance
+          datum
         )
 
       def parseComplexTransaction(
@@ -282,7 +285,10 @@ object TxParserAlgebra {
             yaml.v12.parser
               .parse(inputString)
               .flatMap(tx => tx.as[Tx])
-              .leftMap(_ => InvalidYaml)
+              .leftMap { e =>
+                println("Error parsing yaml: " + e)
+                InvalidYaml
+              }
           )
         )
         tx <- txToIoTransaction(txOrFailure)

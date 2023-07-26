@@ -10,9 +10,25 @@ trait AliceConstants extends BaseConstants {
 
   val ALICE_FIRST_TX_RAW = s"$TMP_DIR/alice_first_tx.pbuf"
 
+  val ALICE_FIRST_COMPLEX_TX = s"$TMP_DIR/alice_first_complex_tx.yaml"
+
+  val ALICE_SECOND_COMPLEX_TX = s"$TMP_DIR/alice_second_complex_tx.yaml"
+
+  val ALICE_FIRST_COMPLEX_TX_RAW = s"$TMP_DIR/alice_first_complex_tx.pbuf"
+  
+  val ALICE_SECOND_COMPLEX_TX_RAW = s"$TMP_DIR/alice_second_complex_tx.pbuf"
+
+  val ALICE_FIRST_COMPLEX_TX_PROVED = s"$TMP_DIR/alice_first_complex_tx_proved.pbuf"
+
   val ALICE_FIRST_TX_PROVED = s"$TMP_DIR/alice_first_tx_proved.pbuf"
 
   val ALICE_VK = s"$TMP_DIR/alice_vk.json"
+
+  val ALICE_COMPLEX_VK_OR = s"$TMP_DIR/alice_complex_vk_or.json"
+
+  val ALICE_COMPLEX_VK_AND = s"$TMP_DIR/alice_complex_vk_and.json"
+
+  val ALICE_FINAL_VK = s"$TMP_DIR/alice_final_vk.json"
 
   val ALICE_VK_AND = s"$TMP_DIR/alice_vk_and.json"
 
@@ -21,6 +37,8 @@ trait AliceConstants extends BaseConstants {
   val ALICE_THIRD_TX_RAW = s"$TMP_DIR/alice_third_tx.pbuf"
 
   val ALICE_SECOND_TX_PROVED = s"$TMP_DIR/alice_second_tx_proved.pbuf"
+
+  val ALICE_SECOND_COMPLEX_TX_PROVED = s"$TMP_DIR/alice_second_complex_tx_proved.pbuf"
 
   val ALICE_THIRD_TX_PROVED = s"$TMP_DIR/alice_third_tx_proved.pbuf"
 

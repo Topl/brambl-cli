@@ -50,7 +50,10 @@ class SimpleTransactionController[F[_]: Monad](
             password,
             outputFile
           )
-          .map(_ => Right("Transaction successfully proved"))
+          .map(_ match {
+            case Right(_)    => Right("Transaction successfully proved")
+            case Left(value) => Left(value)
+          })
     }
   }
 

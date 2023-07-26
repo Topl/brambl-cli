@@ -49,8 +49,8 @@ trait WalletModeModule
               validateParams.someKeyFile.get,
               validateParams.password,
               validateParams.someOutputFile.get,
-              validateParams.contractName,
               validateParams.partyName,
+              validateParams.contractName,
               x
             )
           )
@@ -59,8 +59,8 @@ trait WalletModeModule
               validateParams.someKeyFile.get,
               validateParams.password,
               validateParams.someOutputFile.get,
-              validateParams.contractName,
-              validateParams.partyName
+              validateParams.partyName,
+              validateParams.contractName
             )
           )
       case BramblCliSubCmd.importvks =>
