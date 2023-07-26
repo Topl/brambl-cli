@@ -108,7 +108,7 @@ class ComplexTransactionWithFileTest
     )
   }
 
-  test("Move funds from alice to shared or account with complex tx") {
+  test("Move funds from alice to shared or and and account with complex tx") {
     import scala.concurrent.duration._
     assertIO(
       for {
@@ -156,7 +156,9 @@ class ComplexTransactionWithFileTest
         )
         _ <- IO.println("Exporting VK from alice's wallet")
         _ <- assertIO(
-          exportVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR).run(aliceContext),
+          exportVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR).run(
+            aliceContext
+          ),
           ExitCode.Success
         )
         _ <- IO.println("Exporting VK from bob's wallet")
@@ -166,34 +168,46 @@ class ComplexTransactionWithFileTest
         )
         _ <- IO.println("Importing or VK to alice's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR).run(bobContext),
+          importVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR).run(
+            bobContext
+          ),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
         _ <- IO.println("Importing or VK to bob's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "or_sign", BOB_COMPLEX_VK_OR).run(aliceContext),
+          importVk("alice_bob_0", "or_sign", BOB_COMPLEX_VK_OR).run(
+            aliceContext
+          ),
           ExitCode.Success
         )
         _ <- IO.println("Exporting and VK from alice's wallet")
         _ <- assertIO(
-          exportVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND).run(aliceContext),
+          exportVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND).run(
+            aliceContext
+          ),
           ExitCode.Success
         )
         _ <- IO.println("Exporting and VK from bob's wallet")
         _ <- assertIO(
-          exportVk("alice_bob_0", "and_sign", BOB_COMPLEX_VK_AND).run(bobContext),
+          exportVk("alice_bob_0", "and_sign", BOB_COMPLEX_VK_AND).run(
+            bobContext
+          ),
           ExitCode.Success
         )
         _ <- IO.println("Importing and VK to alice's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND).run(bobContext),
+          importVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND).run(
+            bobContext
+          ),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
         _ <- IO.println("Importing VK to bob's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "and_sign", BOB_COMPLEX_VK_AND).run(aliceContext),
+          importVk("alice_bob_0", "and_sign", BOB_COMPLEX_VK_AND).run(
+            aliceContext
+          ),
           ExitCode.Success
         )
         aliceAddress <- walletController(ALICE_WALLET)
@@ -277,7 +291,133 @@ class ComplexTransactionWithFileTest
         res <- IO.asyncForIO.timeout(
           (for {
             _ <- IO.println("Querying alice's shared and account")
-            queryRes <- queryAccount("alice_bob_0", "and_sign").run(aliceContext)
+            queryRes <- queryAccount("alice_bob_0", "and_sign").run(
+              aliceContext
+            )
+            _ <- IO.sleep(5.seconds)
+          } yield queryRes)
+            .iterateUntil(_ == ExitCode.Success),
+          60.seconds
+        )
+      } yield res,
+      ExitCode.Success
+    )
+  }
+
+  test("Move funds from shared or and and account with complex tx") {
+    import scala.concurrent.duration._
+    assertIO(
+      for {
+        bobAddress <- walletController(BOB_WALLET)
+          .currentaddress("self", "default", Some(1))
+        andAddress <- walletController(ALICE_WALLET)
+          .currentaddress("alice_bob_0", "and_sign", Some(1))
+        orAddress <- walletController(ALICE_WALLET)
+          .currentaddress("alice_bob_0", "or_sign", Some(1))
+        utxosAnd <- genusQueryAlgebra.queryUtxo(
+          decodeAddress(andAddress.get).toOption.get
+        )
+        utxosOr <- genusQueryAlgebra.queryUtxo(
+          decodeAddress(orAddress.get).toOption.get
+        )
+        orUtxo = Encoding.encodeToBase58(
+          utxosOr.head.outputAddress.id.value.toByteArray
+        ) + "#" + utxosOr.head.outputAddress.index.toString
+        andUtxo = Encoding.encodeToBase58(
+          utxosAnd.head.outputAddress.id.value.toByteArray
+        ) + "#" + utxosAnd.head.outputAddress.index.toString
+        _ <- assertIO(
+          exportFinalVk("alice_bob_0", "and_sign", 1, ALICE_AND_VK).run(
+            aliceContext
+          ),
+          ExitCode.Success
+        )
+        _ <- assertIO(
+          exportFinalVk("alice_bob_0", "and_sign", 1, BOB_AND_VK).run(
+            bobContext
+          ),
+          ExitCode.Success
+        )
+        _ <- assertIO(
+          exportFinalVk("alice_bob_0", "or_sign", 1, ALICE_OR_VK).run(
+            aliceContext
+          ),
+          ExitCode.Success
+        )
+        aliceAndKey <- Resource
+          .make(IO(Source.fromFile(ALICE_AND_VK)))(f => IO(f.close()))
+          .use { file =>
+            IO(
+              file.getLines().mkString
+            )
+          }
+        bobAndKey <- Resource
+          .make(IO(Source.fromFile(BOB_AND_VK)))(f => IO(f.close()))
+          .use { file =>
+            IO(
+              file.getLines().mkString
+            )
+          }
+        aliceOrKey <- Resource
+          .make(IO(Source.fromFile(ALICE_OR_VK)))(f => IO(f.close()))
+          .use { file =>
+            IO(
+              file.getLines().mkString
+            )
+          }
+        _ <- createSharedTemplatesToBob(
+          ALICE_THIRD_COMPLEX_TX,
+          andUtxo,
+          orUtxo,
+          aliceAndKey,
+          bobAndKey,
+          aliceOrKey,
+          1000,
+          1000,
+          bobAddress.get
+        )
+        _ <- IO.println("Moving funds (1000) from shared accounts to bob")
+        _ <- assertIO(
+          createComplexTransactionToAddress(
+            ALICE_THIRD_COMPLEX_TX,
+            ALICE_THIRD_COMPLEX_TX_RAW
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          proveSimpleTransaction(
+            "alice_bob_0",
+            "or_sign",
+            Some(1),
+            ALICE_THIRD_COMPLEX_TX_RAW,
+            ALICE_THIRD_COMPLEX_TX_PROVED
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- assertIO(
+          proveSimpleTransaction(
+            "alice_bob_0",
+            "or_sign",
+            Some(1),
+            ALICE_THIRD_COMPLEX_TX_PROVED,
+            ALICE_THIRD_COMPLEX_TX_PROVED_BY_BOTH
+          ).run(bobContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          broadcastSimpleTx(ALICE_THIRD_COMPLEX_TX_PROVED_BY_BOTH, ALICE_WALLET),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- IO.println(
+          "Check bob wallet, expected 2000 LVLs"
+        )
+        res <- IO.asyncForIO.timeout(
+          (for {
+            _ <- IO.println("Querying bob's shared or account")
+            queryRes <- queryAccount("self", "default").run(bobContext)
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),

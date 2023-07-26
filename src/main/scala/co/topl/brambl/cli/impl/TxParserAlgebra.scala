@@ -20,10 +20,10 @@ import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import com.google.protobuf.ByteString
 import quivr.models.Int128
-import quivr.models.VerificationKey
 
 import scala.io.BufferedSource
 import scala.util.Try
+import quivr.models.VerificationKey
 
 case class Tx(
     network: String,
@@ -189,6 +189,7 @@ object TxParserAlgebra {
           value: Long
       ): EitherT[F, TxParserError, SpentTransactionOutput] = for {
         toa <- parseTransactionOuputAddress(networkId, address)
+        _ = println("proposition: " + proposition)
         lockTemplate <- parsePropositionTemaplate(proposition)
         vks <- EitherT(
           Sync[F].delay(

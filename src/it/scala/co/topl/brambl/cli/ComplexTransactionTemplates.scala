@@ -97,4 +97,74 @@ trait ComplexTransactionTemplates {
         |  - address: $addressAliceBobOr
         |    value: 1000""".stripMargin
 
+  def createSharedTemplatesToBob(
+      fileName: String,
+      andUtxoAddress: String,
+      orUtxoAddress: String,
+      aliceAndKey: String,
+      bobAndKey: String,
+      aliceOrKey: String,
+      andAmount: Long,
+      orAmount: Long,
+      addressBob: String
+  ) = {
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+      IO(
+        file.write(
+          sharedTemplatesToBob(
+            andUtxoAddress,
+            orUtxoAddress,
+            aliceAndKey,
+            bobAndKey,
+            aliceOrKey,
+            andAmount,
+            orAmount,
+            addressBob
+          )
+        )
+      )
+    }
+  }
+
+  def sharedTemplatesToBob(
+      andUtxoAddress: String,
+      orUtxoAddress: String,
+      aliceAndKey: String,
+      bobAndKey: String,
+      aliceOrKey: String,
+      andAmount: Long,
+      orAmount: Long,
+      addressBob: String
+  ) =
+    s"""|network: private
+        |
+        |keys: 
+        |  - id: aliceAnd
+        |    vk: $aliceAndKey
+        |  - id: bobAnd
+        |    vk: $bobAndKey
+        |  - id: aliceOr
+        |    vk: $aliceOrKey
+        |
+        |inputs:
+        |  - address: $andUtxoAddress
+        |    keyMap:
+        |     - index: 0
+        |       identifier: aliceAnd
+        |     - index: 1
+        |       identifier: bobAnd
+        |    proposition: threshold(1, sign(0) and sign(1))
+        |    value: $andAmount
+        |  - address: $orUtxoAddress
+        |    keyMap:
+        |     - index: 0
+        |       identifier: aliceOr
+        |     - index: 1
+        |       identifier: aliceOr
+        |    proposition: threshold(1, sign(0) or sign(1))
+        |    value: $orAmount
+        |outputs:
+        |  - address: $addressBob 
+        |    value: ${andAmount + orAmount}""".stripMargin
+
 }
