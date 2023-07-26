@@ -13,7 +13,7 @@ to run Java applications without any setup. It is very easy to install.
 ## Using the CLI
 
 ```
-Usage:  [contracts|parties|genus-query|bifrost-query|wallet|simpletransaction]
+Usage:  [contracts|parties|genus-query|bifrost-query|wallet|tx|simpletransaction]
 Command: contracts [list|add] [options]
 Contract mode
 Command: contracts list
@@ -78,7 +78,7 @@ Get the transaction with a given id
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --transaction-id <value>
                            The id of the transaction in base 58. (mandatory)
-Command: wallet [sync|init|current-address|export-vk|import-vks] [options]
+Command: wallet [sync|init|recover-keys|current-address|export-vk|import-vks] [options]
 Wallet mode
 Command: wallet sync
 Sync wallet
@@ -94,18 +94,18 @@ Initialize wallet
   -w, --password <value>   Password for the encrypted key. (mandatory)
   -o, --output <value>     The output file. (optional)
   --walletdb <value>       Wallet DB file. (mandatory)
+  --mnemonicfile <value>   Mnemonic output file. (mandatory)
   -P, --passphrase <value>
                            Passphrase for the encrypted key. (optional))
-  --mnemonicfile <value>   Mnemonic output file. (mandatory)
 Command: wallet recover-keys
-Recover the wallet main key using a mnemonic. 
+Recover Wallet Main Key
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -m, --mnemonic <value>   Mnemonic for the key. (mandatory)
   -w, --password <value>   Password for the encrypted key. (mandatory)
   -o, --output <value>     The output file. (optional)
   --walletdb <value>       Wallet DB file. (mandatory)
   -P, --passphrase <value>
-                           Passphrase for the encrypted key. (optional)
-  -m, --mnemonic <value>   Mnemonic for the key. (mandatory)
+                           Passphrase for the encrypted key. (optional))
 Command: wallet current-address
 Obtain current address
 Command: wallet export-vk
@@ -117,12 +117,22 @@ Export verification key
   --walletdb <value>       Wallet DB file. (mandatory)
   --party-name <value>     Name of the party. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
+  --state <value>          State from where we are sending the funds from
 Command: wallet import-vks
 Import verification key
   --walletdb <value>       Wallet DB file. (mandatory)
   --party-name <value>     Name of the party. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
   --input-vks <value>      The keys to import. (mandatory)
+Command: tx [create] [options]
+Transaction mode
+Command: tx create
+Create transaction
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  -o, --output <value>     The output file. (mandatory)
+  -i, --input <value>      The input file. (mandatory)
 Command: simpletransaction [create|broadcast|prove] [options]
 Simple transaction mode
 Command: simpletransaction create
@@ -308,6 +318,8 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet export-vk -w test -o $O
 
 This will export the base verification key for the party `$PARTY_NAME` and contract `$CONTRACT_NAME` to the file `$OUTPUT_FILE`. The keyfile `$KEYFILE` is used to derive the exported key.
 
+This command is also used to export a final verification key. To do this, use the `--state` option to specify the state from which to export the key.
+
 ### Import a base verification key
 
 To import one or many base verification keys run the following command:
@@ -325,3 +337,93 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet sync --contract-name $C
 ```
 
 This will sync the wallet for the party `$PARTY_NAME` and contract `$CONTRACT_NAME` with the bifrost node running on `localhost` on port `9084`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`.
+
+### Create a transaction from a file
+
+To create a transaction from a file run the following command:
+
+```bash
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- tx create -i $INPUT_FILE --bifrost-port 9084 -o $OUTPUT_FILE -n private -h localhost
+```
+
+This will create a transaction from the file `$INPUT_FILE` and store the result in the file `$OUTPUT_FILE`.
+
+#### Example of format
+
+A file to move the input from a height lock contract to a new address would look like this:
+
+```yaml
+network: private
+
+keys: []
+
+inputs:
+  - address: 7exK7vSMd6aCYqiiZ1VjWSYLif98zHxsQgtqaRM3WvAc#1
+    keyMap: []
+    proposition: threshold(1, height(1, 9223372036854775807))
+    value: 10000000
+outputs:
+  - address: ptetP7jshHUxEn3noNHnfU5AhV8AcifVAWkhYYvXvrjfErEsey686BBukpQm
+    value: 10000000
+```
+
+A file to move the input from a single signature lock contract to multiple addresses would look like this:
+
+```yaml
+network: private
+
+keys: 
+  - id: alice
+    vk: GeMD3jTdwPEpABPksjFYGgU9tLebpTbqiEvwF7Yyi5jHUBUXhtfsMRUVc5zE6fbL8FYrTDVNRt7eWwrbQMZuwswVP1zpWq8X8r
+
+inputs:
+  - address: 6YKBJePhf48a2kCdrov69v9NoiFAuLT7isthazhVBuu1#0
+    keyMap:
+     - index: 0
+       identifier: alice
+    proposition: threshold(1, sign(0))
+    value: 10000000
+outputs:
+  - address: ptetP7jshHUxEn3noNHnfU5AhV8AcifVAWkhYYvXvrjfErEsey686BBukpQm 
+    value: 9998000
+  - address: ptetP7jshHV4h1qe2uSoaKYiM618wKHbpjwadc7HxEGiDQ85MCMzoFF6oh6R 
+    value: 1000
+  - address: ptetP7jshHUiwiZvm48Z1ebrARr36cxAKTKfhETfRKXomouZafiRadz2m7jp
+    value: 1000
+```
+
+A file to move two different UTXOs protected by different locks and different
+signatures to a single address would look like this:
+
+```yaml
+network: private
+
+keys: 
+  - id: aliceAnd
+    vk: GeMD3jTedVsewW98Cin4Ksgtce784bwpnpcGZDw9wT9WxCaq3PFKo7zRGzaY6ycCcZeB7Sibdsi8DYdYR3u8go9C6W8Wq6K2TS
+  - id: bobAnd
+    vk: GeMD3jTdf9P5qLDw8PLzSJR77jXVcPBZfZVKYMWdZfr9urzDPvCemfdLfRHSNPUqL9hVokQTK4eYfVki5bLAtfoEFbeTU61zAY
+  - id: aliceOr
+    vk: GeMD3jTejkvMtBxhrZo3cgDv7g8tUaJ8QaXJocaz9jS5Re4faHQYhU6RDoimtXUwuFGcMccp4jPdJHY6R3GeKpZ5VvHF25cin3
+
+inputs:
+  - address: 3WiAub289RrnFA5rdr5wouTdEbqoef2rHWe6edygXeUL#1
+    keyMap:
+     - index: 0
+       identifier: aliceAnd
+     - index: 1
+       identifier: bobAnd
+    proposition: threshold(1, sign(0) and sign(1))
+    value: 1000
+  - address: 3WiAub289RrnFA5rdr5wouTdEbqoef2rHWe6edygXeUL#2
+    keyMap:
+     - index: 0
+       identifier: aliceOr
+     - index: 1
+       identifier: aliceOr
+    proposition: threshold(1, sign(0) or sign(1))
+    value: 1000
+outputs:
+  - address: ptetP7jshHUaBVrsqnn3bhtWQ1kugVGJVYsVS4WZ47AthWeL4ZX9B9ZJNTaw 
+    value: 2000
+```
