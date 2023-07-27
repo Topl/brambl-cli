@@ -2,11 +2,16 @@ package co.topl.brambl.cli.controllers
 
 import cats.Monad
 import cats.data.Validated
+import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.LockAddress
 
-class SimpleTransactionController[F[_]: Monad](
+import java.io.FileInputStream
+import java.io.FileOutputStream
+
+class SimpleTransactionController[F[_]: Sync](
     walletStateAlgebra: WalletStateAlgebra[F],
     simplTransactionOps: SimpleTransactionAlgebra[F]
 ) {
@@ -14,9 +19,15 @@ class SimpleTransactionController[F[_]: Monad](
   def broadcastSimpleTransactionFromParams(
       provedTxFile: String
   ): F[Either[String, String]] = {
-    simplTransactionOps.broadcastSimpleTransactionFromParams(
-      provedTxFile
-    )
+    import cats.implicits._
+    simplTransactionOps
+      .broadcastSimpleTransactionFromParams(
+        provedTxFile
+      )
+      .map(_ match {
+        case Right(_)    => Right("Transaction broadcasted")
+        case Left(value) => Left(value.description)
+      })
   }
 
   def proveSimpleTransactionFromParams(
@@ -26,16 +37,26 @@ class SimpleTransactionController[F[_]: Monad](
       outputFile: String
   ): F[Either[String, String]] = {
     import cats.implicits._
+    val inputRes = Resource
+      .make {
+        Sync[F].delay(new FileInputStream(inputFile))
+      }(fos => Sync[F].delay(fos.close()))
+
+    val outputRes = Resource
+      .make(
+        Sync[F].delay(new FileOutputStream(outputFile))
+      )(fos => Sync[F].delay(fos.close()))
+
     simplTransactionOps
       .proveSimpleTransactionFromParams(
-        inputFile,
+        inputRes,
         keyFile,
         password,
-        outputFile
+        outputRes
       )
       .map(_ match {
         case Right(_)    => Right("Transaction successfully proved")
-        case Left(value) => Left(value)
+        case Left(value) => Left(value.description)
       })
   }
 
@@ -74,6 +95,10 @@ class SimpleTransactionController[F[_]: Monad](
             amount,
             outputFile
           )
+          .map(_ match {
+            case Right(_)    => Right("Transaction successfully created")
+            case Left(value) => Left(value.description)
+          })
     }
   }
 }
