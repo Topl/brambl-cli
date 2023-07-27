@@ -1,8 +1,7 @@
 package co.topl.brambl.cli.controllers
 
 import cats.Id
-import co.topl.brambl.cli.impl.PartyStorageAlgebra
-import co.topl.brambl.cli.model.WalletEntity
+import co.topl.brambl.dataApi.{PartyStorageAlgebra, WalletEntity}
 import munit.FunSuite
 
 class PartiesControllerSpec extends FunSuite {

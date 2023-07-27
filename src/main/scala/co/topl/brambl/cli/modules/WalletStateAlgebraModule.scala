@@ -1,15 +1,15 @@
 package co.topl.brambl.cli.modules
 
 import cats.effect.IO
-import co.topl.brambl.cli.impl.WalletStateAlgebra
 import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.servicekit.{WalletStateApi, WalletStateResource}
 
 trait WalletStateAlgebraModule
-    extends WalletResourceModule
+    extends WalletStateResource
     with WalletApiModule
     with TransactionBuilderApiModule {
 
-  def walletStateAlgebra(file: String, networkId: Int) = WalletStateAlgebra
+  def walletStateAlgebra(file: String, networkId: Int) = WalletStateApi
     .make[IO](
       walletResource(file),
       transactionBuilderApi(

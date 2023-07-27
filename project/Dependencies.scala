@@ -8,6 +8,8 @@ object Dependencies {
   val bramblSdk = toplOrg %% "brambl-sdk" % bramblVersion
   val bramblCrypto = toplOrg %% "crypto" % bramblVersion
 
+  val bramblJitPack = "com.github.Topl" % "BramblSc" % "fc834fa"
+
   val grpcNetty =
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
 

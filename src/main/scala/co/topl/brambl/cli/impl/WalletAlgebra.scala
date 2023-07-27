@@ -90,17 +90,13 @@ object WalletAlgebra {
     private def saveMnemonic(
       mnemonic: IndexedSeq[String],
       mnemonicFile: String
-                          ) = {
-      Resource
-        .make(
-          Sync[F]
-            .delay(
-              new FileOutputStream(mnemonicFile)
-            )
-        )(fos => Sync[F].delay(fos.close()))
-        .use { fos =>
-          Sync[F].delay(fos.write(mnemonic.mkString(",").getBytes))
-        }
+    ) = {
+      walletApi
+        .saveMnemonic(
+          mnemonic,
+          mnemonicFile
+        )
+        .map(_.fold(throw _, identity))
     }
 
     def createWalletFromParams(

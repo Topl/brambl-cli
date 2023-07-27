@@ -22,8 +22,10 @@ fork := true
 Defaults.itSettings
 
 libraryDependencies := Seq(
-  bramblSdk,
-  bramblCrypto,
+  //bramblSdk,
+  //bramblCrypto,
+  // Branch Testing
+  bramblJitPack,
   scopt,
   munit,
   fs2Core,

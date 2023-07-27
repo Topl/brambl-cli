@@ -1,8 +1,7 @@
 package co.topl.brambl.cli.controllers
 
 import cats.effect.IO
-import co.topl.brambl.cli.impl.ContractStorageAlgebra
-import co.topl.brambl.cli.model.WalletContract
+import co.topl.brambl.dataApi.{ContractStorageAlgebra, WalletContract}
 import munit.CatsEffectSuite
 
 class ContractsControllerSpec extends CatsEffectSuite {
