@@ -7,6 +7,8 @@ import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.validation.WalletValidationModule
 import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.cli.NetworkIdentifiers
+import co.topl.brambl.cli.Privatenet
 
 object BramblCliParamsValidatorModule
     extends CommonValidationModule
@@ -81,19 +83,19 @@ object BramblCliParamsValidatorModule
             paramConfig
           )
         ),
-      validateNetwork(paramConfig.network),
       validateOutputfile(paramConfig.someOutputFile, required = false)
     )
       .mapN(
         (
             modeAndSubCmd,
-            network,
             someOutputFile
         ) => {
           BramblCliValidatedParams(
             mode = modeAndSubCmd._1,
             subcmd = modeAndSubCmd._2,
-            network = network,
+            network = NetworkIdentifiers
+              .fromString(paramConfig.network) // this was validated before
+              .getOrElse(Privatenet),
             password = paramConfig.password,
             walletFile = paramConfig.someWalletFile.getOrElse(""),
             toAddress = paramConfig.toAddress.map(x =>

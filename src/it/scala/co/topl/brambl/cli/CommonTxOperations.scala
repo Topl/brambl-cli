@@ -194,8 +194,6 @@ trait CommonTxOperations
           partyName,
           "--from-contract",
           contractName,
-          "-n",
-          "private",
           "-h",
           HOST,
           "--bifrost-port",
@@ -296,9 +294,7 @@ trait CommonTxOperations
           "--party-name",
           partyName,
           "--walletdb",
-          c.walletFile,
-          "-n",
-          "private"
+          c.walletFile
         )
       )
     )
@@ -314,8 +310,6 @@ trait CommonTxOperations
           "add",
           "--walletdb",
           c.walletFile,
-          "-n",
-          "private",
           "--contract-name",
           contractName,
           "--contract-template",

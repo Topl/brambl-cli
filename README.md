@@ -18,15 +18,9 @@ Command: contracts [list|add] [options]
 Contract mode
 Command: contracts list
 List existing contracts
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
 Command: contracts add
 Add a new contracts
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
   --contract-template <value>
@@ -35,15 +29,9 @@ Command: parties [list|add] [options]
 Entity mode
 Command: parties list
 List existing parties
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
 Command: parties add
 Add a new parties
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
   --party-name <value>     Name of the party. (mandatory)
 Command: genus-query [utxo-by-address] [options]
@@ -53,7 +41,6 @@ Query utxo
   --from-party <value>     Party where we are sending the funds from
   --from-contract <value>  Contract where we are sending the funds from
   --from-state <value>     State from where we are sending the funds from
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
@@ -61,19 +48,16 @@ Command: bifrost-query [block-by-height|block-by-id|transaction-by-id] [options]
 Bifrost query mode
 Command: bifrost-query block-by-height
 Get the block at a given height
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --height <value>         The height of the block. (mandatory)
 Command: bifrost-query block-by-id
 Get the block with a given id
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --block-id <value>       The id of the block in base 58. (mandatory)
 Command: bifrost-query transaction-by-id
 Get the transaction with a given id
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --transaction-id <value>
@@ -238,7 +222,7 @@ This will broadcast the transaction in the file `$TX_PROVED_FILE` to the network
 To query a block by id run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-id --block-id $BLOCK_ID -n private -h localhost --bifrost-port 9084
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-id --block-id $BLOCK_ID -h localhost --bifrost-port 9084
 ```
 
 This will query the block with id `$BLOCK_ID` from the bifrost node running on `localhost` on port `9084`.
@@ -248,7 +232,7 @@ This will query the block with id `$BLOCK_ID` from the bifrost node running on `
 To query a block by height run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-height --height $HEIGHT -n private -h localhost --bifrost-port 9084
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-height --height $HEIGHT -h localhost --bifrost-port 9084
 ```
 
 This will query the block with height `$HEIGHT` from the bifrost node running on `localhost` on port `9084`.
@@ -258,7 +242,7 @@ This will query the block with height `$HEIGHT` from the bifrost node running on
 To query a transaction by id run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query transaction-by-id --transaction-id $TX_ID -n private -h localhost --bifrost-port 9084
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query transaction-by-id --transaction-id $TX_ID -h localhost --bifrost-port 9084
 ```
 
 This will query the transaction with id `$TX_ID` from the bifrost node running on `localhost` on port `9084`.
@@ -268,7 +252,7 @@ This will query the transaction with id `$TX_ID` from the bifrost node running o
 To query UXTOs by address run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- genus-query utxo-by-address --from-party self --from-contract default -n private -h localhost --bifrost-port 9084 --walletdb $WALLET
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- genus-query utxo-by-address --from-party self --from-contract default -h localhost --bifrost-port 9084 --walletdb $WALLET
 ```
 
 This will query the UXTOs for the address in the genus node. It uses the wallet to derive the right address to query.
@@ -278,7 +262,7 @@ This will query the UXTOs for the address in the genus node. It uses the wallet 
 To add a new party to the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties add --party-name $PARTY_NAME --walletdb $WALLET -n private
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties add --party-name $PARTY_NAME --walletdb $WALLET
 ```
 
 ### List all parties
@@ -286,7 +270,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties add --party-name $PART
 To list all parties in the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties list --walletdb $WALLET -n private
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties list --walletdb $WALLET
 ```
 
 ### Add a new contract
@@ -294,7 +278,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties list --walletdb $WALLE
 To add a new contract to the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts add --walletdb $WALLET --contract-name $CONTRACT_NAME --contract-template $CONTRACT_TEMPLATE -n private
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts add --walletdb $WALLET --contract-name $CONTRACT_NAME --contract-template $CONTRACT_TEMPLATE
 ```
 
 ### List all contracts
@@ -302,7 +286,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts add --walletdb $WALL
 To list all contracts in the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts list --walletdb $WALLET -n private
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts list --walletdb $WALLET
 ```
 
 ### Export a base verification key

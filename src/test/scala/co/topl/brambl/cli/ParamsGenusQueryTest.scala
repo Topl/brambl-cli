@@ -26,8 +26,6 @@ class ParamsGenusQueryTest extends FunSuite {
       "9084",
       "-h",
       "localhost",
-      "-n",
-      "private",
       "--walletdb",
       "wallet.db"
     )
