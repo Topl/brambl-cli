@@ -15,3 +15,4 @@ vk.txt
 *.log
 *.worksheet.sc
 tmp/
+*.vk

@@ -1,5 +1,7 @@
 package co.topl.brambl.cli
 
+import cats.data.Kleisli
+import cats.effect.ExitCode
 import cats.effect.IO
 import co.topl.brambl.cli.controllers.WalletController
 import co.topl.brambl.cli.modules.ChannelResourceModule
@@ -9,9 +11,6 @@ import co.topl.brambl.cli.modules.WalletManagementUtilsModule
 import co.topl.brambl.cli.modules.WalletStateAlgebraModule
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.dataApi.GenusQueryAlgebra
-import cats.data.Kleisli
-import cats.effect.ExitCode
-import co.topl.brambl.models.LockAddress
 
 trait CommonTxOperations
     extends TransactionBuilderApiModule
@@ -83,6 +82,33 @@ trait CommonTxOperations
     )
   )
 
+  def proveComplexTransaction(
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      inputTx: String,
+      outputFile: String
+  ) = Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+    Main.run(
+      List(
+        "tx",
+        "prove",
+        "--coordinates",
+        "X,Y,Z",
+        "-w",
+        c.password,
+        "--keyfile",
+        c.keyFile,
+        "-n",
+        "private",
+        "-i",
+        inputTx,
+        "-o",
+        outputFile
+      )
+    )
+  )
+
   def createSimpleTransactionToCartesianIdx(
       fromParty: String,
       fromContract: String,
@@ -124,6 +150,29 @@ trait CommonTxOperations
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)
+      )
+    )
+
+  def createComplexTransactionToAddress(
+      inputFile: String,
+      outputFile: String
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode](_ =>
+      Main.run(
+        List(
+          "tx",
+          "create",
+          "-i",
+          inputFile,
+          "--bifrost-port",
+          "9084",
+          "-o",
+          outputFile, // BOB_SECOND_TX_RAW,
+          "-n",
+          "private",
+          "-h",
+          "localhost"
+        )
       )
     )
   def createSimpleTransactionToAddress(
@@ -213,6 +262,37 @@ trait CommonTxOperations
           partyName,
           "--contract-name",
           contractName,
+          "--keyfile",
+          c.keyFile
+        )
+      )
+    )
+
+  def exportFinalVk(
+      partyName: String,
+      contractName: String,
+      state: Int,
+      vkFile: String
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "wallet",
+          "export-vk",
+          "-w",
+          c.password,
+          "-o",
+          vkFile,
+          "-n",
+          "private",
+          "--walletdb",
+          c.walletFile,
+          "--party-name",
+          partyName,
+          "--contract-name",
+          contractName,
+          "--state",
+          state.toString(),
           "--keyfile",
           c.keyFile
         )
@@ -319,6 +399,14 @@ trait CommonTxOperations
       )
     )
 
+  val genusQueryAlgebra = GenusQueryAlgebra
+    .make[IO](
+      channelResource(
+        HOST,
+        BIFROST_PORT
+      )
+    )
+
   def walletController(walletFile: String) = new WalletController(
     transactionBuilderApi(
       NetworkConstants.PRIVATE_NETWORK_ID,
@@ -331,13 +419,7 @@ trait CommonTxOperations
     walletManagementUtils,
     walletApi,
     walletAlgebra(walletFile, NetworkConstants.PRIVATE_NETWORK_ID),
-    GenusQueryAlgebra
-      .make[IO](
-        channelResource(
-          HOST,
-          BIFROST_PORT
-        )
-      )
+    genusQueryAlgebra
   )
 
   def broadcastSimpleTx(provedTx: String, wallet: String) = Main.run(

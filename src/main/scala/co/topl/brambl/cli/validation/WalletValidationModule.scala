@@ -106,6 +106,23 @@ trait WalletValidationModule {
     ).sequence.map(_ => paramConfig)
   }
 
+  def validateTxCreateParam(
+      paramConfig: BramblCliParams
+  ): ValidatedNel[String, BramblCliParams] = {
+    import cats.implicits._
+    List(
+      validateInputFile(
+        "Input transaction",
+        paramConfig.someInputFile,
+        required = true
+      ),
+      validateOutputfile(
+        paramConfig.someOutputFile,
+        required = true
+      )
+    ).sequence.map(_ => paramConfig)
+  }
+
   def validateExportVkParam(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {

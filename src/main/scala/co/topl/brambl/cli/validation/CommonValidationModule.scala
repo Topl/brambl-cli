@@ -81,6 +81,14 @@ trait CommonValidationModule {
       subcmd: String
   ): ValidatedNel[String, BramblCliSubCmd.Value] = {
     mode match {
+      case BramblCliMode.tx =>
+        checkValidSubCmd(
+          mode,
+          subcmd,
+          Set(
+            BramblCliSubCmd.create
+          )
+        )
       case BramblCliMode.simpletransaction =>
         checkValidSubCmd(
           mode,

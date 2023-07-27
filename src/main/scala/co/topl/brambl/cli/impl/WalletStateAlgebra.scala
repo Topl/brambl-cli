@@ -45,10 +45,11 @@ object WalletStateAlgebra {
                 s"vk = '${Encoding.encodeToBase58(signatureProposition.verificationKey.toByteArray)}'"
             )
           )
+          hasNext <- Sync[F].delay(rs.next())
           x <- Sync[F].delay(rs.getInt("x_party"))
           y <- Sync[F].delay(rs.getInt("y_contract"))
           z <- Sync[F].delay(rs.getInt("z_state"))
-        } yield if (rs.next()) Some(Indices(x, y, z)) else None
+        } yield if (hasNext) Some(Indices(x, y, z)) else None
       }
 
       def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =

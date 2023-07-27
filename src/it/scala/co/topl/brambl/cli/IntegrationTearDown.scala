@@ -1,16 +1,15 @@
 package co.topl.brambl.cli
 
-import cats.effect.{ExitCode, IO, Sync}
-import cats.implicits.toTraverseOps
-import co.topl.brambl.builders.TransactionBuilderApi
-import co.topl.brambl.cli.modules.{GenusQueryAlgebraModule, TransactionBuilderApiModule, WalletStateAlgebraModule}
+import cats.effect.ExitCode
+import cats.effect.IO
+import cats.effect.Sync
+import co.topl.brambl.cli.modules.GenusQueryAlgebraModule
+import co.topl.brambl.cli.modules.TransactionBuilderApiModule
+import co.topl.brambl.cli.modules.WalletStateAlgebraModule
 import co.topl.brambl.codecs.AddressCodecs
-import co.topl.brambl.dataApi.{GenusQueryAlgebra, WalletStateAlgebra}
 import co.topl.brambl.constants.NetworkConstants
-import co.topl.brambl.models.LockAddress
-import co.topl.brambl.models.box.Lock
-import co.topl.brambl.models.transaction.IoTransaction
-import co.topl.genus.services.Txo
+import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.dataApi.WalletStateAlgebra
 import munit.CatsEffectAssertions.assertIO
 
 import scala.concurrent.duration.DurationInt

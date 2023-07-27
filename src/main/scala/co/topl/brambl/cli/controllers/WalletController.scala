@@ -107,21 +107,69 @@ class WalletController[F[_]: Sync](
     } yield Right("Successfully imported verification keys")
   }
 
-  def exportVk(
-      params: BramblCliValidatedParams
+  def exportFinalVk(
+      keyFile: String,
+      password: String,
+      outputFile: String,
+      partyName: String,
+      contractName: String,
+      state: Int
   ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
-          params.partyName,
-          params.contractName,
+          partyName,
+          contractName,
           None
         )
       )
       keypair <- OptionT(
         walletManagementUtils
-          .loadKeys(params.someKeyFile.get, params.password)
+          .loadKeys(keyFile, password)
+          .map(x => Option(x))
+      )
+      deriveChildKey <- OptionT(
+        walletApi
+          .deriveChildKeys(keypair, indices.copy(z = state))
+          .map(
+            Option(_)
+          )
+      )
+    } yield {
+      Resource
+        .make(Sync[F].delay(new PrintWriter(outputFile)))(file =>
+          Sync[F].delay(file.close())
+        )
+        .use { file =>
+          for {
+            _ <- Sync[F].blocking(
+              file.write(Encoding.encodeToBase58(deriveChildKey.vk.toByteArray))
+            )
+          } yield ()
+        }
+    }).value.map(_.get).flatten.map(_ => Right("Verification key exported"))
+  }
+
+  def exportVk(
+      keyFile: String,
+      password: String,
+      outputFile: String,
+      partyName: String,
+      contractName: String
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    (for {
+      indices <- OptionT(
+        walletStateAlgebra.getCurrentIndicesForFunds(
+          partyName,
+          contractName,
+          None
+        )
+      )
+      keypair <- OptionT(
+        walletManagementUtils
+          .loadKeys(keyFile, password)
           .map(x => Option(x))
       )
       deriveChildKey <- OptionT(
@@ -133,7 +181,7 @@ class WalletController[F[_]: Sync](
       )
     } yield {
       Resource
-        .make(Sync[F].delay(new PrintWriter(params.someOutputFile.get)))(file =>
+        .make(Sync[F].delay(new PrintWriter(outputFile)))(file =>
           Sync[F].delay(file.close())
         )
         .use { file =>
