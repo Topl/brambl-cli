@@ -8,7 +8,7 @@ import co.topl.brambl.cli.mockbase.BaseWalletAlgebra
 import co.topl.brambl.cli.mockbase.BaseWalletApi
 import co.topl.brambl.cli.mockbase.BaseWalletManagementUtils
 import co.topl.brambl.cli.mockbase.BaseWalletStateAlgebra
-import co.topl.brambl.cli.modules.DataApiModule
+import co.topl.brambl.cli.modules.WalletKeyApiModule
 import co.topl.brambl.models.Indices
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
@@ -19,9 +19,9 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import scala.io.Source
 
-class WalletControllerSpecs extends CatsEffectSuite with DataApiModule {
+class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
 
-  val walletApi = WalletApi.make[IO](dataApi)
+  val walletApi = WalletApi.make[IO](walletKeyApi)
 
   val keyPair = (for {
     w <- EitherT(walletApi.createNewWallet("test".getBytes(), None))
@@ -86,7 +86,12 @@ class WalletControllerSpecs extends CatsEffectSuite with DataApiModule {
         )
         res <- IO(Encoding.encodeToBase58(vk.vk.toByteArray))
         _ <- assertIO(
-          IO(Source.fromFile("test.vk").getLines().toList.mkString),
+          IO({
+            val src = Source.fromFile("test.vk")
+            val vks = src.getLines().toList.mkString
+            src.close()
+            vks
+          }),
           res
         )
       } yield ()

@@ -62,11 +62,5 @@ class BaseWalletApi[F[_]] extends WalletApi[F] {
       passphrase: Option[String]
   ): F[Either[WalletApi.WalletApiFailure, VaultStore[F]]] = ???
 
-  override def recoverWallet(
-      mainKeyVaultStore: VaultStore[F],
-      password: Array[Byte],
-      name: String,
-      snapshot: Option[Any]
-  ): F[Either[WalletApi.WalletApiFailure, Unit]] = ???
-
+  override def saveMnemonic(mnemonic: IndexedSeq[String], mnemonicName: String): F[Either[WalletApi.WalletApiFailure, Unit]] = ???
 }
