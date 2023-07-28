@@ -1,13 +1,10 @@
 package co.topl.brambl.cli.impl
 
-import cats.effect.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
 import quivr.models.KeyPair
-
-import java.io.FileOutputStream
 
 trait WalletAlgebra[F[_]] {
 
@@ -90,17 +87,13 @@ object WalletAlgebra {
     private def saveMnemonic(
       mnemonic: IndexedSeq[String],
       mnemonicFile: String
-                          ) = {
-      Resource
-        .make(
-          Sync[F]
-            .delay(
-              new FileOutputStream(mnemonicFile)
-            )
-        )(fos => Sync[F].delay(fos.close()))
-        .use { fos =>
-          Sync[F].delay(fos.write(mnemonic.mkString(",").getBytes))
-        }
+    ) = {
+      walletApi
+        .saveMnemonic(
+          mnemonic,
+          mnemonicFile
+        )
+        .map(_.fold(throw _, identity))
     }
 
     def createWalletFromParams(

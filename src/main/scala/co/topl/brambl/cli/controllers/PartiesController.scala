@@ -1,8 +1,8 @@
 package co.topl.brambl.cli.controllers
 
 import cats.Applicative
-import co.topl.brambl.cli.impl.PartyStorageAlgebra
-import co.topl.brambl.cli.model.WalletEntity
+import co.topl.brambl.dataApi.{PartyStorageAlgebra, WalletEntity}
+
 
 class PartiesController[F[_]: Applicative](
     partyStorageAlgebra: PartyStorageAlgebra[F]

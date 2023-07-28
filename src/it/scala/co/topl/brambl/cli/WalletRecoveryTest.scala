@@ -24,7 +24,7 @@ class WalletRecoveryTest
         Paths.get(TMP_DIR).toFile().listFiles().map(_.delete()).mkString("\n")
         Files.deleteIfExists(Paths.get(TMP_DIR))
       }
-      Files.createDirectory(Paths.get("./tmp"))
+      Files.createDirectory(Paths.get(TMP_DIR))
     },
     teardown = { _ => () }
   )

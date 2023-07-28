@@ -3,9 +3,8 @@ package co.topl.brambl.cli.controllers
 import cats.Id
 import cats.data.Validated
 import cats.effect.kernel.Sync
-import co.topl.brambl.cli.impl.ContractStorageAlgebra
+import co.topl.brambl.dataApi.{ContractStorageAlgebra, WalletContract}
 import co.topl.brambl.cli.impl.QuivrFastParser
-import co.topl.brambl.cli.model.WalletContract
 import co.topl.brambl.codecs.LockTemplateCodecs
 
 class ContractsController[F[_]: Sync](

@@ -24,6 +24,9 @@ Defaults.itSettings
 libraryDependencies := Seq(
   bramblSdk,
   bramblCrypto,
+  bramblServiceKit,
+  // Branch Testing
+  //bramblJitPack,
   scopt,
   munit,
   fs2Core,

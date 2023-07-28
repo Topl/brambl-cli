@@ -1,7 +1,6 @@
 package co.topl.brambl.cli.views
 
-import co.topl.brambl.cli.model.WalletEntity
-import co.topl.brambl.cli.model.WalletContract
+import co.topl.brambl.dataApi.{WalletEntity, WalletContract}
 
 object WalletModelDisplayOps {
 
@@ -12,9 +11,9 @@ object WalletModelDisplayOps {
     s"""Y Coordinate\tContract Name\tLock Template"""
 
   def display(walletEntity: WalletEntity): String =
-    s"""${walletEntity.idx}\t${walletEntity.name}"""
+    s"""${walletEntity.xIdx}\t${walletEntity.name}"""
 
   def display(walletContract: WalletContract): String =
-    s"""${walletContract.idx}\t${walletContract.name}\t${walletContract.lockTemplate}"""
+    s"""${walletContract.yIdx}\t${walletContract.name}\t${walletContract.lockTemplate}"""
 
 }
