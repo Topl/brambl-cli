@@ -5,6 +5,17 @@ import scopt.OParser
 object BramblCliParamsParserModule {
   val builder = OParser.builder[BramblCliParams]
 
+  val hostPort = {
+    import builder._
+    Seq(
+      opt[String]('h', "host")
+        .action((x, c) => c.copy(host = x))
+        .text("The host of the node. (mandatory)"),
+      opt[Int]("bifrost-port")
+        .action((x, c) => c.copy(bifrostPort = x))
+        .text("Port Bifrost node. (mandatory)")
+    )
+  }
   val hostPortNetwork = {
     import builder._
     Seq(
@@ -12,6 +23,13 @@ object BramblCliParamsParserModule {
         .action((x, c) => c.copy(network = x))
         .text(
           "Network name: Possible values: mainnet, testnet, private. (mandatory)"
+        )
+        .validate(x =>
+          if (NetworkIdentifiers.fromString(x).isDefined) success
+          else
+            failure(
+              s"Network $x is not supported.  Possible values: mainnet, testnet, private."
+            )
         ),
       opt[String]('h', "host")
         .action((x, c) => c.copy(host = x))
@@ -62,27 +80,23 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = "list"))
         .text("List existing contracts")
         .children(
-          hostPortNetwork ++ Seq(
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)")
-          ): _*
+          opt[Option[String]]("walletdb")
+            .action((x, c) => c.copy(someWalletFile = x))
+            .text("Wallet DB file. (mandatory)")
         ),
       cmd("add")
         .action((_, c) => c.copy(subcmd = "add"))
         .text("Add a new contracts")
         .children(
-          hostPortNetwork ++ Seq(
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)"),
-            opt[String]("contract-name")
-              .action((x, c) => c.copy(contractName = x))
-              .text("Name of the contract. (mandatory)"),
-            opt[String]("contract-template")
-              .action((x, c) => c.copy(lockTemplate = x))
-              .text("Contract template. (mandatory)")
-          ): _*
+          opt[Option[String]]("walletdb")
+            .action((x, c) => c.copy(someWalletFile = x))
+            .text("Wallet DB file. (mandatory)"),
+          opt[String]("contract-name")
+            .action((x, c) => c.copy(contractName = x))
+            .text("Name of the contract. (mandatory)"),
+          opt[String]("contract-template")
+            .action((x, c) => c.copy(lockTemplate = x))
+            .text("Contract template. (mandatory)")
         )
     )
 
@@ -94,11 +108,9 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = "list"))
         .text("List existing parties")
         .children(
-          hostPortNetwork ++ Seq(
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)")
-          ): _*
+          opt[Option[String]]("walletdb")
+            .action((x, c) => c.copy(someWalletFile = x))
+            .text("Wallet DB file. (mandatory)")
         ),
       cmd("add")
         .action((_, c) => c.copy(subcmd = "add"))
@@ -123,7 +135,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = "utxobyaddress"))
         .text("Query utxo")
         .children(
-          (coordinates ++ hostPortNetwork ++ Seq(
+          (coordinates ++ hostPort ++ Seq(
             opt[Option[String]]("walletdb")
               .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)")
@@ -138,7 +150,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = "blockbyheight"))
         .text("Get the block at a given height")
         .children(
-          (hostPortNetwork ++ Seq(
+          (hostPort ++ Seq(
             opt[Long]("height")
               .action((x, c) => c.copy(height = x))
               .text("The height of the block. (mandatory)")
@@ -148,7 +160,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = "blockbyid"))
         .text("Get the block with a given id")
         .children(
-          (hostPortNetwork ++ Seq(
+          (hostPort ++ Seq(
             opt[Option[String]]("block-id")
               .action((x, c) => c.copy(blockId = x))
               .text("The id of the block in base 58. (mandatory)")
@@ -158,7 +170,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = "transactionbyid"))
         .text("Get the transaction with a given id")
         .children(
-          (hostPortNetwork ++ Seq(
+          (hostPort ++ Seq(
             opt[Option[String]]("transaction-id")
               .action((x, c) => c.copy(transactionId = x))
               .text("The id of the transaction in base 58. (mandatory)")

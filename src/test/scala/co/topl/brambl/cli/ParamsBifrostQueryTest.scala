@@ -20,9 +20,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "--bifrost-port",
       "9084",
       "-h",
-      "localhost",
-      "-n",
-      "private"
+      "localhost"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assertEquals(validateParams(params0).isValid, true)
@@ -36,9 +34,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "--bifrost-port",
       "9084",
       "-h",
-      "localhost",
-      "-n",
-      "private"
+      "localhost"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assertEquals(validateParams(params0).isValid, true)
@@ -52,9 +48,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "--bifrost-port",
       "9084",
       "-h",
-      "localhost",
-      "-n",
-      "private"
+      "localhost"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assertEquals(validateParams(params0).isValid, true)
