@@ -354,7 +354,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = "prove"))
         .text("Prove transaction")
         .children(
-          ((coordinates ++ keyfileAndPassword ++ Seq(
+          ((keyfileAndPassword ++ Seq(
             opt[String]('o', "output")
               .action((x, c) => c.copy(someOutputFile = Some(x)))
               .text("The output file. (mandatory)"),

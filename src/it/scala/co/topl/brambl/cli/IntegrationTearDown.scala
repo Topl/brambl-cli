@@ -50,9 +50,6 @@ trait IntegrationTearDown
       _ <- IO.println(s"Proving teardown transaction")
       _ <- assertIO(
         proveSimpleTransaction(
-          FROM_PARTY,
-          FROM_CONTRACT,
-          None,
           txFileLocation("raw"),
           txFileLocation("proved")
         ).run(walletKeyConfig),

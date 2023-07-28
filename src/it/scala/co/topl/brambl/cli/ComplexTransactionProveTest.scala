@@ -62,9 +62,6 @@ class ComplexTransactionProveTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "noparty",
-            "genesis",
-            Some(1),
             ALICE_FIRST_TX_RAW,
             ALICE_FIRST_TX_PROVED
           ).run(aliceContext),
@@ -158,9 +155,6 @@ class ComplexTransactionProveTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "self",
-            "default",
-            None,
             ALICE_SECOND_TX_RAW,
             ALICE_SECOND_TX_PROVED
           ).run(aliceContext),
@@ -260,9 +254,6 @@ class ComplexTransactionProveTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "self",
-            "default",
-            None,
             ALICE_THIRD_TX_RAW,
             ALICE_THIRD_TX_PROVED
           ).run(aliceContext),
@@ -320,9 +311,6 @@ class ComplexTransactionProveTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "alice_bob_0",
-            "or_sign",
-            None,
             BOB_SECOND_TX_RAW,
             BOB_SECOND_TX_PROVED
           ).run(bobContext),
@@ -391,9 +379,6 @@ class ComplexTransactionProveTest
         _ <- IO.println("Proving by Alice")
         _ <- assertIO(
           proveSimpleTransaction(
-            "alice_bob_0",
-            "and_sign",
-            None,
             BOB_THIRD_TX_RAW,
             BOB_THIRD_TX_PROVED
           ).run(aliceContext),
@@ -403,9 +388,6 @@ class ComplexTransactionProveTest
         _ <- IO.println("Proving by Bob")
         _ <- assertIO(
           proveSimpleTransaction(
-            "alice_bob_0",
-            "and_sign",
-            None,
             BOB_THIRD_TX_PROVED,
             ALICE_FOURTH_TX_PROVED
           ).run(bobContext),

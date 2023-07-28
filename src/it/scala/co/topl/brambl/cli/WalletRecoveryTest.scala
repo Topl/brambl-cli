@@ -63,9 +63,6 @@ class WalletRecoveryTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "noparty",
-            "genesis",
-            Some(1),
             WALLET_FIRST_TX_RAW,
             WALLET_FIRST_TX_PROVED
           ).run(walletContext),
@@ -125,9 +122,6 @@ class WalletRecoveryTest
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
-            "self",
-            "default",
-            None,
             WALLET_SECOND_TX_RAW,
             WALLET_SECOND_TX_PROVED
           ).run(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)),
