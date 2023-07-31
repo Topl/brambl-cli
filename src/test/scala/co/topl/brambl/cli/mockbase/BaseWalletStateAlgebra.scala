@@ -11,7 +11,11 @@ import quivr.models.VerificationKey
 
 class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
-  override def initWalletState(vk: VerificationKey): F[Unit] = ???
+  override def initWalletState(
+      networkId: Int,
+      ledgerId: Int,
+      vk: VerificationKey
+  ): F[Unit] = ???
 
   override def getIndicesBySignature(
       signatureProposition: Proposition.DigitalSignature

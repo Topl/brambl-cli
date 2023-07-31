@@ -9,6 +9,8 @@ import quivr.models.KeyPair
 trait WalletAlgebra[F[_]] {
 
   def createWalletFromParams(
+      networkId: Int,
+      ledgerId: Int,
       password: String,
       somePassphrase: Option[String],
       someOutputFile: Option[String],
@@ -16,10 +18,10 @@ trait WalletAlgebra[F[_]] {
   ): F[Unit]
 
   def recoverKeysFromParams(
-    mnemonic: IndexedSeq[String],
-    password: String,
-    somePassphrase: Option[String],
-    someOutputFile: Option[String]
+      mnemonic: IndexedSeq[String],
+      password: String,
+      somePassphrase: Option[String],
+      someOutputFile: Option[String]
   ): F[Unit]
 
 }
@@ -42,9 +44,9 @@ object WalletAlgebra {
       .map(_.fold(throw _, identity))
 
     private def recoverWalletKey(
-      mnemonic: IndexedSeq[String],
-      password: String,
-      somePassphrase: Option[String]
+        mnemonic: IndexedSeq[String],
+        password: String,
+        somePassphrase: Option[String]
     ) = walletApi
       .importWallet(
         mnemonic,
@@ -85,8 +87,8 @@ object WalletAlgebra {
     }
 
     private def saveMnemonic(
-      mnemonic: IndexedSeq[String],
-      mnemonicFile: String
+        mnemonic: IndexedSeq[String],
+        mnemonicFile: String
     ) = {
       walletApi
         .saveMnemonic(
@@ -97,6 +99,8 @@ object WalletAlgebra {
     }
 
     def createWalletFromParams(
+        networkId: Int,
+        ledgerId: Int,
         password: String,
         somePassphrase: Option[String],
         someOutputFile: Option[String],
@@ -133,15 +137,15 @@ object WalletAlgebra {
             )
           }
         derivedKey <- walletApi.deriveChildKeysPartial(keyPair, 1, 1)
-        _ <- walletStateApi.initWalletState(derivedKey.vk)
+        _ <- walletStateApi.initWalletState(networkId, ledgerId, derivedKey.vk)
       } yield ()
 
     }
     def recoverKeysFromParams(
-      mnemonic: IndexedSeq[String],
-      password: String,
-      somePassphrase: Option[String],
-      someOutputFile: Option[String]
+        mnemonic: IndexedSeq[String],
+        password: String,
+        somePassphrase: Option[String],
+        someOutputFile: Option[String]
     ) = {
       import io.circe.syntax._
       import co.topl.crypto.encryption.VaultStore.Codecs._

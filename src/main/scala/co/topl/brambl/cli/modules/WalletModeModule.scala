@@ -1,11 +1,10 @@
 package co.topl.brambl.cli.modules
 
+import cats.effect.IO
+import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.WalletController
-import co.topl.brambl.cli.BramblCliSubCmd
-import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.dataApi.GenusQueryAlgebra
-import cats.effect.IO
 
 trait WalletModeModule
     extends WalletStateAlgebraModule
@@ -19,19 +18,13 @@ trait WalletModeModule
       validateParams: BramblCliValidatedParams
   ): IO[Either[String, String]] = {
     val walletController = new WalletController(
-      transactionBuilderApi(
-        validateParams.network.networkId,
-        NetworkConstants.MAIN_LEDGER_ID
-      ),
       walletStateAlgebra(
-        validateParams.walletFile,
-        validateParams.network.networkId
+        validateParams.walletFile
       ),
       walletManagementUtils,
       walletApi,
       walletAlgebra(
-        validateParams.walletFile,
-        validateParams.network.networkId
+        validateParams.walletFile
       ),
       GenusQueryAlgebra
         .make[IO](
@@ -65,6 +58,7 @@ trait WalletModeModule
           )
       case BramblCliSubCmd.importvks =>
         walletController.importVk(
+          validateParams.network.networkId,
           validateParams.inputVks,
           validateParams.someKeyFile.get,
           validateParams.password,
@@ -77,6 +71,7 @@ trait WalletModeModule
         walletController.recoverKeysFromParams(validateParams)
       case BramblCliSubCmd.sync =>
         walletController.sync(
+          validateParams.network.networkId,
           validateParams.contractName,
           validateParams.partyName
         )

@@ -5,6 +5,8 @@ import co.topl.brambl.cli.impl.WalletAlgebra
 class BaseWalletAlgebra[F[_]] extends WalletAlgebra[F] {
 
   override def createWalletFromParams(
+      networkId: Int,
+      ledgerId: Int,
       password: String,
       somePassphrase: Option[String],
       someOutputFile: Option[String],

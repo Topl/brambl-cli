@@ -15,8 +15,7 @@ trait SimpleTransactionModeModule
     case BramblCliSubCmd.broadcast =>
       new SimpleTransactionController(
         walletStateAlgebra(
-          validateParams.walletFile,
-          validateParams.network.networkId
+          validateParams.walletFile
         ),
         simplTransactionOps(
           validateParams.walletFile,
@@ -28,8 +27,7 @@ trait SimpleTransactionModeModule
     case BramblCliSubCmd.prove =>
       new SimpleTransactionController(
         walletStateAlgebra(
-          validateParams.walletFile,
-          validateParams.network.networkId
+          validateParams.walletFile
         ),
         simplTransactionOps(
           validateParams.walletFile,
@@ -46,8 +44,7 @@ trait SimpleTransactionModeModule
     case BramblCliSubCmd.create =>
       new SimpleTransactionController(
         walletStateAlgebra(
-          validateParams.walletFile,
-          validateParams.network.networkId
+          validateParams.walletFile
         ),
         simplTransactionOps(
           validateParams.walletFile,
