@@ -17,7 +17,7 @@ trait SimpleTransactionAlgebraModule
   ) = SimpleTransactionAlgebra
     .make[IO](
       walletApi,
-      walletStateAlgebra(walletFile, networkId),
+      walletStateAlgebra(walletFile),
       genusQueryAlgebra(
         host,
         bifrostPort

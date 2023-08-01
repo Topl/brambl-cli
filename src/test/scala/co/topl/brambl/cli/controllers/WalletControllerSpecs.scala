@@ -3,7 +3,6 @@ package co.topl.brambl.cli.controllers
 import cats.data.EitherT
 import cats.effect.IO
 import co.topl.brambl.cli.mockbase.BaseGenusQueryAlgebra
-import co.topl.brambl.cli.mockbase.BaseTransactionBuilderApi
 import co.topl.brambl.cli.mockbase.BaseWalletAlgebra
 import co.topl.brambl.cli.mockbase.BaseWalletApi
 import co.topl.brambl.cli.mockbase.BaseWalletManagementUtils
@@ -45,7 +44,6 @@ class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
   tmpDirectory.test("exportFinalVk should export the key at the right index") {
     _ =>
       val controller = new WalletController[IO](
-        new BaseTransactionBuilderApi[IO], // : TransactionBuilderApi[F],
         new BaseWalletStateAlgebra[IO] {
           override def getCurrentIndicesForFunds(
               party: String,

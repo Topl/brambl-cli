@@ -16,8 +16,7 @@ trait GenusQueryModeModule
     case BramblCliSubCmd.utxobyaddress =>
       new GenusQueryController(
         walletStateAlgebra(
-          validateParams.walletFile,
-          validateParams.network.networkId
+          validateParams.walletFile
         ),
         GenusQueryAlgebra
           .make[IO](

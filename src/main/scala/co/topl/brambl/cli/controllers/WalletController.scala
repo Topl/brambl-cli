@@ -18,9 +18,11 @@ import co.topl.brambl.codecs.AddressCodecs
 import co.topl.genus.services.TxoState
 import co.topl.genus.services.Txo
 import co.topl.brambl.models.Indices
+import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.models.LockAddress
+import co.topl.brambl.models.LockId
 
 class WalletController[F[_]: Sync](
-    transactionBuilderApi: TransactionBuilderApi[F],
     walletStateAlgebra: dataApi.WalletStateAlgebra[F],
     walletManagementUtils: WalletManagementUtils[F],
     walletApi: WalletApi[F],
@@ -29,6 +31,7 @@ class WalletController[F[_]: Sync](
 ) {
 
   def importVk(
+      networkId: Int,
       inputVks: Seq[File],
       keyfile: String,
       password: String,
@@ -37,6 +40,8 @@ class WalletController[F[_]: Sync](
   ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
+    import co.topl.brambl.common.ContainsEvidence.Ops
+    import co.topl.brambl.common.ContainsImmutable.instances._
     for {
       keyAndEncodedKeys <- (inputVks
         .map { file =>
@@ -85,9 +90,10 @@ class WalletController[F[_]: Sync](
       errorOrLock <- lockTempl.build(
         deriveChildKey.vk :: keyAndEncodedKeys.toList.map(x => x._1)
       )
-      // TODO: double check that this lock is validated
-      lockAddress <- transactionBuilderApi.lockAddress(
-        errorOrLock.toOption.get
+      lockAddress = LockAddress(
+        networkId,
+        NetworkConstants.MAIN_LEDGER_ID,
+        LockId(errorOrLock.toOption.get.sizedEvidence.digest.value)
       )
       _ <- walletStateAlgebra.updateWalletState(
         Encoding.encodeToBase58Check(
@@ -200,6 +206,8 @@ class WalletController[F[_]: Sync](
     import cats.implicits._
     walletAlgebra
       .createWalletFromParams(
+        params.network.networkId,
+        NetworkConstants.MAIN_LEDGER_ID,
         params.password,
         params.somePassphrase,
         params.someOutputFile,
@@ -228,11 +236,14 @@ class WalletController[F[_]: Sync](
   }
 
   def sync(
+      networkId: Int,
       party: String,
       contract: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
+    import co.topl.brambl.common.ContainsEvidence.Ops
+    import co.topl.brambl.common.ContainsImmutable.instances._
     (for {
       // current indices
       someIndices <- walletStateAlgebra.getCurrentIndicesForFunds(
@@ -277,8 +288,10 @@ class WalletController[F[_]: Sync](
           )
           .sequence
         lock <- walletStateAlgebra.getLock(party, contract, indices.z)
-        lockAddress <- transactionBuilderApi.lockAddress(
-          lock.get
+        lockAddress = LockAddress(
+          networkId,
+          NetworkConstants.MAIN_LEDGER_ID,
+          LockId(lock.get.getPredicate.sizedEvidence.digest.value)
         )
         _ <- walletStateAlgebra.updateWalletState(
           Encoding.encodeToBase58Check(

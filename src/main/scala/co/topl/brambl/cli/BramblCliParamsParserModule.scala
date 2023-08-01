@@ -258,7 +258,12 @@ object BramblCliParamsParserModule {
         ),
       cmd("current-address")
         .action((_, c) => c.copy(subcmd = "currentaddress"))
-        .text("Obtain current address"),
+        .text("Obtain current address")
+        .children(
+          opt[Option[String]]("walletdb")
+            .action((x, c) => c.copy(someWalletFile = x))
+            .text("Wallet DB file. (mandatory)")
+        ),
       cmd("export-vk")
         .action((_, c) => c.copy(subcmd = "exportvk"))
         .text("Export verification key")

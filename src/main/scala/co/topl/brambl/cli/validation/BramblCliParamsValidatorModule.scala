@@ -35,7 +35,7 @@ object BramblCliParamsValidatorModule
       case (BramblCliMode.wallet, BramblCliSubCmd.importvks) =>
         validateImportVksParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
-        ((mode, subcmd)).validNel
+        validateWalletFile(paramConfig.someWalletFile).map(_ => (mode, subcmd))
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
         validateSimpleTransactionCreateParams(paramConfig).map(_ =>
           (mode, subcmd)

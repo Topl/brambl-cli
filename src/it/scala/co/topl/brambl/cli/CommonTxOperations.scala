@@ -9,7 +9,6 @@ import co.topl.brambl.cli.modules.TransactionBuilderApiModule
 import co.topl.brambl.cli.modules.WalletAlgebraModule
 import co.topl.brambl.cli.modules.WalletManagementUtilsModule
 import co.topl.brambl.cli.modules.WalletStateAlgebraModule
-import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.dataApi.GenusQueryAlgebra
 
 trait CommonTxOperations
@@ -366,17 +365,12 @@ trait CommonTxOperations
     )
 
   def walletController(walletFile: String) = new WalletController(
-    transactionBuilderApi(
-      NetworkConstants.PRIVATE_NETWORK_ID,
-      NetworkConstants.MAIN_LEDGER_ID
-    ),
     walletStateAlgebra(
-      walletFile,
-      NetworkConstants.PRIVATE_NETWORK_ID
+      walletFile
     ),
     walletManagementUtils,
     walletApi,
-    walletAlgebra(walletFile, NetworkConstants.PRIVATE_NETWORK_ID),
+    walletAlgebra(walletFile),
     genusQueryAlgebra
   )
 

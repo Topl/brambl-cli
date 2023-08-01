@@ -176,7 +176,7 @@ Note that the passphrase **must** be the same passphrase used to initially gener
 To get the current address of the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet current-address -w test -n private -o $MAIN_KEY --walletdb $WALLET
+cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet current-address --walletdb $WALLET
 ```
 
 This will output the current address of the wallet.

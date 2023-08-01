@@ -7,7 +7,6 @@ import co.topl.brambl.cli.modules.GenusQueryAlgebraModule
 import co.topl.brambl.cli.modules.TransactionBuilderApiModule
 import co.topl.brambl.cli.modules.WalletStateAlgebraModule
 import co.topl.brambl.codecs.AddressCodecs
-import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import munit.CatsEffectAssertions.assertIO
@@ -30,7 +29,7 @@ trait IntegrationTearDown
 
   def tearDown(walletKeyConfig: WalletKeyConfig): IO[ExitCode] = {
     val genus = genusQueryAlgebra(HOST, BIFROST_PORT)
-    val walletState = walletStateAlgebra(walletKeyConfig.walletFile, NetworkConstants.PRIVATE_NETWORK_ID)
+    val walletState = walletStateAlgebra(walletKeyConfig.walletFile)
     for {
       changeAmount <- getChangeAmount(genus, walletState)
       _ <- IO.println(s"Creating teardown transaction: Moving change ($changeAmount LVLs) back to genesis")

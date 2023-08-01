@@ -5,8 +5,8 @@ import co.topl.brambl.cli.impl.WalletAlgebra
 trait WalletAlgebraModule
     extends WalletStateAlgebraModule
     with WalletApiModule {
-  def walletAlgebra(file: String, networkId: Int) = WalletAlgebra.make(
+  def walletAlgebra(file: String) = WalletAlgebra.make(
     walletApi,
-    walletStateAlgebra(file, networkId)
+    walletStateAlgebra(file)
   )
 }
