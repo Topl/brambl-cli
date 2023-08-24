@@ -220,24 +220,6 @@ trait CommonValidationModule {
     }
   }
 
-  def validateNoPassphrase(somePassphrase: Option[String]) =
-    somePassphrase match {
-      case Some(_) =>
-        Validated.invalidNel(
-          "Passphrase must not be specified"
-        )
-      case None => Validated.validNel(None)
-    }
-
-  def validateNoPassword(password: String) =
-    if (password.trim().length > 0) {
-      Validated.invalidNel(
-        "Password must not be specified"
-      )
-    } else {
-      Validated.validNel(password)
-    }
-
   def validatePassphrase(
       somePassphrase: Option[String]
   ): ValidatedNel[String, Option[String]] = {

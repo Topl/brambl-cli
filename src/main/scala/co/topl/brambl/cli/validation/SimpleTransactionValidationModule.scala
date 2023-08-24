@@ -13,23 +13,6 @@ import co.topl.brambl.utils.EncodingError
 trait SimpleTransactionValidationModule {
   self: CommonValidationModule =>
 
-  def validateNoAddressOrCoordinates(
-      someAddress: Option[String],
-      someToParty: Option[String],
-      someToContract: Option[String]
-  ): ValidatedNel[String, Unit] = {
-    import cats.implicits._
-    if (someAddress.isDefined) {
-      s"Address is not required".invalidNel
-    } else if (someToParty.isDefined) {
-      s"toParty is not required".invalidNel
-    } else if (someToContract.isDefined) {
-      s"toContract is not required".invalidNel
-    } else {
-      ().validNel
-    }
-  }
-
   def validateAddress(
       someAddress: Option[String]
   ): ValidatedNel[String, LockAddress] = {
@@ -65,15 +48,6 @@ trait SimpleTransactionValidationModule {
       amount.validNel
     } else {
       "Amount must be greater than 0".invalidNel
-    }
-  }
-
-  def validateNoAmount(amount: Long) = {
-    import cats.implicits._
-    if (amount == 0) {
-      amount.validNel
-    } else {
-      "Amount is not required".invalidNel
     }
   }
 
@@ -141,7 +115,6 @@ trait SimpleTransactionValidationModule {
         paramConfig.someToParty,
         paramConfig.someToContract
       ),
-      validateNoPassphrase(paramConfig.somePassphrase),
       validateNonEmpty("Password", paramConfig.password),
       validateHost(paramConfig.host),
       validateFromCoordinates(
@@ -160,7 +133,6 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNoPassphrase(paramConfig.somePassphrase),
       validateNonEmpty("Password", paramConfig.password),
       validateOutputfile(paramConfig.someOutputFile, required = true),
       validateInputFile("Key file", paramConfig.someKeyFile, required = true),
@@ -177,7 +149,6 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNoPassphrase(paramConfig.somePassphrase),
       validateHost(paramConfig.host),
       validateInputFile(
         "Transaction file",
@@ -192,20 +163,12 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNoAddressOrCoordinates(
-        paramConfig.toAddress,
-        paramConfig.someToParty,
-        paramConfig.someToContract
-      ),
-      validateNoPassphrase(paramConfig.somePassphrase),
-      validateNoPassword(paramConfig.password),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
         paramConfig.someFromContract,
         paramConfig.someFromState
-      ),
-      validateNoAmount(paramConfig.amount)
+      )
     ).sequence.map(_ => paramConfig)
   }
   def validateBlockByHeightQueryParams(

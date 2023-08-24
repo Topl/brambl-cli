@@ -20,7 +20,6 @@ object BramblCliParamsValidatorModule
       subcmd: BramblCliSubCmd.Value,
       paramConfig: BramblCliParams
   ) = {
-    import cats.implicits._
     (mode, subcmd) match {
       case (BramblCliMode.tx, BramblCliSubCmd.create) =>
         validateTxCreateParam(paramConfig).map(_ => (mode, subcmd))
