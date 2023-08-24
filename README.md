@@ -24,7 +24,7 @@ Your system needs to have the following software installed.
 
 ```shell
 ➜ cd csInstallPath
-➜  csInstallPath ./cs launch https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 --bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
+➜  csInstallPath ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
 ```
 
 ### Usage mode
