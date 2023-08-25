@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 types. The valid token types are "lvl", "topl", "asset" and "all". Documentation
 was also updated.
 - Refactor validation for: walletdb parameter
-
+- The walletdb parameter for wallet init is now `--newwallet` instead of `--walletdb`.
+This is because of a problem with the scopt library that forced that change.
 
 ### Removed
 

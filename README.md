@@ -125,7 +125,7 @@ Initialize wallet
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -w, --password <value>   Password for the encrypted key. (mandatory)
   -o, --output <value>     The output file. (optional)
-  --walletdb <value>       Wallet DB file. (mandatory)
+  --newwallet <value>      Wallet DB file. (mandatory)
   --mnemonicfile <value>   Mnemonic output file. (mandatory)
   -P, --passphrase <value>
                            Passphrase for the encrypted key. (optional))
