@@ -7,13 +7,35 @@ The Brambl CLI is a command line interface to the Topl platform. It is a simple 
 Your system needs to have the following software installed.
 
 - A Java Virtual Machine (JVM).- The bifrost-daml-broker is a Java application, and thus Java is needed.
-- [Coursier](https://get-coursier.io/docs/cli-installation).- A simple command line tool (CLI) to
-to run Java applications without any setup. It is very easy to install.
+- [Coursier](https://get-coursier.io/docs/cli-installation).- A simple command line tool (CLI) to run Java applications without any setup. It is very easy to install.
+- check coursier install step
+ 
+```shell
+$ cd csInstallPath
+$  csInstallPath ./cs version  
+2.1.6
+```
 
 ## Using the CLI
 
+- There is no need to clone this repository for CLI usages, you can launch a release version of the CLI providing the repository.
+- You can check releases on [sonatype](https://s01.oss.sonatype.org/content/repositories/releases/co/topl/brambl-cli_2.13/)
+- Then just launch your coursier application
+
+```shell
+$ cd csInstallPath
+$  csInstallPath ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
+```
+
+### Usage mode
+
 ```
 Usage:  [contracts|parties|genus-query|bifrost-query|wallet|tx|simpletransaction]
+```
+
+### Contract mode
+
+```
 Command: contracts [list|add] [options]
 Contract mode
 Command: contracts list
@@ -25,6 +47,11 @@ Add a new contracts
   --contract-name <value>  Name of the contract. (mandatory)
   --contract-template <value>
                            Contract template. (mandatory)
+```
+
+### Entity mode
+
+```
 Command: parties [list|add] [options]
 Entity mode
 Command: parties list
@@ -37,6 +64,12 @@ Add a new parties
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
   --party-name <value>     Name of the party. (mandatory)
+
+```
+
+### Genus query mode
+
+```
 Command: genus-query [utxo-by-address] [options]
 Genus query mode
 Command: genus-query utxo-by-address
@@ -48,6 +81,11 @@ Query utxo
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
   --token <value>          The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'
+```
+
+### Bifrost query mode
+
+```  
 Command: bifrost-query [block-by-height|block-by-id|transaction-by-id] [options]
 Bifrost query mode
 Command: bifrost-query block-by-height
@@ -66,6 +104,12 @@ Get the transaction with a given id
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --transaction-id <value>
                            The id of the transaction in base 58. (mandatory)
+                           
+```
+
+### Wallet mode
+
+```                           
 Command: wallet [sync|init|recover-keys|current-address|export-vk|import-vks] [options]
 Wallet mode
 Command: wallet sync
@@ -113,6 +157,12 @@ Import verification key
   --party-name <value>     Name of the party. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
   --input-vks <value>      The keys to import. (mandatory)
+  
+```
+
+### Transaction mode
+
+```  
 Command: tx [create] [options]
 Transaction mode
 Command: tx create
@@ -122,6 +172,12 @@ Create transaction
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   -o, --output <value>     The output file. (mandatory)
   -i, --input <value>      The input file. (mandatory)
+  
+```
+
+### Simple transaction mode
+
+```  
 Command: simpletransaction [create|broadcast|prove] [options]
 Simple transaction mode
 Command: simpletransaction create
@@ -155,10 +211,15 @@ Prove transaction
   -i, --input <value>      The input file. (mandatory)
 ```
 
-We assume that the command to lauch has been aliased to `brambl-cli`.
+## Launch Examples
+ 
+The below examples assumes:
+
+- Coursier is installed.
+- That the command to lauch has been aliased to `brambl-cli`.
 
 ```
-alias brambl-cli="cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha2 --"
+alias brambl-cli="cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 --"
 ```
 
 ### Initialize a wallet
