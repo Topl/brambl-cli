@@ -23,7 +23,7 @@ object Dependencies {
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 
   lazy val catEffects = "org.typelevel" %% "cats-effect" % "3.3.12"
-  lazy val scopt = "com.github.scopt" %% "scopt" % "4.0.1"
+  lazy val scopt = "com.github.scopt" %% "scopt" % "4.1.0"
   lazy val munit = "org.scalameta" %% "munit" % "1.0.0-M8" % "it,test"
   lazy val fs2Core = "co.fs2" %% "fs2-core" % "3.5.0"
   lazy val fs2IO = "co.fs2" %% "fs2-io" % "3.5.0"

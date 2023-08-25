@@ -14,17 +14,15 @@ trait WalletValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNonEmpty("Password", paramConfig.password),
       validatePassphrase(paramConfig.somePassphrase),
       validateOutputfile(paramConfig.someMnemonicFile, required = true)
     ).sequence.map(_ => paramConfig)
   }
- def validateKeyRecoveryParams(
+  def validateKeyRecoveryParams(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNonEmpty("Password", paramConfig.password),
       validateMnemonic(paramConfig.mnemonic),
       validatePassphrase(paramConfig.somePassphrase)
     ).sequence.map(_ => paramConfig)
@@ -79,10 +77,7 @@ trait WalletValidationModule {
         "Keyfile",
         paramConfig.someKeyFile,
         required = true
-      ),
-      validateNonEmpty("Party name", paramConfig.partyName),
-      validateNonEmpty("Contract name", paramConfig.contractName),
-      validateNonEmpty("Password", paramConfig.password)
+      )
     )).sequence.map(_ => paramConfig)
   }
 
@@ -92,9 +87,7 @@ trait WalletValidationModule {
     import cats.implicits._
     (
       List(
-        validateHost(paramConfig.host),
-        validateNonEmpty("Party name", paramConfig.partyName),
-        validateNonEmpty("Contract name", paramConfig.contractName)
+        validateHost(paramConfig.host)
       )
     ).sequence.map(_ => paramConfig)
   }
@@ -129,10 +122,7 @@ trait WalletValidationModule {
       validateOutputfile(
         paramConfig.someOutputFile,
         required = true
-      ),
-      validateNonEmpty("Party name", paramConfig.partyName),
-      validateNonEmpty("Contract name", paramConfig.contractName),
-      validateNonEmpty("Password", paramConfig.password)
+      )
     ).sequence.map(_ => paramConfig)
   }
 

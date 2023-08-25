@@ -57,6 +57,8 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "private",
       "-a",
       "100",
+      "-w",
+      "test",
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
@@ -90,6 +92,8 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "private",
       "-a",
       "100",
+      "-w",
+      "test",
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
@@ -158,7 +162,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assert(validateParams(params0).isInvalid)
   }
-  test("Test invalid transaction create with no toAddress, toParty or toContract") {
+  test(
+    "Test invalid transaction create with no toAddress, toParty or toContract"
+  ) {
     val args0 = List(
       "simpletransaction",
       "create",
@@ -177,12 +183,17 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "wallet.db",
+      "-w",
+      "test"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assert(validateParams(params0).isInvalid)
+
   }
-  test("Test invalid transaction create with only one of toParty or toContract") {
+  test(
+    "Test invalid transaction create with only one of toParty or toContract"
+  ) {
     val args0 = List(
       "simpletransaction",
       "create",
@@ -207,5 +218,6 @@ class ParamsSimpleTransactionTest extends FunSuite {
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assert(validateParams(params0).isInvalid)
+
   }
 }

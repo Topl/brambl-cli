@@ -36,16 +36,6 @@ trait CommonValidationModule {
     }
   }
 
-  def validateNonEmpty(fieldName: String, s: String) = {
-    if (s.trim().length > 0) {
-      Validated.validNel(s)
-    } else {
-      Validated.invalidNel(
-        s"$fieldName must not be empty"
-      )
-    }
-  }
-
   def validateOutputfile(
       someOutputFile: Option[String],
       required: Boolean

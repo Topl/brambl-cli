@@ -26,11 +26,11 @@ trait BifrostQueryModeModule extends ChannelResourceModule {
       case BramblCliSubCmd.blockbyid =>
         new BifrostQueryController(
           bifrostQueryAlgebra
-        ).blockById(validateParams.blockId.get)
+        ).blockById(validateParams.blockId)
       case BramblCliSubCmd.transactionbyid =>
         new BifrostQueryController(
           bifrostQueryAlgebra
-        ).fetchTransaction(validateParams.transactionId.get)
+        ).fetchTransaction(validateParams.transactionId)
     }
   }
 

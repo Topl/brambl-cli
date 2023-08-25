@@ -7,7 +7,6 @@ import cats.syntax.either._
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.models.LockAddress
-import co.topl.brambl.utils.Encoding
 import co.topl.brambl.utils.EncodingError
 
 trait SimpleTransactionValidationModule {
@@ -36,8 +35,12 @@ trait SimpleTransactionValidationModule {
       someToContract: Option[String]
   ): ValidatedNel[String, Unit] =
     (someAddress, someToParty, someToContract) match {
-      case (Some(addr), None, None) => validateAddress(Some(addr)).map(_ => ())
-      case (None, Some(_), Some(_)) => ().validNel
+      case (Some(addr), None, None) =>
+        println("Validating address")
+        validateAddress(Some(addr)).map(_ => ())
+      case (None, Some(_), Some(_)) =>
+        println("Not validating address")
+        ().validNel
       case _ =>
         "Exactly toParty and toContract together or only toAddress must be specified".invalidNel
     }
@@ -58,34 +61,6 @@ trait SimpleTransactionValidationModule {
     } else {
       "Height must be greater or equal to zero.".invalidNel
     }
-  }
-  def validateBlockId(blockId: Option[String]) = {
-    import cats.implicits._
-    blockId
-      .map(bId => {
-        Encoding
-          .decodeFromBase58(bId)
-          .left
-          .map(x => s"Invalid blockId: ${x.getMessage()}")
-          .toValidatedNel
-      })
-      .getOrElse(
-        "BlockId is a required field".invalidNel
-      )
-  }
-  def validateTransactionId(transactionId: Option[String]) = {
-    import cats.implicits._
-    transactionId
-      .map(tId => {
-        Encoding
-          .decodeFromBase58(tId)
-          .left
-          .map(x => s"Invalid transaction id: ${x.getMessage()}")
-          .toValidatedNel
-      })
-      .getOrElse(
-        "TransactionId is a required field".invalidNel
-      )
   }
 
   def validateFromCoordinates(
@@ -115,7 +90,6 @@ trait SimpleTransactionValidationModule {
         paramConfig.someToParty,
         paramConfig.someToContract
       ),
-      validateNonEmpty("Password", paramConfig.password),
       validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
@@ -133,7 +107,6 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateNonEmpty("Password", paramConfig.password),
       validateOutputfile(paramConfig.someOutputFile, required = true),
       validateInputFile("Key file", paramConfig.someKeyFile, required = true),
       validateInputFile(
@@ -177,42 +150,6 @@ trait SimpleTransactionValidationModule {
     import cats.implicits._
     List(
       validateHeight(paramConfig.height)
-    ).sequence.map(_ => paramConfig)
-  }
-  def validateBlockByIdQueryParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateBlockId(paramConfig.blockId)
-    ).sequence.map(_ => paramConfig)
-  }
-  def validateTransactionByIdQueryParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateTransactionId(paramConfig.transactionId)
-    ).sequence.map(_ => paramConfig)
-  }
-
-
-  def validateAddEntitiyParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateNonEmpty("Party name", paramConfig.partyName)
-    ).sequence.map(_ => paramConfig)
-  }
-
-  def validateAddContractParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateNonEmpty("Contract name", paramConfig.contractName),
-      validateNonEmpty("Contract template", paramConfig.lockTemplate)
     ).sequence.map(_ => paramConfig)
   }
 

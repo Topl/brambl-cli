@@ -38,7 +38,9 @@ class ComplexTransactionWithFileTest
     import scala.concurrent.duration._
     assertIO(
       for {
+        _ <- IO.println("Create a wallet for alice")
         _ <- createWallet().run(aliceContext)
+        _ <- IO.println("Created a wallet for alice")
         _ <- IO.asyncForIO.timeout(
           (for {
             _ <- IO.println("Querying genesis to start")

@@ -52,20 +52,6 @@ object BramblCliParamsValidatorModule
         validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.bifrostquery, BramblCliSubCmd.blockbyheight) =>
         validateBlockByHeightQueryParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.bifrostquery, BramblCliSubCmd.blockbyid) =>
-        validateBlockByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.bifrostquery, BramblCliSubCmd.transactionbyid) =>
-        validateTransactionByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.parties, BramblCliSubCmd.list) =>
-        import cats.implicits._
-        (mode, subcmd).validNel
-      case (BramblCliMode.contracts, BramblCliSubCmd.list) =>
-        import cats.implicits._
-        (mode, subcmd).validNel
-      case (BramblCliMode.parties, BramblCliSubCmd.add) =>
-        validateAddEntitiyParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.contracts, BramblCliSubCmd.add) =>
-        validateAddContractParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.invalid, BramblCliSubCmd.invalid) =>
         import cats.implicits._
         "Invalid mode and subcmd".invalidNel
@@ -75,6 +61,9 @@ object BramblCliParamsValidatorModule
       case (_, BramblCliSubCmd.invalid) =>
         import cats.implicits._
         "Invalid subcmd".invalidNel
+      case (_, _) => 
+        import cats.implicits._
+        (mode, subcmd).validNel
     }
   }
 
