@@ -11,8 +11,8 @@ Your system needs to have the following software installed.
 - check coursier install step
  
 ```shell
-➜ cd csInstallPath
-➜  csInstallPath ./cs version  
+$ cd csInstallPath
+$  csInstallPath ./cs version  
 2.1.6
 ```
 
@@ -20,11 +20,11 @@ Your system needs to have the following software installed.
 
 - There is no need to clone this repository for CLI usages, you can launch a release version of the CLI providing the repository.
 - You can check releases on [sonatype](https://s01.oss.sonatype.org/content/repositories/releases/co/topl/brambl-cli_2.13/)
-- Then just lunch your coursier application
+- Then just launch your coursier application
 
 ```shell
-➜ cd csInstallPath
-➜  csInstallPath ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
+$ cd csInstallPath
+$  csInstallPath ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
 ```
 
 ### Usage mode
