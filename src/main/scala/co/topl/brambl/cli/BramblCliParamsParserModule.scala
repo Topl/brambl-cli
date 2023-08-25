@@ -5,6 +5,16 @@ import scopt.OParser
 object BramblCliParamsParserModule {
   val builder = OParser.builder[BramblCliParams]
 
+  import builder._
+
+  def validateWalletDbFile(walletDbFile: Option[String]): Either[String, Unit] =
+    walletDbFile match {
+      case Some(x) =>
+        if (new java.io.File(x).exists()) success
+        else failure(s"Wallet file $x does not exist")
+      case None => failure(s"Wallet file is a mandatory parameter")
+    }
+
   val hostPort = {
     import builder._
     Seq(
@@ -65,12 +75,11 @@ object BramblCliParamsParserModule {
         .action((x, c) => c.copy(password = x))
         .text("Password for the encrypted key. (mandatory)"),
       opt[Option[String]]("walletdb")
+        .validate(validateWalletDbFile(_))
         .action((x, c) => c.copy(someWalletFile = x))
         .text("Wallet DB file. (mandatory)")
     )
   }
-
-  import builder._
 
   val contractsMode = cmd("contracts")
     .action((_, c) => c.copy(mode = BramblCliMode.contracts))
@@ -81,6 +90,7 @@ object BramblCliParamsParserModule {
         .text("List existing contracts")
         .children(
           opt[Option[String]]("walletdb")
+            .validate(validateWalletDbFile(_))
             .action((x, c) => c.copy(someWalletFile = x))
             .text("Wallet DB file. (mandatory)")
         ),
@@ -89,6 +99,7 @@ object BramblCliParamsParserModule {
         .text("Add a new contracts")
         .children(
           opt[Option[String]]("walletdb")
+            .validate(validateWalletDbFile(_))
             .action((x, c) => c.copy(someWalletFile = x))
             .text("Wallet DB file. (mandatory)"),
           opt[String]("contract-name")
@@ -109,6 +120,7 @@ object BramblCliParamsParserModule {
         .text("List existing parties")
         .children(
           opt[Option[String]]("walletdb")
+            .validate(validateWalletDbFile(_))
             .action((x, c) => c.copy(someWalletFile = x))
             .text("Wallet DB file. (mandatory)")
         ),
@@ -118,6 +130,7 @@ object BramblCliParamsParserModule {
         .children(
           hostPortNetwork ++ Seq(
             opt[Option[String]]("walletdb")
+              .validate(validateWalletDbFile(_))
               .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)"),
             opt[String]("party-name")
@@ -140,11 +153,14 @@ object BramblCliParamsParserModule {
         .children(
           (coordinates ++ hostPort ++ Seq(
             opt[Option[String]]("walletdb")
+              .validate(validateWalletDbFile(_))
               .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)"),
             opt[TokenType.Value]("token")
               .action((x, c) => c.copy(tokenType = x))
-              .text("The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'")
+              .text(
+                "The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'"
+              )
               .optional()
           )): _*
         )
@@ -201,6 +217,7 @@ object BramblCliParamsParserModule {
               .action((x, c) => c.copy(contractName = x))
               .text("Name of the contract. (mandatory)"),
             opt[Option[String]]("walletdb")
+              .validate(validateWalletDbFile(_))
               .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)")
           ))): _*
@@ -222,6 +239,7 @@ object BramblCliParamsParserModule {
               .action((x, c) => c.copy(someOutputFile = Some(x)))
               .text("The output file. (optional)"),
             opt[Option[String]]("walletdb")
+              .validate(validateWalletDbFile(_))
               .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)"),
             opt[Option[String]]("mnemonicfile")
@@ -254,6 +272,7 @@ object BramblCliParamsParserModule {
               .action((x, c) => c.copy(someOutputFile = Some(x)))
               .text("The output file. (optional)"),
             opt[Option[String]]("walletdb")
+              .validate(validateWalletDbFile(_))
               .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)")
           ) ++
@@ -268,6 +287,7 @@ object BramblCliParamsParserModule {
         .text("Obtain current address")
         .children(
           opt[Option[String]]("walletdb")
+            .validate(validateWalletDbFile(_))
             .action((x, c) => c.copy(someWalletFile = x))
             .text("Wallet DB file. (mandatory)")
         ),
@@ -280,6 +300,7 @@ object BramblCliParamsParserModule {
               .action((x, c) => c.copy(someOutputFile = Some(x)))
               .text("The output file."),
             opt[Option[String]]("walletdb")
+              .validate(validateWalletDbFile(_))
               .action((x, c) => c.copy(someWalletFile = x))
               .text("Wallet DB file. (mandatory)"),
             opt[String]("party-name")
@@ -298,6 +319,7 @@ object BramblCliParamsParserModule {
         .text("Import verification key")
         .children(
           opt[Option[String]]("walletdb")
+            .validate(validateWalletDbFile(_))
             .action((x, c) => c.copy(someWalletFile = x))
             .text("Wallet DB file. (mandatory)"),
           opt[String]("party-name")

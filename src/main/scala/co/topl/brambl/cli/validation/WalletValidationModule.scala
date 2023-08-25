@@ -16,7 +16,6 @@ trait WalletValidationModule {
     List(
       validateNonEmpty("Password", paramConfig.password),
       validatePassphrase(paramConfig.somePassphrase),
-      validateWalletFile(paramConfig.someWalletFile),
       validateOutputfile(paramConfig.someMnemonicFile, required = true)
     ).sequence.map(_ => paramConfig)
   }
@@ -27,8 +26,7 @@ trait WalletValidationModule {
     List(
       validateNonEmpty("Password", paramConfig.password),
       validateMnemonic(paramConfig.mnemonic),
-      validatePassphrase(paramConfig.somePassphrase),
-      validateWalletFile(paramConfig.someWalletFile)
+      validatePassphrase(paramConfig.somePassphrase)
     ).sequence.map(_ => paramConfig)
   }
 
@@ -94,11 +92,6 @@ trait WalletValidationModule {
     import cats.implicits._
     (
       List(
-        validateInputFile(
-          "Wallet DB",
-          paramConfig.someWalletFile,
-          required = true
-        ),
         validateHost(paramConfig.host),
         validateNonEmpty("Party name", paramConfig.partyName),
         validateNonEmpty("Contract name", paramConfig.contractName)
@@ -131,11 +124,6 @@ trait WalletValidationModule {
       validateInputFile(
         "Keyfile",
         paramConfig.someKeyFile,
-        required = true
-      ),
-      validateInputFile(
-        "Wallet DB",
-        paramConfig.someWalletFile,
         required = true
       ),
       validateOutputfile(

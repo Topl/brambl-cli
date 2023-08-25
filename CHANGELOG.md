@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The query-utxo command now supports a new parameter to filter UTXOs by token
 types. The valid token types are "lvl", "topl", "asset" and "all". Documentation
 was also updated.
+- Refactor validation for: walletdb parameter
 
 
 ### Removed

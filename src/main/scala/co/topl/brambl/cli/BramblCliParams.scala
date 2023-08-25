@@ -9,15 +9,17 @@ import scala.collection.immutable.IndexedSeq
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val invalid, wallet, genusquery, bifrostquery, simpletransaction, parties, contracts, tx =
+  val invalid, wallet, genusquery, bifrostquery, simpletransaction, parties,
+      contracts, tx =
     Value
 }
 
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
-  val invalid, init, recoverkeys, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
-      prove, broadcast, currentaddress, list, add, exportvk, importvks, sync = Value
+  val invalid, init, recoverkeys, utxobyaddress, blockbyheight, blockbyid,
+      transactionbyid, create, prove, broadcast, currentaddress, list, add,
+      exportvk, importvks, sync = Value
 }
 
 sealed abstract class NetworkIdentifiers(
@@ -100,7 +102,7 @@ final case class BramblCliValidatedParams(
     inputVks: Seq[File] = Seq(),
     host: String = "",
     bifrostPort: Int = 0,
-    walletFile: String = "",
+    walletFile: String,
     password: String,
     fromParty: String,
     fromContract: String,

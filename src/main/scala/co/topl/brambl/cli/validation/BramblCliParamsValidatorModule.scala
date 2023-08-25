@@ -5,10 +5,10 @@ import co.topl.brambl.cli.BramblCliMode
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliValidatedParams
-import co.topl.brambl.cli.validation.WalletValidationModule
-import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.cli.NetworkIdentifiers
 import co.topl.brambl.cli.Privatenet
+import co.topl.brambl.cli.validation.WalletValidationModule
+import co.topl.brambl.codecs.AddressCodecs
 
 object BramblCliParamsValidatorModule
     extends CommonValidationModule
@@ -34,7 +34,8 @@ object BramblCliParamsValidatorModule
       case (BramblCliMode.wallet, BramblCliSubCmd.importvks) =>
         validateImportVksParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
-        validateWalletFile(paramConfig.someWalletFile).map(_ => (mode, subcmd))
+        import cats.implicits._
+        (mode, subcmd).validNel
       case (BramblCliMode.simpletransaction, BramblCliSubCmd.create) =>
         validateSimpleTransactionCreateParams(paramConfig).map(_ =>
           (mode, subcmd)
@@ -56,14 +57,16 @@ object BramblCliParamsValidatorModule
       case (BramblCliMode.bifrostquery, BramblCliSubCmd.transactionbyid) =>
         validateTransactionByIdQueryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.parties, BramblCliSubCmd.list) =>
-        validateListParams(paramConfig).map(_ => (mode, subcmd))
+        import cats.implicits._
+        (mode, subcmd).validNel
       case (BramblCliMode.contracts, BramblCliSubCmd.list) =>
-        validateListParams(paramConfig).map(_ => (mode, subcmd))
+        import cats.implicits._
+        (mode, subcmd).validNel
       case (BramblCliMode.parties, BramblCliSubCmd.add) =>
         validateAddEntitiyParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.contracts, BramblCliSubCmd.add) =>
         validateAddContractParams(paramConfig).map(_ => (mode, subcmd))
-        case (BramblCliMode.invalid, BramblCliSubCmd.invalid) =>
+      case (BramblCliMode.invalid, BramblCliSubCmd.invalid) =>
         import cats.implicits._
         "Invalid mode and subcmd".invalidNel
       case (BramblCliMode.invalid, _) =>

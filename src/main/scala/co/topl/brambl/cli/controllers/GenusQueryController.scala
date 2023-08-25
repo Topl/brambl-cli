@@ -17,7 +17,7 @@ class GenusQueryController[F[_]: Monad](
       fromParty: String,
       fromContract: String,
       someFromState: Option[Int],
-      tokenType: TokenType.Value
+      tokenType: TokenType.Value = TokenType.all
   ): F[Either[String, String]] = {
 
     import cats.implicits._
