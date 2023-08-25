@@ -9,14 +9,14 @@ import scala.collection.immutable.IndexedSeq
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val wallet, genusquery, bifrostquery, simpletransaction, parties, contracts, tx =
+  val invalid, wallet, genusquery, bifrostquery, simpletransaction, parties, contracts, tx =
     Value
 }
 
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
-  val init, recoverkeys, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
+  val invalid, init, recoverkeys, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
       prove, broadcast, currentaddress, list, add, exportvk, importvks, sync = Value
 }
 
@@ -56,12 +56,13 @@ case object Privatenet
 object TokenType extends Enumeration {
   type TokenType = Value
 
-  val lvl = Value
+  val all, lvl, topl, asset = Value
 }
 
 final case class BramblCliParams(
-    mode: String = "",
-    subcmd: String = "",
+    mode: BramblCliMode.Value = BramblCliMode.invalid,
+    subcmd: BramblCliSubCmd.Value = BramblCliSubCmd.invalid,
+    tokenType: TokenType.Value = TokenType.all,
     password: String = "",
     host: String = "",
     bifrostPort: Int = 0,
@@ -91,6 +92,7 @@ final case class BramblCliParams(
 final case class BramblCliValidatedParams(
     mode: BramblCliMode.Value,
     subcmd: BramblCliSubCmd.Value,
+    tokenType: TokenType.Value = TokenType.all,
     network: NetworkIdentifiers,
     partyName: String = "",
     contractName: String = "",

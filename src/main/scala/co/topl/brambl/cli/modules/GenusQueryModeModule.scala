@@ -28,7 +28,8 @@ trait GenusQueryModeModule
       ).queryUtxoFromParams(
         validateParams.fromParty,
         validateParams.fromContract,
-        validateParams.someFromState
+        validateParams.someFromState,
+        validateParams.tokenType
       )
   }
 

@@ -54,7 +54,7 @@ class ComplexTransactionWithFileTest
           .currentaddress("noparty", "genesis", Some(1))
         utxos <- genusQueryAlgebra.queryUtxo(
           decodeAddress(genesisAddress.get).toOption.get
-        )
+        ).map(_.filter(_.transactionOutput.value.value.isLvl))
         _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")
         genesisUtxoAddress = Encoding.encodeToBase58(
           utxos.head.outputAddress.id.value.toByteArray
@@ -211,7 +211,7 @@ class ComplexTransactionWithFileTest
           .currentaddress("self", "default", Some(1))
         utxos <- genusQueryAlgebra.queryUtxo(
           decodeAddress(aliceAddress.get).toOption.get
-        )
+        ).map(_.filter(_.transactionOutput.value.value.isLvl))
         aliceChangeAddress <- walletController(ALICE_WALLET)
           .currentaddress("self", "default", Some(1))
         addressAliceBobOr <- walletController(ALICE_WALLET)
@@ -310,10 +310,10 @@ class ComplexTransactionWithFileTest
           .currentaddress("alice_bob_0", "or_sign", Some(1))
         utxosAnd <- genusQueryAlgebra.queryUtxo(
           decodeAddress(andAddress.get).toOption.get
-        )
+        ).map(_.filter(_.transactionOutput.value.value.isLvl))
         utxosOr <- genusQueryAlgebra.queryUtxo(
           decodeAddress(orAddress.get).toOption.get
-        )
+        ).map(_.filter(_.transactionOutput.value.value.isLvl))
         orUtxo = Encoding.encodeToBase58(
           utxosOr.head.outputAddress.id.value.toByteArray
         ) + "#" + utxosOr.head.outputAddress.index.toString

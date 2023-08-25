@@ -73,11 +73,11 @@ object BramblCliParamsParserModule {
   import builder._
 
   val contractsMode = cmd("contracts")
-    .action((_, c) => c.copy(mode = "contracts"))
+    .action((_, c) => c.copy(mode = BramblCliMode.contracts))
     .text("Contract mode")
     .children(
       cmd("list")
-        .action((_, c) => c.copy(subcmd = "list"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.list))
         .text("List existing contracts")
         .children(
           opt[Option[String]]("walletdb")
@@ -85,7 +85,7 @@ object BramblCliParamsParserModule {
             .text("Wallet DB file. (mandatory)")
         ),
       cmd("add")
-        .action((_, c) => c.copy(subcmd = "add"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
         .text("Add a new contracts")
         .children(
           opt[Option[String]]("walletdb")
@@ -101,11 +101,11 @@ object BramblCliParamsParserModule {
     )
 
   val partiesMode = cmd("parties")
-    .action((_, c) => c.copy(mode = "parties"))
+    .action((_, c) => c.copy(mode = BramblCliMode.parties))
     .text("Entity mode")
     .children(
       cmd("list")
-        .action((_, c) => c.copy(subcmd = "list"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.list))
         .text("List existing parties")
         .children(
           opt[Option[String]]("walletdb")
@@ -113,7 +113,7 @@ object BramblCliParamsParserModule {
             .text("Wallet DB file. (mandatory)")
         ),
       cmd("add")
-        .action((_, c) => c.copy(subcmd = "add"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
         .text("Add a new parties")
         .children(
           hostPortNetwork ++ Seq(
@@ -127,27 +127,34 @@ object BramblCliParamsParserModule {
         )
     )
 
+  implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
+    scopt.Read.reads(TokenType.withName)
+
   val genusQueryMode = cmd("genus-query")
-    .action((_, c) => c.copy(mode = "genusquery"))
+    .action((_, c) => c.copy(mode = BramblCliMode.genusquery))
     .text("Genus query mode")
     .children(
       cmd("utxo-by-address")
-        .action((_, c) => c.copy(subcmd = "utxobyaddress"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.utxobyaddress))
         .text("Query utxo")
         .children(
           (coordinates ++ hostPort ++ Seq(
             opt[Option[String]]("walletdb")
               .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)")
+              .text("Wallet DB file. (mandatory)"),
+            opt[TokenType.Value]("token")
+              .action((x, c) => c.copy(tokenType = x))
+              .text("The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'")
+              .optional()
           )): _*
         )
     )
   val bifrostQueryMode = cmd("bifrost-query")
-    .action((_, c) => c.copy(mode = "bifrostquery"))
+    .action((_, c) => c.copy(mode = BramblCliMode.bifrostquery))
     .text("Bifrost query mode")
     .children(
       cmd("block-by-height")
-        .action((_, c) => c.copy(subcmd = "blockbyheight"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.blockbyheight))
         .text("Get the block at a given height")
         .children(
           (hostPort ++ Seq(
@@ -157,7 +164,7 @@ object BramblCliParamsParserModule {
           )): _*
         ),
       cmd("block-by-id")
-        .action((_, c) => c.copy(subcmd = "blockbyid"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.blockbyid))
         .text("Get the block with a given id")
         .children(
           (hostPort ++ Seq(
@@ -167,7 +174,7 @@ object BramblCliParamsParserModule {
           )): _*
         ),
       cmd("transaction-by-id")
-        .action((_, c) => c.copy(subcmd = "transactionbyid"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.transactionbyid))
         .text("Get the transaction with a given id")
         .children(
           (hostPort ++ Seq(
@@ -179,11 +186,11 @@ object BramblCliParamsParserModule {
     )
 
   val walletMode = cmd("wallet")
-    .action((_, c) => c.copy(mode = "wallet"))
+    .action((_, c) => c.copy(mode = BramblCliMode.wallet))
     .text("Wallet mode")
     .children(
       cmd("sync")
-        .action((_, c) => c.copy(subcmd = "sync"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.sync))
         .text("Sync wallet")
         .children(
           (hostPortNetwork ++ (Seq(
@@ -199,7 +206,7 @@ object BramblCliParamsParserModule {
           ))): _*
         ),
       cmd("init")
-        .action((_, c) => c.copy(subcmd = "init"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.init))
         .text("Initialize wallet")
         .children(
           (Seq(
@@ -228,7 +235,7 @@ object BramblCliParamsParserModule {
             )): _*
         ),
       cmd("recover-keys")
-        .action((_, c) => c.copy(subcmd = "recoverkeys"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.recoverkeys))
         .text("Recover Wallet Main Key")
         .children(
           (Seq(
@@ -257,7 +264,7 @@ object BramblCliParamsParserModule {
             )): _*
         ),
       cmd("current-address")
-        .action((_, c) => c.copy(subcmd = "currentaddress"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
         .text("Obtain current address")
         .children(
           opt[Option[String]]("walletdb")
@@ -265,7 +272,7 @@ object BramblCliParamsParserModule {
             .text("Wallet DB file. (mandatory)")
         ),
       cmd("export-vk")
-        .action((_, c) => c.copy(subcmd = "exportvk"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.exportvk))
         .text("Export verification key")
         .children(
           (keyfileAndPassword ++ Seq(
@@ -287,7 +294,7 @@ object BramblCliParamsParserModule {
           )): _*
         ),
       cmd("import-vks")
-        .action((_, c) => c.copy(subcmd = "importvks"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.importvks))
         .text("Import verification key")
         .children(
           opt[Option[String]]("walletdb")
@@ -306,11 +313,11 @@ object BramblCliParamsParserModule {
     )
 
   val transactionMode = cmd("tx")
-    .action((_, c) => c.copy(mode = "tx"))
+    .action((_, c) => c.copy(mode = BramblCliMode.tx))
     .text("Transaction mode")
     .children(
       cmd("create")
-        .action((_, c) => c.copy(subcmd = "create"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")
         .children(
           ((hostPortNetwork ++ Seq(
@@ -324,11 +331,11 @@ object BramblCliParamsParserModule {
         )
     )
   val simpleTransactionMode = cmd("simpletransaction")
-    .action((_, c) => c.copy(mode = "simpletransaction"))
+    .action((_, c) => c.copy(mode = BramblCliMode.simpletransaction))
     .text("Simple transaction mode")
     .children(
       cmd("create")
-        .action((_, c) => c.copy(subcmd = "create"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")
         .children(
           ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
@@ -358,7 +365,7 @@ object BramblCliParamsParserModule {
             )): _*
         ),
       cmd("broadcast")
-        .action((_, c) => c.copy(subcmd = "broadcast"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.broadcast))
         .text("Broadcast transaction")
         .children(
           ((hostPortNetwork ++ Seq(
@@ -368,7 +375,7 @@ object BramblCliParamsParserModule {
           ))): _*
         ),
       cmd("prove")
-        .action((_, c) => c.copy(subcmd = "prove"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.prove))
         .text("Prove transaction")
         .children(
           ((keyfileAndPassword ++ Seq(

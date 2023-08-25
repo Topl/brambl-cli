@@ -198,7 +198,9 @@ trait CommonTxOperations
           "--bifrost-port",
           s"$BIFROST_PORT",
           "--walletdb",
-          c.walletFile
+          c.walletFile,
+          "--token",
+          "lvl"
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)

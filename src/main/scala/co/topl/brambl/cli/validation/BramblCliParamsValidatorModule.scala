@@ -63,6 +63,15 @@ object BramblCliParamsValidatorModule
         validateAddEntitiyParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.contracts, BramblCliSubCmd.add) =>
         validateAddContractParams(paramConfig).map(_ => (mode, subcmd))
+        case (BramblCliMode.invalid, BramblCliSubCmd.invalid) =>
+        import cats.implicits._
+        "Invalid mode and subcmd".invalidNel
+      case (BramblCliMode.invalid, _) =>
+        import cats.implicits._
+        "Invalid mode".invalidNel
+      case (_, BramblCliSubCmd.invalid) =>
+        import cats.implicits._
+        "Invalid subcmd".invalidNel
     }
   }
 
@@ -71,17 +80,11 @@ object BramblCliParamsValidatorModule
   ): ValidatedNel[String, BramblCliValidatedParams] = {
     import cats.implicits._
     (
-      validateMode(paramConfig.mode)
-        .andThen(mode =>
-          validateSubCmd(mode, paramConfig.subcmd).map((mode, _))
-        )
-        .andThen(modeAndSubCmd =>
-          validateSpecificParams(
-            modeAndSubCmd._1,
-            modeAndSubCmd._2,
-            paramConfig
-          )
-        ),
+      validateSpecificParams(
+        paramConfig.mode,
+        paramConfig.subcmd,
+        paramConfig
+      ),
       validateOutputfile(paramConfig.someOutputFile, required = false)
     )
       .mapN(
@@ -92,6 +95,7 @@ object BramblCliParamsValidatorModule
           BramblCliValidatedParams(
             mode = modeAndSubCmd._1,
             subcmd = modeAndSubCmd._2,
+            tokenType = paramConfig.tokenType,
             network = NetworkIdentifiers
               .fromString(paramConfig.network) // this was validated before
               .getOrElse(Privatenet),

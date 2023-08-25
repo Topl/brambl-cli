@@ -1,25 +1,11 @@
 package co.topl.brambl.cli.validation
 
-import scala.util.Try
 import cats.data.Validated
 import cats.data.ValidatedNel
-import co.topl.brambl.cli.BramblCliMode
-import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.NetworkIdentifiers
 
 trait CommonValidationModule {
 
-  def validateMode(mode: String) = {
-    Try(BramblCliMode.withName(mode)).toOption match {
-      case Some(mode) => Validated.validNel(mode)
-      case None =>
-        Validated.invalidNel(
-          "Invalid mode. Valid values are " + BramblCliMode.values.mkString(
-            ", "
-          )
-        )
-    }
-  }
   def validateNetwork(network: String) = {
     NetworkIdentifiers.fromString(network) match {
       case Some(mode) => Validated.validNel(mode)
@@ -50,104 +36,6 @@ trait CommonValidationModule {
     }
   }
 
-  def checkValidSubCmd(
-      mode: BramblCliMode.BramblCliMode,
-      subcmd: String,
-      validSubCmds: Set[BramblCliSubCmd.Value]
-  ) = {
-    Try(BramblCliSubCmd.withName(subcmd)).toOption match {
-      case Some(subcmd) =>
-        if (validSubCmds.contains(subcmd)) {
-          Validated.validNel(subcmd)
-        } else {
-          Validated.invalidNel(
-            s"Invalid $mode for utxo mode. Valid values are " + validSubCmds
-              .mkString(
-                ", "
-              )
-          )
-        }
-      case None =>
-        Validated.invalidNel(
-          "Invalid subcmd. Valid values are " + BramblCliSubCmd.values.mkString(
-            ", "
-          )
-        )
-    }
-  }
-
-  def validateSubCmd(
-      mode: BramblCliMode.BramblCliMode,
-      subcmd: String
-  ): ValidatedNel[String, BramblCliSubCmd.Value] = {
-    mode match {
-      case BramblCliMode.tx =>
-        checkValidSubCmd(
-          mode,
-          subcmd,
-          Set(
-            BramblCliSubCmd.create
-          )
-        )
-      case BramblCliMode.simpletransaction =>
-        checkValidSubCmd(
-          mode,
-          subcmd,
-          Set(
-            BramblCliSubCmd.create,
-            BramblCliSubCmd.prove,
-            BramblCliSubCmd.broadcast
-          )
-        )
-      case BramblCliMode.wallet =>
-        checkValidSubCmd(
-          mode,
-          subcmd,
-          Set(
-            BramblCliSubCmd.init,
-            BramblCliSubCmd.recoverkeys,
-            BramblCliSubCmd.currentaddress,
-            BramblCliSubCmd.exportvk,
-            BramblCliSubCmd.importvks,
-            BramblCliSubCmd.sync
-          )
-        )
-      case BramblCliMode.genusquery =>
-        checkValidSubCmd(
-          mode,
-          subcmd,
-          Set(BramblCliSubCmd.utxobyaddress)
-        )
-      case BramblCliMode.bifrostquery =>
-        checkValidSubCmd(
-          mode,
-          subcmd,
-          Set(
-            BramblCliSubCmd.blockbyheight,
-            BramblCliSubCmd.blockbyid,
-            BramblCliSubCmd.transactionbyid
-          )
-        )
-      case BramblCliMode.contracts =>
-        checkValidSubCmd(
-          mode,
-          subcmd,
-          Set(
-            BramblCliSubCmd.add,
-            BramblCliSubCmd.list
-          )
-        )
-      case BramblCliMode.parties =>
-        checkValidSubCmd(
-          mode,
-          subcmd,
-          Set(
-            BramblCliSubCmd.list,
-            BramblCliSubCmd.add
-          )
-        )
-    }
-  }
   def validateNonEmpty(fieldName: String, s: String) = {
     if (s.trim().length > 0) {
       Validated.validNel(s)
