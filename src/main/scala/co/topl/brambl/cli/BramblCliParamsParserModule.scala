@@ -127,7 +127,18 @@ object BramblCliParamsParserModule {
         .text("Contract where we are sending the funds from"),
       opt[Option[String]]("from-state")
         .action((x, c) => c.copy(someFromState = x))
-        .text("State from where we are sending the funds from")
+        .text("State from where we are sending the funds from"),
+      checkConfig(c =>
+        if (c.someFromParty.map(_ == "noparty").getOrElse(false)) {
+          if (c.someFromState.isEmpty) {
+            failure("You must specify a from-state when using noparty")
+          } else {
+            success
+          }
+        } else {
+          success
+        }
+      )
     )
   }
 

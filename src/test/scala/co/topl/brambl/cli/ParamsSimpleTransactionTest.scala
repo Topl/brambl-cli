@@ -62,8 +62,10 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isInvalid, true)
+    assertEquals(
+      OParser.parse(paramParser, args0, BramblCliParams()).isEmpty,
+      true
+    )
   }
 
   test("Test from-party transactions require index") {
@@ -128,7 +130,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(validateParams(params0).isValid)
   }
 
-  test("Test invalid transaction create with all toAddress, toParty and toContract") {
+  test(
+    "Test invalid transaction create with all toAddress, toParty and toContract"
+  ) {
     val args0 = List(
       "simpletransaction",
       "create",

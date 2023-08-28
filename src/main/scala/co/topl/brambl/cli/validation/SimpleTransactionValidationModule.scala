@@ -43,23 +43,6 @@ trait SimpleTransactionValidationModule {
     }
 
 
-  def validateFromCoordinates(
-      someFromParty: Option[String],
-      someFromContract: Option[String],
-      someFromState: Option[String]
-  ) = {
-    import cats.implicits._
-    if (someFromParty.map(_ == "noparty").getOrElse(false)) {
-      if (someFromState.isEmpty) {
-        "You must specify a from-state when using noparty".invalidNel
-      } else {
-        (someFromParty, someFromContract, someFromState).validNel
-      }
-    } else {
-      (someFromParty, someFromContract, someFromState).validNel
-    }
-  }
-
   def validateSimpleTransactionCreateParams(
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {
@@ -69,24 +52,6 @@ trait SimpleTransactionValidationModule {
         paramConfig.toAddress,
         paramConfig.someToParty,
         paramConfig.someToContract
-      ),
-      validateFromCoordinates(
-        paramConfig.someFromParty,
-        paramConfig.someFromContract,
-        paramConfig.someFromState
-      )
-    ).sequence.map(_ => paramConfig)
-  }
-
-  def validateUtxoQueryParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateFromCoordinates(
-        paramConfig.someFromParty,
-        paramConfig.someFromContract,
-        paramConfig.someFromState
       )
     ).sequence.map(_ => paramConfig)
   }

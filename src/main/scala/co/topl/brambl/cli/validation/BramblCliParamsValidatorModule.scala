@@ -7,12 +7,10 @@ import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.NetworkIdentifiers
 import co.topl.brambl.cli.Privatenet
-import co.topl.brambl.cli.validation.WalletValidationModule
 import co.topl.brambl.codecs.AddressCodecs
 
 object BramblCliParamsValidatorModule
-    extends WalletValidationModule
-    with SimpleTransactionValidationModule {
+    extends SimpleTransactionValidationModule {
 
   def validateSpecificParams(
       mode: BramblCliMode.Value,
@@ -27,8 +25,6 @@ object BramblCliParamsValidatorModule
         validateSimpleTransactionCreateParams(paramConfig).map(_ =>
           (mode, subcmd)
         )
-      case (BramblCliMode.genusquery, BramblCliSubCmd.utxobyaddress) =>
-        validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.invalid, BramblCliSubCmd.invalid) =>
         import cats.implicits._
         "Invalid mode and subcmd".invalidNel
