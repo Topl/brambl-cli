@@ -8,6 +8,15 @@ object BramblCliParamsParserModule {
 
   import builder._
 
+  val passphraseArg =
+    opt[String]('P', "passphrase")
+      .action((x, c) => c.copy(somePassphrase = Some(x)))
+      .text("Passphrase for the encrypted key. (optional))")
+      .validate(x =>
+        if (x.trim().isEmpty) failure("Passphrase may not be empty")
+        else success
+      )
+
   val newwalletdbArg = opt[Option[String]]("newwalletdb")
     .action((x, c) => c.copy(someWalletFile = x))
     .text("Wallet DB file. (mandatory)")
@@ -15,6 +24,10 @@ object BramblCliParamsParserModule {
   val outputArg = opt[String]('o', "output")
     .action((x, c) => c.copy(someOutputFile = Some(x)))
     .text("The output file. (optional)")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Output file may not be empty")
+      else success
+    )
 
   val walletDbArg = opt[Option[String]]("walletdb")
     .action((x, c) => c.copy(someWalletFile = x))
@@ -111,6 +124,12 @@ object BramblCliParamsParserModule {
   val keyfileArg = opt[String]('k', "keyfile")
     .action((x, c) => c.copy(someKeyFile = Some(x)))
     .text("The key file.")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Key file may not be empty")
+      else if (!new java.io.File(x).exists())
+        failure(s"Key file $x does not exist")
+      else success
+    )
 
   val keyfileAndPassword = {
     Seq(
@@ -256,39 +275,39 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.init))
         .text("Initialize wallet")
         .children(
-          (Seq(
-            networkArg,
-            passwordArg,
-            outputArg,
-            newwalletdbArg,
-            opt[Option[String]]("mnemonicfile")
-              .action((x, c) => c.copy(someMnemonicFile = x))
-              .text("Mnemonic output file. (mandatory)")
-          ) ++
+          (
             Seq(
-              opt[String]('P', "passphrase")
-                .action((x, c) => c.copy(somePassphrase = Some(x)))
-                .text("Passphrase for the encrypted key. (optional))")
-            )): _*
+              networkArg,
+              passwordArg,
+              outputArg,
+              newwalletdbArg,
+              passphraseArg,
+              opt[Option[String]]("mnemonicfile")
+                .action((x, c) => c.copy(someMnemonicFile = x))
+                .text("Mnemonic output file. (mandatory)")
+            )
+          ): _*
         ),
       cmd("recover-keys")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.recoverkeys))
         .text("Recover Wallet Main Key")
         .children(
-          (Seq(
-            networkArg,
-            opt[Seq[String]]('m', "mnemonic")
-              .action((x, c) => c.copy(mnemonic = x))
-              .text("Mnemonic for the key. (mandatory)"),
-            passwordArg,
-            outputArg,
-            newwalletdbArg
-          ) ++
+          (
             Seq(
-              opt[String]('P', "passphrase")
-                .action((x, c) => c.copy(somePassphrase = Some(x)))
-                .text("Passphrase for the encrypted key. (optional))")
-            )): _*
+              networkArg,
+              opt[Seq[String]]('m', "mnemonic")
+                .action((x, c) => c.copy(mnemonic = x))
+                .text("Mnemonic for the key. (mandatory)")
+                .validate(x =>
+                  if (List(12, 15, 18, 21, 24).contains(x.length)) success
+                  else failure("Mnemonic must be 12, 15, 18, 21 or 24 words")
+                ),
+              passwordArg,
+              outputArg,
+              newwalletdbArg,
+              passphraseArg
+            )
+          ): _*
         ),
       cmd("current-address")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
@@ -349,7 +368,7 @@ object BramblCliParamsParserModule {
         .text("Create transaction")
         .children(
           ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
-            outputArg
+            outputArg.required()
           )) ++
             Seq(
               opt[Option[String]]('t', "to")
@@ -391,7 +410,7 @@ object BramblCliParamsParserModule {
         .text("Prove transaction")
         .children(
           ((keyfileAndPassword ++ Seq(
-            outputArg,
+            outputArg.required(),
             opt[String]('i', "input")
               .action((x, c) => c.copy(someInputFile = Some(x)))
               .text("The input file. (mandatory)")

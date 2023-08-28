@@ -1,32 +1,14 @@
 package co.topl.brambl.cli.validation
 
+import cats.data.Validated
 import cats.data.ValidatedNel
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.utils.Encoding
-import cats.data.Validated
 
 trait WalletValidationModule {
 
   self: CommonValidationModule =>
 
-  def validateKeyGenerationParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validatePassphrase(paramConfig.somePassphrase),
-      validateOutputfile(paramConfig.someMnemonicFile, required = true)
-    ).sequence.map(_ => paramConfig)
-  }
-  def validateKeyRecoveryParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateMnemonic(paramConfig.mnemonic),
-      validatePassphrase(paramConfig.somePassphrase)
-    ).sequence.map(_ => paramConfig)
-  }
 
   def validateInputKey(
       someInputFile: Option[String],
@@ -78,16 +60,6 @@ trait WalletValidationModule {
       .map(_ => paramConfig)
   }
 
-  def validateSyncParam(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    (
-      List(
-        validateHost(paramConfig.host)
-      )
-    ).sequence.map(_ => paramConfig)
-  }
 
   def validateTxCreateParam(
       paramConfig: BramblCliParams
@@ -98,29 +70,9 @@ trait WalletValidationModule {
         "Input transaction",
         paramConfig.someInputFile,
         required = true
-      ),
-      validateOutputfile(
-        paramConfig.someOutputFile,
-        required = true
       )
     ).sequence.map(_ => paramConfig)
   }
 
-  def validateExportVkParam(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateInputFile(
-        "Keyfile",
-        paramConfig.someKeyFile,
-        required = true
-      ),
-      validateOutputfile(
-        paramConfig.someOutputFile,
-        required = true
-      )
-    ).sequence.map(_ => paramConfig)
-  }
 
 }

@@ -79,13 +79,11 @@ trait SimpleTransactionValidationModule {
         paramConfig.someToParty,
         paramConfig.someToContract
       ),
-      validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
         paramConfig.someFromContract,
         paramConfig.someFromState
       ),
-      validateOutputfile(paramConfig.someOutputFile, required = true),
       validateInputFile("Key file", paramConfig.someKeyFile, required = true)
     ).sequence.map(_ => paramConfig)
   }
@@ -95,7 +93,6 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateOutputfile(paramConfig.someOutputFile, required = true),
       validateInputFile("Key file", paramConfig.someKeyFile, required = true),
       validateInputFile(
         "Transaction file",
@@ -110,7 +107,6 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateHost(paramConfig.host),
       validateInputFile(
         "Transaction file",
         paramConfig.someInputFile,
@@ -124,7 +120,6 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
     List(
-      validateHost(paramConfig.host),
       validateFromCoordinates(
         paramConfig.someFromParty,
         paramConfig.someFromContract,

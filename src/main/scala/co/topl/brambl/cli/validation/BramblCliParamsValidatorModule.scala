@@ -23,14 +23,6 @@ object BramblCliParamsValidatorModule
     (mode, subcmd) match {
       case (BramblCliMode.tx, BramblCliSubCmd.create) =>
         validateTxCreateParam(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.wallet, BramblCliSubCmd.init) =>
-        validateKeyGenerationParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.wallet, BramblCliSubCmd.recoverkeys) =>
-        validateKeyRecoveryParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.wallet, BramblCliSubCmd.exportvk) =>
-        validateExportVkParam(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.wallet, BramblCliSubCmd.sync) =>
-        validateSyncParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.importvks) =>
         validateImportVksParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
@@ -61,7 +53,7 @@ object BramblCliParamsValidatorModule
       case (_, BramblCliSubCmd.invalid) =>
         import cats.implicits._
         "Invalid subcmd".invalidNel
-      case (_, _) => 
+      case (_, _) =>
         import cats.implicits._
         (mode, subcmd).validNel
     }
@@ -71,59 +63,53 @@ object BramblCliParamsValidatorModule
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliValidatedParams] = {
     import cats.implicits._
-    (
-      validateSpecificParams(
-        paramConfig.mode,
-        paramConfig.subcmd,
-        paramConfig
-      ),
-      validateOutputfile(paramConfig.someOutputFile, required = false)
-    )
-      .mapN(
-        (
-            modeAndSubCmd,
-            someOutputFile
-        ) => {
-          BramblCliValidatedParams(
-            mode = modeAndSubCmd._1,
-            subcmd = modeAndSubCmd._2,
-            tokenType = paramConfig.tokenType,
-            network = NetworkIdentifiers
-              .fromString(paramConfig.network) // this was validated before
-              .getOrElse(Privatenet),
-            password = paramConfig.password,
-            walletFile = paramConfig.someWalletFile.getOrElse(""),
-            toAddress = paramConfig.toAddress.map(x =>
-              AddressCodecs
-                .decodeAddress(x)
-                .toOption
-                .get
-            ), // this was validated before
-            someToParty = paramConfig.someToParty,
-            someToContract = paramConfig.someToContract,
-            partyName = paramConfig.partyName,
-            contractName = paramConfig.contractName,
-            lockTemplate = paramConfig.lockTemplate,
-            inputVks = paramConfig.inputVks.map(new java.io.File(_)),
-            fromParty = paramConfig.someFromParty.getOrElse("self"),
-            fromContract = paramConfig.someFromContract.getOrElse("default"),
-            someFromState = paramConfig.someFromState.map(_.toInt),
-            bifrostPort = paramConfig.bifrostPort,
-            host = paramConfig.host,
-            amount = paramConfig.amount,
-            height = paramConfig.height,
-            blockId = paramConfig.blockId,
-            transactionId = paramConfig.transactionId,
-            someKeyFile = paramConfig.someKeyFile,
-            somePassphrase = paramConfig.somePassphrase,
-            someOutputFile = someOutputFile,
-            someInputFile = paramConfig.someInputFile,
-            mnemonic = paramConfig.mnemonic.toIndexedSeq,
-            someMnemonicFile = paramConfig.someMnemonicFile
-          ).validNel
-        }
-      )
-      .andThen(x => x)
+    validateSpecificParams(
+      paramConfig.mode,
+      paramConfig.subcmd,
+      paramConfig
+    ).map(
+      (
+        modeAndSubCmd
+      ) => {
+        BramblCliValidatedParams(
+          mode = modeAndSubCmd._1,
+          subcmd = modeAndSubCmd._2,
+          tokenType = paramConfig.tokenType,
+          network = NetworkIdentifiers
+            .fromString(paramConfig.network) // this was validated before
+            .getOrElse(Privatenet),
+          password = paramConfig.password,
+          walletFile = paramConfig.someWalletFile.getOrElse(""),
+          toAddress = paramConfig.toAddress.map(x =>
+            AddressCodecs
+              .decodeAddress(x)
+              .toOption
+              .get
+          ), // this was validated before
+          someToParty = paramConfig.someToParty,
+          someToContract = paramConfig.someToContract,
+          partyName = paramConfig.partyName,
+          contractName = paramConfig.contractName,
+          lockTemplate = paramConfig.lockTemplate,
+          inputVks = paramConfig.inputVks.map(new java.io.File(_)),
+          fromParty = paramConfig.someFromParty.getOrElse("self"),
+          fromContract = paramConfig.someFromContract.getOrElse("default"),
+          someFromState = paramConfig.someFromState.map(_.toInt),
+          bifrostPort = paramConfig.bifrostPort,
+          host = paramConfig.host,
+          amount = paramConfig.amount,
+          height = paramConfig.height,
+          blockId = paramConfig.blockId,
+          transactionId = paramConfig.transactionId,
+          someKeyFile = paramConfig.someKeyFile,
+          somePassphrase = paramConfig.somePassphrase,
+          someOutputFile = paramConfig.someOutputFile,
+          someInputFile = paramConfig.someInputFile,
+          mnemonic = paramConfig.mnemonic.toIndexedSeq,
+          someMnemonicFile = paramConfig.someMnemonicFile
+        ).validNel
+      }
+    ).andThen(x => x)
   }
 
 }

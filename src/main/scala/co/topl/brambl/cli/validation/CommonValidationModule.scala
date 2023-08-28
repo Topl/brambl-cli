@@ -5,33 +5,6 @@ import cats.data.ValidatedNel
 
 trait CommonValidationModule {
 
-  def validateHost(host: String) = {
-    import cats.implicits._
-    if (host.nonEmpty) {
-      host.validNel
-    } else {
-      "Host must be non-empty".invalidNel
-    }
-  }
-
-  def validateOutputfile(
-      someOutputFile: Option[String],
-      required: Boolean
-  ): ValidatedNel[String, Option[String]] = {
-    someOutputFile match {
-      case Some(outputFile) =>
-        if (outputFile.trim().length >= 0) {
-          Validated.validNel(Some(outputFile))
-        } else {
-          Validated.invalidNel(
-            "Output file must not be empty"
-          )
-        }
-      case None =>
-        if (required) Validated.invalidNel("Output file is required")
-        else Validated.validNel(None)
-    }
-  }
 
   def validateInputFile(
       fileType: String,
@@ -60,28 +33,4 @@ trait CommonValidationModule {
     }
   }
 
-  def validatePassphrase(
-      somePassphrase: Option[String]
-  ): ValidatedNel[String, Option[String]] = {
-    somePassphrase match {
-      case Some(passphrase) =>
-        if (passphrase.trim().length >= 0) {
-          Validated.validNel(Some(passphrase))
-        } else {
-          Validated.invalidNel(
-            "Passphrase must not be empty"
-          )
-        }
-      case None => Validated.validNel(None)
-    }
-  }
-
-  def validateMnemonic(
-      mnemonic: Seq[String]
-  ): ValidatedNel[String, Seq[String]] =
-    if (List(12, 15, 18, 21, 24).contains(mnemonic.length))
-      Validated.validNel(mnemonic)
-    else Validated.invalidNel(
-      "Mnemonic must be 12, 15, 18, 21 or 24 words"
-    )
 }
