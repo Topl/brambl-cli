@@ -277,14 +277,15 @@ object BramblCliParamsParserModule {
         .children(
           (
             Seq(
-              networkArg,
-              passwordArg,
-              outputArg,
-              newwalletdbArg,
-              passphraseArg,
+              networkArg.required(),
+              passwordArg.required(),
+              outputArg.optional(),
+              newwalletdbArg.required(),
+              passphraseArg.optional(),
               opt[Option[String]]("mnemonicfile")
                 .action((x, c) => c.copy(someMnemonicFile = x))
                 .text("Mnemonic output file. (mandatory)")
+                .required()
             )
           ): _*
         ),

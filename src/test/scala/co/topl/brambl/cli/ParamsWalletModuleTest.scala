@@ -65,9 +65,7 @@ class ParamsWalletModuleTest extends FunSuite {
     assertEquals(
       OParser
         .parse(paramParser, args0, BramblCliParams())
-        .map(validateKeyGenerationParams)
-        .get
-        .isInvalid,
+        .isEmpty,
       true
     )
   }
@@ -90,10 +88,7 @@ class ParamsWalletModuleTest extends FunSuite {
     )
     assert(
       OParser
-        .parse(paramParser, args0, BramblCliParams())
-        .map(validateKeyRecoveryParams)
-        .get
-        .isValid
+        .parse(paramParser, args0, BramblCliParams()).isDefined
     )
   }
 }
