@@ -2,12 +2,9 @@ package co.topl.brambl.cli
 
 import munit.FunSuite
 
-import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
 import scopt.OParser
 
 class ParamsBifrostQueryTest extends FunSuite {
-
-  import BramblCliParamsValidatorModule._
 
   import BramblCliParamsParserModule._
 
@@ -22,8 +19,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "-h",
       "localhost"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
   test("Block by id") {
     val args0 = List(
@@ -36,8 +32,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "-h",
       "localhost"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
   test("Transaction by id") {
     val args0 = List(
@@ -50,8 +45,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "-h",
       "localhost"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
 }

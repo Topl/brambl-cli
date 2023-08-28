@@ -3,11 +3,7 @@ package co.topl.brambl.cli
 import munit.FunSuite
 import scopt.OParser
 
-import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
-
 class ParamsWalletModuleTest extends FunSuite {
-
-  import BramblCliParamsValidatorModule._
 
   import BramblCliParamsParserModule._
 
@@ -24,8 +20,7 @@ class ParamsWalletModuleTest extends FunSuite {
       "--mnemonicfile",
       "mnemonic.txt"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
     val args1 = List(
       "wallet",
       "init",
@@ -40,8 +35,7 @@ class ParamsWalletModuleTest extends FunSuite {
       "--mnemonicfile",
       "mnemonic.txt"
     )
-    val params1 = OParser.parse(paramParser, args1, BramblCliParams()).get
-    assertEquals(validateParams(params1).isValid, true)
+    assert(OParser.parse(paramParser, args1, BramblCliParams()).isDefined)
     val args2 = List(
       "wallet",
       "init",
@@ -56,17 +50,15 @@ class ParamsWalletModuleTest extends FunSuite {
       "--mnemonicfile",
       "mnemonic.txt"
     )
-    val params2 = OParser.parse(paramParser, args2, BramblCliParams()).get
-    assertEquals(validateParams(params2).isValid, true)
+    assert(OParser.parse(paramParser, args2, BramblCliParams()).isDefined)
   }
 
   test("Test invalid key create") {
     val args0 = List("wallet", "init")
-    assertEquals(
+    assert(
       OParser
         .parse(paramParser, args0, BramblCliParams())
-        .isEmpty,
-      true
+        .isEmpty
     )
   }
   test("Test valid key recovery") {
@@ -88,7 +80,8 @@ class ParamsWalletModuleTest extends FunSuite {
     )
     assert(
       OParser
-        .parse(paramParser, args0, BramblCliParams()).isDefined
+        .parse(paramParser, args0, BramblCliParams())
+        .isDefined
     )
   }
 }

@@ -1,12 +1,19 @@
 package co.topl.brambl.cli
 
+import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.models.LockAddress
 import co.topl.brambl.utils.Encoding
 import scopt.OParser
+
+import java.io.File
 
 object BramblCliParamsParserModule {
   val builder = OParser.builder[BramblCliParams]
 
   import builder._
+
+  implicit val networkRead: scopt.Read[NetworkIdentifiers] =
+    scopt.Read.reads(NetworkIdentifiers.fromString(_).get)
 
   val inputFileArg = opt[String]('i', "input")
     .action((x, c) => c.copy(someInputFile = Some(x)))
@@ -27,8 +34,8 @@ object BramblCliParamsParserModule {
         else success
       )
 
-  val newwalletdbArg = opt[Option[String]]("newwalletdb")
-    .action((x, c) => c.copy(someWalletFile = x))
+  val newwalletdbArg = opt[String]("newwalletdb")
+    .action((x, c) => c.copy(walletFile = x))
     .text("Wallet DB file. (mandatory)")
 
   val outputArg = opt[String]('o', "output")
@@ -39,8 +46,8 @@ object BramblCliParamsParserModule {
       else success
     )
 
-  val walletDbArg = opt[Option[String]]("walletdb")
-    .action((x, c) => c.copy(someWalletFile = x))
+  val walletDbArg = opt[String]("walletdb")
+    .action((x, c) => c.copy(walletFile = x))
     .validate(validateWalletDbFile(_))
     .text("Wallet DB file. (mandatory)")
 
@@ -52,17 +59,10 @@ object BramblCliParamsParserModule {
     .action((x, c) => c.copy(contractName = x))
     .text("Name of the contract. (mandatory)")
 
-  val networkArg = opt[String]('n', "network")
+  val networkArg = opt[NetworkIdentifiers]('n', "network")
     .action((x, c) => c.copy(network = x))
     .text(
       "Network name: Possible values: mainnet, testnet, private. (mandatory)"
-    )
-    .validate(x =>
-      if (NetworkIdentifiers.fromString(x).isDefined) success
-      else
-        failure(
-          s"Network $x is not supported.  Possible values: mainnet, testnet, private."
-        )
     )
 
   val passwordArg = opt[String]('w', "password")
@@ -81,13 +81,10 @@ object BramblCliParamsParserModule {
     .action((x, c) => c.copy(partyName = x))
     .text("Name of the party. (mandatory)")
 
-  def validateWalletDbFile(walletDbFile: Option[String]): Either[String, Unit] =
-    walletDbFile match {
-      case Some(x) =>
-        if (new java.io.File(x).exists()) success
-        else failure(s"Wallet file $x does not exist")
-      case None => failure(s"Wallet file is a mandatory parameter")
-    }
+  def validateWalletDbFile(walletDbFile: String): Either[String, Unit] =
+    if (walletDbFile.trim().isEmpty) failure("Wallet file may not be empty")
+    else if (new java.io.File(walletDbFile).exists()) success
+    else failure(s"Wallet file $walletDbFile does not exist")
 
   def hostArg =
     opt[String]('h', "host")
@@ -119,17 +116,17 @@ object BramblCliParamsParserModule {
   val coordinates = {
     import builder._
     Seq(
-      opt[Option[String]]("from-party")
-        .action((x, c) => c.copy(someFromParty = x))
+      opt[String]("from-party")
+        .action((x, c) => c.copy(fromParty = x))
         .text("Party where we are sending the funds from"),
-      opt[Option[String]]("from-contract")
-        .action((x, c) => c.copy(someFromContract = x))
+      opt[String]("from-contract")
+        .action((x, c) => c.copy(fromContract = x))
         .text("Contract where we are sending the funds from"),
-      opt[Option[String]]("from-state")
+      opt[Option[Int]]("from-state")
         .action((x, c) => c.copy(someFromState = x))
         .text("State from where we are sending the funds from"),
       checkConfig(c =>
-        if (c.someFromParty.map(_ == "noparty").getOrElse(false)) {
+        if (c.fromParty == "noparty") {
           if (c.someFromState.isEmpty) {
             failure("You must specify a from-state when using noparty")
           } else {
@@ -210,6 +207,14 @@ object BramblCliParamsParserModule {
 
   implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
     scopt.Read.reads(TokenType.withName)
+
+  implicit val lockAddressRead: scopt.Read[LockAddress] =
+    scopt.Read.reads(
+      AddressCodecs
+        .decodeAddress(_)
+        .toOption
+        .get
+    )
 
   val genusQueryMode = cmd("genus-query")
     .action((_, c) => c.copy(mode = BramblCliMode.genusquery))
@@ -350,7 +355,7 @@ object BramblCliParamsParserModule {
             walletDbArg,
             partyNameArg,
             contractNameArg,
-            opt[Option[String]]("state")
+            opt[Option[Int]]("state")
               .action((x, c) => c.copy(someFromState = x))
               .text("State from where we are sending the funds from")
           )): _*
@@ -362,7 +367,7 @@ object BramblCliParamsParserModule {
           (keyfileAndPassword ++ Seq(
             partyNameArg,
             contractNameArg,
-            opt[Seq[String]]("input-vks")
+            opt[Seq[File]]("input-vks")
               .action((x, c) => c.copy(inputVks = x))
               .text("The keys to import. (mandatory)")
           )): _*
@@ -395,7 +400,7 @@ object BramblCliParamsParserModule {
             outputArg.required()
           )) ++
             Seq(
-              opt[Option[String]]('t', "to")
+              opt[Option[LockAddress]]('t', "to")
                 .action((x, c) => c.copy(toAddress = x))
                 .text(
                   "Address to send LVLs to. (mandatory if to-party and to-contract are not provided)"
@@ -416,7 +421,24 @@ object BramblCliParamsParserModule {
                 .validate(x =>
                   if (x > 0) success
                   else failure("Amount must be greater than 0")
+                ),
+              checkConfig(c =>
+                if (
+                  c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
                 )
+                  (c.toAddress, c.someToParty, c.someToContract) match {
+                    case (Some(_), None, None) =>
+                      success
+                    case (None, Some(_), Some(_)) =>
+                      success
+                    case _ =>
+                      failure(
+                        "Exactly toParty and toContract together or only toAddress must be specified"
+                      )
+                  }
+                else
+                  success
+              )
             )): _*
         ),
       cmd("broadcast")

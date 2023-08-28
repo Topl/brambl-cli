@@ -2,9 +2,7 @@ package co.topl.brambl.cli
 import munit.FunSuite
 import scopt.OParser
 
-import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
 class ParamsSimpleTransactionTest extends FunSuite {
-  import BramblCliParamsValidatorModule._
 
   import BramblCliParamsParserModule._
 
@@ -31,8 +29,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
   test("Test noparty transactions require index") {
@@ -62,10 +59,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    assertEquals(
-      OParser.parse(paramParser, args0, BramblCliParams()).isEmpty,
-      true
-    )
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 
   test("Test from-party transactions require index") {
@@ -97,8 +91,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
   test("Test valid transaction create using toParty and toContract") {
@@ -126,8 +119,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isValid)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
   test(
@@ -159,8 +151,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isInvalid)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
   test(
     "Test invalid transaction create with no toAddress, toParty or toContract"
@@ -185,8 +176,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isInvalid)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
 
   }
   test(
@@ -214,8 +204,6 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--walletdb",
       "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isInvalid)
-
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 }
