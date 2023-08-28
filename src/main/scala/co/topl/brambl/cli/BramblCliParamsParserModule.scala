@@ -9,8 +9,8 @@ object BramblCliParamsParserModule {
   import builder._
 
   val newwalletdbArg = opt[Option[String]]("newwalletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)")
+    .action((x, c) => c.copy(someWalletFile = x))
+    .text("Wallet DB file. (mandatory)")
 
   val outputArg = opt[String]('o', "output")
     .action((x, c) => c.copy(someOutputFile = Some(x)))
@@ -66,29 +66,32 @@ object BramblCliParamsParserModule {
       case None => failure(s"Wallet file is a mandatory parameter")
     }
 
-  val hostPort = {
-    import builder._
-    Seq(
-      opt[String]('h', "host")
-        .action((x, c) => c.copy(host = x))
-        .text("The host of the node. (mandatory)"),
-      opt[Int]("bifrost-port")
-        .action((x, c) => c.copy(bifrostPort = x))
-        .text("Port Bifrost node. (mandatory)")
+  def hostArg =
+    opt[String]('h', "host")
+      .action((x, c) => c.copy(host = x))
+      .text("The host of the node. (mandatory)")
+      .validate(x =>
+        if (x.trim().isEmpty) failure("Host may not be empty") else success
+      )
+
+  def portArg = opt[Int]("bifrost-port")
+    .action((x, c) => c.copy(bifrostPort = x))
+    .text("Port Bifrost node. (mandatory)")
+    .validate(x =>
+      if (x >= 0 && x <= 65536) success
+      else failure("Port must be between 0 and 65536")
     )
-  }
-  val hostPortNetwork = {
-    import builder._
+
+  val hostPort = Seq(
+      hostArg,
+      portArg
+    )
+  val hostPortNetwork =
     Seq(
       networkArg,
-      opt[String]('h', "host")
-        .action((x, c) => c.copy(host = x))
-        .text("The host of the node. (mandatory)"),
-      opt[Int]("bifrost-port")
-        .action((x, c) => c.copy(bifrostPort = x))
-        .text("Port Bifrost node. (mandatory)")
+      hostArg,
+      portArg
     )
-  }
 
   val coordinates = {
     import builder._
@@ -365,6 +368,10 @@ object BramblCliParamsParserModule {
               opt[Long]('a', "amount")
                 .action((x, c) => c.copy(amount = x))
                 .text("Amount to send simple transaction")
+                .validate(x =>
+                  if (x > 0) success
+                  else failure("Amount must be greater than 0")
+                )
             )): _*
         ),
       cmd("broadcast")

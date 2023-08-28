@@ -43,15 +43,6 @@ trait SimpleTransactionValidationModule {
         "Exactly toParty and toContract together or only toAddress must be specified".invalidNel
     }
 
-  def validateAmount(amount: Long) = {
-    import cats.implicits._
-    if (amount > 0) {
-      amount.validNel
-    } else {
-      "Amount must be greater than 0".invalidNel
-    }
-  }
-
   def validateHeight(height: Long) = {
     import cats.implicits._
     if (height >= 0) {
@@ -95,8 +86,7 @@ trait SimpleTransactionValidationModule {
         paramConfig.someFromState
       ),
       validateOutputfile(paramConfig.someOutputFile, required = true),
-      validateInputFile("Key file", paramConfig.someKeyFile, required = true),
-      validateAmount(paramConfig.amount)
+      validateInputFile("Key file", paramConfig.someKeyFile, required = true)
     ).sequence.map(_ => paramConfig)
   }
 

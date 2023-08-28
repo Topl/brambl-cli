@@ -5,15 +5,6 @@ import cats.data.ValidatedNel
 
 trait CommonValidationModule {
 
-  def validatePort(port: Int) = {
-    import cats.implicits._
-    if (port > 0 && port < 65536) {
-      port.validNel
-    } else {
-      "Port must be between 0 and 65536".invalidNel
-    }
-  }
-
   def validateHost(host: String) = {
     import cats.implicits._
     if (host.nonEmpty) {
@@ -39,22 +30,6 @@ trait CommonValidationModule {
       case None =>
         if (required) Validated.invalidNel("Output file is required")
         else Validated.validNel(None)
-    }
-  }
-  def validateWalletFile(
-      someWalletFile: Option[String]
-  ): ValidatedNel[String, String] = {
-    someWalletFile match {
-      case Some(walletFile) =>
-        if (walletFile.trim().length >= 0) {
-          Validated.validNel(walletFile)
-        } else {
-          Validated.invalidNel(
-            "Wallet file is mandatory"
-          )
-        }
-      case None =>
-        Validated.invalidNel("Wallet file is mandatory")
     }
   }
 
