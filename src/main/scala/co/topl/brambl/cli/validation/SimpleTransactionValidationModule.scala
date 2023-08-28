@@ -10,7 +10,6 @@ import co.topl.brambl.models.LockAddress
 import co.topl.brambl.utils.EncodingError
 
 trait SimpleTransactionValidationModule {
-  self: CommonValidationModule =>
 
   def validateAddress(
       someAddress: Option[String]
@@ -43,14 +42,6 @@ trait SimpleTransactionValidationModule {
         "Exactly toParty and toContract together or only toAddress must be specified".invalidNel
     }
 
-  def validateHeight(height: Long) = {
-    import cats.implicits._
-    if (height >= 0) {
-      height.validNel
-    } else {
-      "Height must be greater or equal to zero.".invalidNel
-    }
-  }
 
   def validateFromCoordinates(
       someFromParty: Option[String],
@@ -83,34 +74,6 @@ trait SimpleTransactionValidationModule {
         paramConfig.someFromParty,
         paramConfig.someFromContract,
         paramConfig.someFromState
-      ),
-      validateInputFile("Key file", paramConfig.someKeyFile, required = true)
-    ).sequence.map(_ => paramConfig)
-  }
-
-  def validateSimpleTransactionProveParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateInputFile("Key file", paramConfig.someKeyFile, required = true),
-      validateInputFile(
-        "Transaction file",
-        paramConfig.someInputFile,
-        required = true
-      )
-    ).sequence.map(_ => paramConfig)
-  }
-
-  def validateSimpleTransactionBroadcastParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateInputFile(
-        "Transaction file",
-        paramConfig.someInputFile,
-        required = true
       )
     ).sequence.map(_ => paramConfig)
   }
@@ -125,14 +88,6 @@ trait SimpleTransactionValidationModule {
         paramConfig.someFromContract,
         paramConfig.someFromState
       )
-    ).sequence.map(_ => paramConfig)
-  }
-  def validateBlockByHeightQueryParams(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateHeight(paramConfig.height)
     ).sequence.map(_ => paramConfig)
   }
 

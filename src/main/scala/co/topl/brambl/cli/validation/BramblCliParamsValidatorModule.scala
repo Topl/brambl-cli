@@ -11,8 +11,7 @@ import co.topl.brambl.cli.validation.WalletValidationModule
 import co.topl.brambl.codecs.AddressCodecs
 
 object BramblCliParamsValidatorModule
-    extends CommonValidationModule
-    with WalletValidationModule
+    extends WalletValidationModule
     with SimpleTransactionValidationModule {
 
   def validateSpecificParams(
@@ -21,10 +20,6 @@ object BramblCliParamsValidatorModule
       paramConfig: BramblCliParams
   ) = {
     (mode, subcmd) match {
-      case (BramblCliMode.tx, BramblCliSubCmd.create) =>
-        validateTxCreateParam(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.wallet, BramblCliSubCmd.importvks) =>
-        validateImportVksParam(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.wallet, BramblCliSubCmd.currentaddress) =>
         import cats.implicits._
         (mode, subcmd).validNel
@@ -32,18 +27,8 @@ object BramblCliParamsValidatorModule
         validateSimpleTransactionCreateParams(paramConfig).map(_ =>
           (mode, subcmd)
         )
-      case (BramblCliMode.simpletransaction, BramblCliSubCmd.prove) =>
-        validateSimpleTransactionProveParams(paramConfig).map(_ =>
-          (mode, subcmd)
-        )
-      case (BramblCliMode.simpletransaction, BramblCliSubCmd.broadcast) =>
-        validateSimpleTransactionBroadcastParams(paramConfig).map(_ =>
-          (mode, subcmd)
-        )
       case (BramblCliMode.genusquery, BramblCliSubCmd.utxobyaddress) =>
         validateUtxoQueryParams(paramConfig).map(_ => (mode, subcmd))
-      case (BramblCliMode.bifrostquery, BramblCliSubCmd.blockbyheight) =>
-        validateBlockByHeightQueryParams(paramConfig).map(_ => (mode, subcmd))
       case (BramblCliMode.invalid, BramblCliSubCmd.invalid) =>
         import cats.implicits._
         "Invalid mode and subcmd".invalidNel

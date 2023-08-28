@@ -8,6 +8,16 @@ object BramblCliParamsParserModule {
 
   import builder._
 
+  val inputFileArg = opt[String]('i', "input")
+    .action((x, c) => c.copy(someInputFile = Some(x)))
+    .text("The input file. (mandatory)")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Input file may not be empty")
+      else if (!new java.io.File(x).exists())
+        failure(s"Input file $x does not exist")
+      else success
+    )
+
   val passphraseArg =
     opt[String]('P', "passphrase")
       .action((x, c) => c.copy(somePassphrase = Some(x)))
@@ -221,6 +231,10 @@ object BramblCliParamsParserModule {
             opt[Long]("height")
               .action((x, c) => c.copy(height = x))
               .text("The height of the block. (mandatory)")
+              .validate(x =>
+                if (x >= 0) success
+                else failure("Height must be greater than or equal to 0")
+              )
           )): _*
         ),
       cmd("block-by-id")
@@ -354,9 +368,7 @@ object BramblCliParamsParserModule {
         .children(
           ((hostPortNetwork ++ Seq(
             outputArg,
-            opt[String]('i', "input")
-              .action((x, c) => c.copy(someInputFile = Some(x)))
-              .text("The input file. (mandatory)")
+            inputFileArg
           ))): _*
         )
     )
@@ -401,9 +413,7 @@ object BramblCliParamsParserModule {
         .text("Broadcast transaction")
         .children(
           ((hostPortNetwork ++ Seq(
-            opt[String]('i', "input")
-              .action((x, c) => c.copy(someInputFile = Some(x)))
-              .text("The input file. (mandatory)")
+            inputFileArg.required()
           ))): _*
         ),
       cmd("prove")
@@ -412,9 +422,7 @@ object BramblCliParamsParserModule {
         .children(
           ((keyfileAndPassword ++ Seq(
             outputArg.required(),
-            opt[String]('i', "input")
-              .action((x, c) => c.copy(someInputFile = Some(x)))
-              .text("The input file. (mandatory)")
+            inputFileArg.required()
           ))): _*
         )
     )

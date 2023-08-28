@@ -2,13 +2,9 @@ package co.topl.brambl.cli.validation
 
 import cats.data.Validated
 import cats.data.ValidatedNel
-import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.utils.Encoding
 
 trait WalletValidationModule {
-
-  self: CommonValidationModule =>
-
 
   def validateInputKey(
       someInputFile: Option[String],
@@ -44,35 +40,7 @@ trait WalletValidationModule {
     }
   }
 
-  def validateImportVksParam(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    (paramConfig.inputVks
-      .map(x =>
-        validateInputFile(
-          s"Input file $x",
-          Some(x),
-          required = true
-        )
-      ))
-      .sequence
-      .map(_ => paramConfig)
-  }
 
-
-  def validateTxCreateParam(
-      paramConfig: BramblCliParams
-  ): ValidatedNel[String, BramblCliParams] = {
-    import cats.implicits._
-    List(
-      validateInputFile(
-        "Input transaction",
-        paramConfig.someInputFile,
-        required = true
-      )
-    ).sequence.map(_ => paramConfig)
-  }
 
 
 }
