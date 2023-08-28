@@ -227,7 +227,7 @@ alias brambl-cli="cs launch -r https://s01.oss.sonatype.org/content/repositories
 To create a keyfile for the valhalla network and a new mnemonic, with password `test` and passphrase `passphrase`, and to store the keyfile in the file `mainkey.json` and the mnemonic in the file `mnemonic.txt`, and initialize a `wallet.db` file run the following command:
 
 ```bash
-brambl-cli wallet init -w test --passphrase passphrase -n private -o mainkey.json --walletdb wallet.db --mnemonicfile mnemonic.txt
+brambl-cli wallet init -w test --passphrase passphrase -n private -o mainkey.json --newwalletdb wallet.db --mnemonicfile mnemonic.txt
 ```
 
 ### Recover a wallet keyfile

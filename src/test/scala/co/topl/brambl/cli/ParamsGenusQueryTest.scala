@@ -27,7 +27,7 @@ class ParamsGenusQueryTest extends FunSuite {
       "-h",
       "localhost",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assertEquals(validateParams(params0).isValid, true)
