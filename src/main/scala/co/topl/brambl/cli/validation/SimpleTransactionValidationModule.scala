@@ -36,10 +36,8 @@ trait SimpleTransactionValidationModule {
   ): ValidatedNel[String, Unit] =
     (someAddress, someToParty, someToContract) match {
       case (Some(addr), None, None) =>
-        println("Validating address")
         validateAddress(Some(addr)).map(_ => ())
       case (None, Some(_), Some(_)) =>
-        println("Not validating address")
         ().validNel
       case _ =>
         "Exactly toParty and toContract together or only toAddress must be specified".invalidNel

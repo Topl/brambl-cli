@@ -2,22 +2,9 @@ package co.topl.brambl.cli.validation
 
 import cats.data.Validated
 import cats.data.ValidatedNel
-import co.topl.brambl.cli.NetworkIdentifiers
 
 trait CommonValidationModule {
 
-  def validateNetwork(network: String) = {
-    NetworkIdentifiers.fromString(network) match {
-      case Some(mode) => Validated.validNel(mode)
-      case None =>
-        Validated.invalidNel(
-          "Invalid network. Valid values are " + NetworkIdentifiers.values
-            .mkString(
-              ", "
-            )
-        )
-    }
-  }
   def validatePort(port: Int) = {
     import cats.implicits._
     if (port > 0 && port < 65536) {

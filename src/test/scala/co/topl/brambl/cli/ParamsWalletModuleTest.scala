@@ -79,7 +79,7 @@ class ParamsWalletModuleTest extends FunSuite {
       "test",
       "-o",
       "outputFile.json",
-      "--walletdb",
+      "--newwalletdb",
       "wallet.db",
       "-n",
       "private",

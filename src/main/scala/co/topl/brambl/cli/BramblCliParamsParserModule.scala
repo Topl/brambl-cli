@@ -8,6 +8,10 @@ object BramblCliParamsParserModule {
 
   import builder._
 
+  val newwalletdbArg = opt[Option[String]]("newwalletdb")
+              .action((x, c) => c.copy(someWalletFile = x))
+              .text("Wallet DB file. (mandatory)")
+
   val outputArg = opt[String]('o', "output")
     .action((x, c) => c.copy(someOutputFile = Some(x)))
     .text("The output file. (optional)")
@@ -24,6 +28,19 @@ object BramblCliParamsParserModule {
     )
     .action((x, c) => c.copy(contractName = x))
     .text("Name of the contract. (mandatory)")
+
+  val networkArg = opt[String]('n', "network")
+    .action((x, c) => c.copy(network = x))
+    .text(
+      "Network name: Possible values: mainnet, testnet, private. (mandatory)"
+    )
+    .validate(x =>
+      if (NetworkIdentifiers.fromString(x).isDefined) success
+      else
+        failure(
+          s"Network $x is not supported.  Possible values: mainnet, testnet, private."
+        )
+    )
 
   val passwordArg = opt[String]('w', "password")
     .action((x, c) => c.copy(password = x))
@@ -63,18 +80,7 @@ object BramblCliParamsParserModule {
   val hostPortNetwork = {
     import builder._
     Seq(
-      opt[String]('n', "network")
-        .action((x, c) => c.copy(network = x))
-        .text(
-          "Network name: Possible values: mainnet, testnet, private. (mandatory)"
-        )
-        .validate(x =>
-          if (NetworkIdentifiers.fromString(x).isDefined) success
-          else
-            failure(
-              s"Network $x is not supported.  Possible values: mainnet, testnet, private."
-            )
-        ),
+      networkArg,
       opt[String]('h', "host")
         .action((x, c) => c.copy(host = x))
         .text("The host of the node. (mandatory)"),
@@ -247,16 +253,10 @@ object BramblCliParamsParserModule {
         .text("Initialize wallet")
         .children(
           (Seq(
-            opt[String]('n', "network")
-              .action((x, c) => c.copy(network = x))
-              .text(
-                "Network name: Possible values: mainnet, testnet, private. (mandatory)"
-              ),
+            networkArg,
             passwordArg,
             outputArg,
-            opt[Option[String]]("newwalletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)"),
+            newwalletdbArg,
             opt[Option[String]]("mnemonicfile")
               .action((x, c) => c.copy(someMnemonicFile = x))
               .text("Mnemonic output file. (mandatory)")
@@ -272,17 +272,13 @@ object BramblCliParamsParserModule {
         .text("Recover Wallet Main Key")
         .children(
           (Seq(
-            opt[String]('n', "network")
-              .action((x, c) => c.copy(network = x))
-              .text(
-                "Network name: Possible values: mainnet, testnet, private. (mandatory)"
-              ),
+            networkArg,
             opt[Seq[String]]('m', "mnemonic")
               .action((x, c) => c.copy(mnemonic = x))
               .text("Mnemonic for the key. (mandatory)"),
             passwordArg,
             outputArg,
-            walletDbArg
+            newwalletdbArg
           ) ++
             Seq(
               opt[String]('P', "passphrase")
