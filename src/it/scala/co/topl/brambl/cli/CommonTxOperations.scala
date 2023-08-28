@@ -340,7 +340,7 @@ trait CommonTxOperations
           "private",
           "-o",
           c.keyFile,
-          "--walletdb",
+          "--newwalletdb",
           c.walletFile,
           "--mnemonic",
           mnemonic
