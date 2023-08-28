@@ -246,7 +246,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.sync))
         .text("Sync wallet")
         .children(
-          (hostPortNetwork ++ (Seq(
+          (hostPortNetwork ++ keyfileAndPassword ++ (Seq(
             partyNameArg,
             contractNameArg,
             walletDbArg
