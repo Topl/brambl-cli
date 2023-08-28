@@ -60,8 +60,6 @@ trait CommonTxOperations
         c.password,
         "--keyfile",
         c.keyFile,
-        "-n",
-        "private",
         "-i",
         inputTx,
         "-o",
@@ -242,8 +240,6 @@ trait CommonTxOperations
           c.password,
           "-o",
           vkFile,
-          "-n",
-          "private",
           "--walletdb",
           c.walletFile,
           "--party-name",
@@ -264,8 +260,6 @@ trait CommonTxOperations
         List(
           "wallet",
           "import-vks",
-          "-n",
-          "private",
           "--input-vks",
           vkFile,
           "--party-name",
@@ -277,7 +271,7 @@ trait CommonTxOperations
           "--keyfile",
           c.keyFile,
           "-w",
-          c.password
+          c.password,
         )
       )
     )
@@ -383,9 +377,7 @@ trait CommonTxOperations
       "-h",
       HOST,
       "--bifrost-port",
-      s"$BIFROST_PORT",
-      "--walletdb",
-      wallet
+      s"$BIFROST_PORT"
     )
   )
 }

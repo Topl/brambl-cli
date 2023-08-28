@@ -83,9 +83,9 @@ object BramblCliParamsParserModule {
     )
 
   val hostPort = Seq(
-      hostArg,
-      portArg
-    )
+    hostArg,
+    portArg
+  )
   val hostPortNetwork =
     Seq(
       networkArg,
@@ -108,12 +108,13 @@ object BramblCliParamsParserModule {
     )
   }
 
+  val keyfileArg = opt[String]('k', "keyfile")
+    .action((x, c) => c.copy(someKeyFile = Some(x)))
+    .text("The key file.")
+
   val keyfileAndPassword = {
-    import builder._
     Seq(
-      opt[String]('k', "keyfile")
-        .action((x, c) => c.copy(someKeyFile = Some(x)))
-        .text("The key file."),
+      keyfileArg,
       passwordArg,
       walletDbArg
     )
@@ -313,12 +314,13 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.importvks))
         .text("Import verification key")
         .children(
-          walletDbArg,
-          partyNameArg,
-          contractNameArg,
-          opt[Seq[String]]("input-vks")
-            .action((x, c) => c.copy(inputVks = x))
-            .text("The keys to import. (mandatory)")
+          (keyfileAndPassword ++ Seq(
+            partyNameArg,
+            contractNameArg,
+            opt[Seq[String]]("input-vks")
+              .action((x, c) => c.copy(inputVks = x))
+              .text("The keys to import. (mandatory)")
+          )): _*
         )
     )
 

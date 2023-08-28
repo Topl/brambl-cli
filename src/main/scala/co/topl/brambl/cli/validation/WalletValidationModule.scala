@@ -66,19 +66,16 @@ trait WalletValidationModule {
       paramConfig: BramblCliParams
   ): ValidatedNel[String, BramblCliParams] = {
     import cats.implicits._
-    (paramConfig.inputVks.map(x =>
-      validateInputFile(
-        s"Input file $x",
-        Some(x),
-        required = true
-      )
-    ) ++ List(
-      validateInputFile(
-        "Keyfile",
-        paramConfig.someKeyFile,
-        required = true
-      )
-    )).sequence.map(_ => paramConfig)
+    (paramConfig.inputVks
+      .map(x =>
+        validateInputFile(
+          s"Input file $x",
+          Some(x),
+          required = true
+        )
+      ))
+      .sequence
+      .map(_ => paramConfig)
   }
 
   def validateSyncParam(
