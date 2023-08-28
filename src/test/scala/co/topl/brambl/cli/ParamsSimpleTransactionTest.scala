@@ -57,8 +57,6 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "private",
       "-a",
       "100",
-      "-w",
-      "test",
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
@@ -92,8 +90,6 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "private",
       "-a",
       "100",
-      "-w",
-      "test",
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
@@ -183,9 +179,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db",
-      "-w",
-      "test"
+      "wallet.db"
     )
     val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
     assert(validateParams(params0).isInvalid)
