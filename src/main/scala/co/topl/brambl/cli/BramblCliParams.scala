@@ -9,15 +9,17 @@ import scala.collection.immutable.IndexedSeq
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val wallet, genusquery, bifrostquery, simpletransaction, parties, contracts, tx =
+  val invalid, wallet, genusquery, bifrostquery, simpletransaction, parties,
+      contracts, tx =
     Value
 }
 
 object BramblCliSubCmd extends Enumeration {
   type BramblCliSubCmd = Value
 
-  val init, recoverkeys, utxobyaddress, blockbyheight, blockbyid, transactionbyid, create,
-      prove, broadcast, currentaddress, list, add, exportvk, importvks, sync = Value
+  val invalid, init, recoverkeys, utxobyaddress, blockbyheight, blockbyid,
+      transactionbyid, create, prove, broadcast, currentaddress, list, add,
+      exportvk, importvks, sync = Value
 }
 
 sealed abstract class NetworkIdentifiers(
@@ -56,42 +58,14 @@ case object Privatenet
 object TokenType extends Enumeration {
   type TokenType = Value
 
-  val lvl = Value
+  val all, lvl, topl, asset = Value
 }
 
 final case class BramblCliParams(
-    mode: String = "",
-    subcmd: String = "",
-    password: String = "",
-    host: String = "",
-    bifrostPort: Int = 0,
-    network: String = "",
-    partyName: String = "",
-    contractName: String = "",
-    lockTemplate: String = "",
-    inputVks: Seq[String] = Seq(),
-    someWalletFile: Option[String] = None,
-    toAddress: Option[String] = None,
-    someToParty: Option[String] = None,
-    someToContract: Option[String] = None,
-    amount: Long = 0L,
-    height: Long = 0L,
-    blockId: Option[String] = None,
-    transactionId: Option[String] = None,
-    someFromParty: Option[String] = None,
-    someFromContract: Option[String] = None,
-    someFromState: Option[String] = None,
-    somePassphrase: Option[String] = None,
-    someKeyFile: Option[String] = None,
-    someInputFile: Option[String] = None,
-    someOutputFile: Option[String] = None,
-    mnemonic: Seq[String] = Seq(),
-    someMnemonicFile: Option[String] = None
-)
-final case class BramblCliValidatedParams(
-    mode: BramblCliMode.Value,
-    subcmd: BramblCliSubCmd.Value,
-    network: NetworkIdentifiers,
+    mode: BramblCliMode.Value = BramblCliMode.invalid,
+    subcmd: BramblCliSubCmd.Value = BramblCliSubCmd.invalid,
+    tokenType: TokenType.Value = TokenType.all,
+    network: NetworkIdentifiers = Privatenet,
     partyName: String = "",
     contractName: String = "",
     lockTemplate: String = "",
@@ -99,21 +73,21 @@ final case class BramblCliValidatedParams(
     host: String = "",
     bifrostPort: Int = 0,
     walletFile: String = "",
-    password: String,
-    fromParty: String,
-    fromContract: String,
-    height: Long,
-    blockId: Option[String],
-    transactionId: Option[String] = None,
-    someFromState: Option[Int],
-    toAddress: Option[LockAddress],
+    password: String = "",
+    fromParty: String = "",
+    fromContract: String = "",
+    height: Long = -1,
+    blockId: String = "",
+    transactionId: String = "",
+    someFromState: Option[Int] = None,
+    toAddress: Option[LockAddress] = None,
     someToParty: Option[String] = None,
     someToContract: Option[String] = None,
-    amount: Long,
-    somePassphrase: Option[String],
+    amount: Long = -1,
+    somePassphrase: Option[String] = None,
     someKeyFile: Option[String] = None,
     someInputFile: Option[String] = None,
-    someOutputFile: Option[String],
-    mnemonic: IndexedSeq[String] = IndexedSeq(),
+    someOutputFile: Option[String] = None,
+    mnemonic: Seq[String] = IndexedSeq(),
     someMnemonicFile: Option[String] = None
 )

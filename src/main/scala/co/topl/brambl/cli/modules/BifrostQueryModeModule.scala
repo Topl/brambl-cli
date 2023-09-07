@@ -1,16 +1,16 @@
 package co.topl.brambl.cli.modules
 
 import cats.effect.IO
-import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.BifrostQueryController
 import co.topl.brambl.cli.modules.ChannelResourceModule
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.dataApi.BifrostQueryAlgebra
+import co.topl.brambl.cli.BramblCliParams
 
 trait BifrostQueryModeModule extends ChannelResourceModule {
 
   def bifrostQuerySubcmd(
-      validateParams: BramblCliValidatedParams
+      validateParams: BramblCliParams
   ): IO[Either[String, String]] = {
     val bifrostQueryAlgebra = BifrostQueryAlgebra.make[IO](
       channelResource(
@@ -26,11 +26,11 @@ trait BifrostQueryModeModule extends ChannelResourceModule {
       case BramblCliSubCmd.blockbyid =>
         new BifrostQueryController(
           bifrostQueryAlgebra
-        ).blockById(validateParams.blockId.get)
+        ).blockById(validateParams.blockId)
       case BramblCliSubCmd.transactionbyid =>
         new BifrostQueryController(
           bifrostQueryAlgebra
-        ).fetchTransaction(validateParams.transactionId.get)
+        ).fetchTransaction(validateParams.transactionId)
     }
   }
 

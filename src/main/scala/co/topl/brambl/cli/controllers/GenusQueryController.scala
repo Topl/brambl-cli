@@ -6,6 +6,7 @@ import co.topl.brambl.cli.views.BlockDisplayOps
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.dataApi.GenusQueryAlgebra
 import topl.brambl.dataApi.WalletStateAlgebra
+import topl.brambl.cli.TokenType
 
 class GenusQueryController[F[_]: Monad](
     walletStateAlgebra: WalletStateAlgebra[F],
@@ -15,7 +16,8 @@ class GenusQueryController[F[_]: Monad](
   def queryUtxoFromParams(
       fromParty: String,
       fromContract: String,
-      someFromState: Option[Int]
+      someFromState: Option[Int],
+      tokenType: TokenType.Value = TokenType.all
   ): F[Either[String, String]] = {
 
     import cats.implicits._
@@ -25,6 +27,18 @@ class GenusQueryController[F[_]: Monad](
         case Some(address) =>
           genusQueryAlgebra
             .queryUtxo(AddressCodecs.decodeAddress(address).toOption.get)
+            .map(_.filter{x => 
+              import monocle.macros.syntax.lens._
+              val lens = x.focus(_.transactionOutput.value.value)
+              if (tokenType == TokenType.lvl)
+                lens.get.isLvl
+              else if (tokenType == TokenType.topl)
+                lens.get.isTopl
+              else if (tokenType == TokenType.asset)
+                lens.get.isAsset
+              else
+                true
+            })
             .map { txos =>
               if (txos.isEmpty) Left("No UTXO found")
               else

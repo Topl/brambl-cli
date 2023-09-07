@@ -2,9 +2,7 @@ package co.topl.brambl.cli
 import munit.FunSuite
 import scopt.OParser
 
-import co.topl.brambl.cli.validation.BramblCliParamsValidatorModule
 class ParamsSimpleTransactionTest extends FunSuite {
-  import BramblCliParamsValidatorModule._
 
   import BramblCliParamsParserModule._
 
@@ -29,10 +27,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
   test("Test noparty transactions require index") {
@@ -60,10 +57,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isInvalid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 
   test("Test from-party transactions require index") {
@@ -93,10 +89,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assertEquals(validateParams(params0).isValid, true)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
   test("Test valid transaction create using toParty and toContract") {
@@ -122,13 +117,14 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isValid)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
-  test("Test invalid transaction create with all toAddress, toParty and toContract") {
+  test(
+    "Test invalid transaction create with all toAddress, toParty and toContract"
+  ) {
     val args0 = List(
       "simpletransaction",
       "create",
@@ -153,12 +149,13 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isInvalid)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
-  test("Test invalid transaction create with no toAddress, toParty or toContract") {
+  test(
+    "Test invalid transaction create with no toAddress, toParty or toContract"
+  ) {
     val args0 = List(
       "simpletransaction",
       "create",
@@ -177,12 +174,14 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isInvalid)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
+
   }
-  test("Test invalid transaction create with only one of toParty or toContract") {
+  test(
+    "Test invalid transaction create with only one of toParty or toContract"
+  ) {
     val args0 = List(
       "simpletransaction",
       "create",
@@ -203,9 +202,8 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--keyfile",
       "src/test/resources/keyfile.json",
       "--walletdb",
-      "wallet.db"
+      "src/test/resources/wallet.db"
     )
-    val params0 = OParser.parse(paramParser, args0, BramblCliParams()).get
-    assert(validateParams(params0).isInvalid)
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 }

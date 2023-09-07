@@ -2,15 +2,15 @@ package co.topl.brambl.cli.modules
 
 import cats.effect.IO
 import co.topl.brambl.cli.BramblCliSubCmd
-import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.SimpleTransactionController
+import co.topl.brambl.cli.BramblCliParams
 
 trait SimpleTransactionModeModule
     extends SimpleTransactionAlgebraModule
     with WalletStateAlgebraModule {
 
   def simpleTransactionSubcmds(
-      validateParams: BramblCliValidatedParams
+      validateParams: BramblCliParams
   ): IO[Either[String, String]] = validateParams.subcmd match {
     case BramblCliSubCmd.broadcast =>
       new SimpleTransactionController(

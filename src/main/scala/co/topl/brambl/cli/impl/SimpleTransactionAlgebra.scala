@@ -147,7 +147,7 @@ object SimpleTransactionAlgebra {
           } yield {
             response
           }).value
-        })).flatten.value.map(_ => Right(()))
+        })).flatten.value.map(_.void)
       }
 
       override def proveSimpleTransactionFromParams(

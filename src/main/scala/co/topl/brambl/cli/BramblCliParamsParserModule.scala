@@ -1,177 +1,286 @@
 package co.topl.brambl.cli
 
+import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.models.LockAddress
+import co.topl.brambl.utils.Encoding
 import scopt.OParser
+
+import java.io.File
 
 object BramblCliParamsParserModule {
   val builder = OParser.builder[BramblCliParams]
 
-  val hostPort = {
-    import builder._
-    Seq(
-      opt[String]('h', "host")
-        .action((x, c) => c.copy(host = x))
-        .text("The host of the node. (mandatory)"),
-      opt[Int]("bifrost-port")
-        .action((x, c) => c.copy(bifrostPort = x))
-        .text("Port Bifrost node. (mandatory)")
+  import builder._
+
+  implicit val networkRead: scopt.Read[NetworkIdentifiers] =
+    scopt.Read.reads(NetworkIdentifiers.fromString(_).get)
+
+  val inputFileArg = opt[String]('i', "input")
+    .action((x, c) => c.copy(someInputFile = Some(x)))
+    .text("The input file. (mandatory)")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Input file may not be empty")
+      else if (!new java.io.File(x).exists())
+        failure(s"Input file $x does not exist")
+      else success
     )
-  }
-  val hostPortNetwork = {
-    import builder._
-    Seq(
-      opt[String]('n', "network")
-        .action((x, c) => c.copy(network = x))
-        .text(
-          "Network name: Possible values: mainnet, testnet, private. (mandatory)"
-        )
-        .validate(x =>
-          if (NetworkIdentifiers.fromString(x).isDefined) success
-          else
-            failure(
-              s"Network $x is not supported.  Possible values: mainnet, testnet, private."
-            )
-        ),
-      opt[String]('h', "host")
-        .action((x, c) => c.copy(host = x))
-        .text("The host of the node. (mandatory)"),
-      opt[Int]("bifrost-port")
-        .action((x, c) => c.copy(bifrostPort = x))
-        .text("Port Bifrost node. (mandatory)")
+
+  val passphraseArg =
+    opt[String]('P', "passphrase")
+      .action((x, c) => c.copy(somePassphrase = Some(x)))
+      .text("Passphrase for the encrypted key. (optional))")
+      .validate(x =>
+        if (x.trim().isEmpty) failure("Passphrase may not be empty")
+        else success
+      )
+
+  val newwalletdbArg = opt[String]("newwalletdb")
+    .action((x, c) => c.copy(walletFile = x))
+    .text("Wallet DB file. (mandatory)")
+
+  val outputArg = opt[String]('o', "output")
+    .action((x, c) => c.copy(someOutputFile = Some(x)))
+    .text("The output file. (optional)")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Output file may not be empty")
+      else success
     )
-  }
+
+  val walletDbArg = opt[String]("walletdb")
+    .action((x, c) => c.copy(walletFile = x))
+    .validate(validateWalletDbFile(_))
+    .text("Wallet DB file. (mandatory)")
+
+  val contractNameArg = opt[String]("contract-name")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Contract name may not be empty")
+      else success
+    )
+    .action((x, c) => c.copy(contractName = x))
+    .text("Name of the contract. (mandatory)")
+
+  val networkArg = opt[NetworkIdentifiers]('n', "network")
+    .action((x, c) => c.copy(network = x))
+    .text(
+      "Network name: Possible values: mainnet, testnet, private. (mandatory)"
+    )
+
+  val passwordArg = opt[String]('w', "password")
+    .action((x, c) => c.copy(password = x))
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Password may not be empty")
+      else success
+    )
+    .text("Password for the encrypted key. (mandatory)")
+
+  val partyNameArg = opt[String]("party-name")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Party name may not be empty")
+      else success
+    )
+    .action((x, c) => c.copy(partyName = x))
+    .text("Name of the party. (mandatory)")
+
+  def validateWalletDbFile(walletDbFile: String): Either[String, Unit] =
+    if (walletDbFile.trim().isEmpty) failure("Wallet file may not be empty")
+    else if (new java.io.File(walletDbFile).exists()) success
+    else failure(s"Wallet file $walletDbFile does not exist")
+
+  def hostArg =
+    opt[String]('h', "host")
+      .action((x, c) => c.copy(host = x))
+      .text("The host of the node. (mandatory)")
+      .validate(x =>
+        if (x.trim().isEmpty) failure("Host may not be empty") else success
+      )
+
+  def portArg = opt[Int]("bifrost-port")
+    .action((x, c) => c.copy(bifrostPort = x))
+    .text("Port Bifrost node. (mandatory)")
+    .validate(x =>
+      if (x >= 0 && x <= 65536) success
+      else failure("Port must be between 0 and 65536")
+    )
+
+  val hostPort = Seq(
+    hostArg,
+    portArg
+  )
+  val hostPortNetwork =
+    Seq(
+      networkArg,
+      hostArg,
+      portArg
+    )
 
   val coordinates = {
     import builder._
     Seq(
-      opt[Option[String]]("from-party")
-        .action((x, c) => c.copy(someFromParty = x))
+      opt[String]("from-party")
+        .action((x, c) => c.copy(fromParty = x))
         .text("Party where we are sending the funds from"),
-      opt[Option[String]]("from-contract")
-        .action((x, c) => c.copy(someFromContract = x))
+      opt[String]("from-contract")
+        .action((x, c) => c.copy(fromContract = x))
         .text("Contract where we are sending the funds from"),
-      opt[Option[String]]("from-state")
+      opt[Option[Int]]("from-state")
         .action((x, c) => c.copy(someFromState = x))
-        .text("State from where we are sending the funds from")
+        .text("State from where we are sending the funds from"),
+      checkConfig(c =>
+        if (c.fromParty == "noparty") {
+          if (c.someFromState.isEmpty) {
+            failure("You must specify a from-state when using noparty")
+          } else {
+            success
+          }
+        } else {
+          success
+        }
+      )
     )
   }
+
+  val keyfileArg = opt[String]('k', "keyfile")
+    .action((x, c) => c.copy(someKeyFile = Some(x)))
+    .text("The key file.")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Key file may not be empty")
+      else if (!new java.io.File(x).exists())
+        failure(s"Key file $x does not exist")
+      else success
+    )
 
   val keyfileAndPassword = {
-    import builder._
     Seq(
-      opt[String]('k', "keyfile")
-        .action((x, c) => c.copy(someKeyFile = Some(x)))
-        .text("The key file."),
-      opt[String]('w', "password")
-        .action((x, c) => c.copy(password = x))
-        .text("Password for the encrypted key. (mandatory)"),
-      opt[Option[String]]("walletdb")
-        .action((x, c) => c.copy(someWalletFile = x))
-        .text("Wallet DB file. (mandatory)")
+      keyfileArg,
+      passwordArg,
+      walletDbArg
     )
   }
 
-  import builder._
-
   val contractsMode = cmd("contracts")
-    .action((_, c) => c.copy(mode = "contracts"))
+    .action((_, c) => c.copy(mode = BramblCliMode.contracts))
     .text("Contract mode")
     .children(
       cmd("list")
-        .action((_, c) => c.copy(subcmd = "list"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.list))
         .text("List existing contracts")
         .children(
-          opt[Option[String]]("walletdb")
-            .action((x, c) => c.copy(someWalletFile = x))
-            .text("Wallet DB file. (mandatory)")
+          walletDbArg
         ),
       cmd("add")
-        .action((_, c) => c.copy(subcmd = "add"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
         .text("Add a new contracts")
         .children(
-          opt[Option[String]]("walletdb")
-            .action((x, c) => c.copy(someWalletFile = x))
-            .text("Wallet DB file. (mandatory)"),
-          opt[String]("contract-name")
-            .action((x, c) => c.copy(contractName = x))
-            .text("Name of the contract. (mandatory)"),
+          walletDbArg,
+          contractNameArg,
           opt[String]("contract-template")
+            .validate(x =>
+              if (x.trim().isEmpty)
+                failure("Contract template may not be empty")
+              else success
+            )
             .action((x, c) => c.copy(lockTemplate = x))
             .text("Contract template. (mandatory)")
         )
     )
 
   val partiesMode = cmd("parties")
-    .action((_, c) => c.copy(mode = "parties"))
+    .action((_, c) => c.copy(mode = BramblCliMode.parties))
     .text("Entity mode")
     .children(
       cmd("list")
-        .action((_, c) => c.copy(subcmd = "list"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.list))
         .text("List existing parties")
         .children(
-          opt[Option[String]]("walletdb")
-            .action((x, c) => c.copy(someWalletFile = x))
-            .text("Wallet DB file. (mandatory)")
+          walletDbArg
         ),
       cmd("add")
-        .action((_, c) => c.copy(subcmd = "add"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
         .text("Add a new parties")
         .children(
           hostPortNetwork ++ Seq(
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)"),
-            opt[String]("party-name")
-              .action((x, c) => c.copy(partyName = x))
-              .text("Name of the party. (mandatory)")
+            walletDbArg,
+            partyNameArg
           ): _*
         )
     )
 
+  implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
+    scopt.Read.reads(TokenType.withName)
+
+  implicit val lockAddressRead: scopt.Read[LockAddress] =
+    scopt.Read.reads(
+      AddressCodecs
+        .decodeAddress(_)
+        .toOption
+        .get
+    )
+
   val genusQueryMode = cmd("genus-query")
-    .action((_, c) => c.copy(mode = "genusquery"))
+    .action((_, c) => c.copy(mode = BramblCliMode.genusquery))
     .text("Genus query mode")
     .children(
       cmd("utxo-by-address")
-        .action((_, c) => c.copy(subcmd = "utxobyaddress"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.utxobyaddress))
         .text("Query utxo")
         .children(
           (coordinates ++ hostPort ++ Seq(
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)")
+            walletDbArg,
+            opt[TokenType.Value]("token")
+              .action((x, c) => c.copy(tokenType = x))
+              .text(
+                "The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'"
+              )
+              .optional()
           )): _*
         )
     )
   val bifrostQueryMode = cmd("bifrost-query")
-    .action((_, c) => c.copy(mode = "bifrostquery"))
+    .action((_, c) => c.copy(mode = BramblCliMode.bifrostquery))
     .text("Bifrost query mode")
     .children(
       cmd("block-by-height")
-        .action((_, c) => c.copy(subcmd = "blockbyheight"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.blockbyheight))
         .text("Get the block at a given height")
         .children(
           (hostPort ++ Seq(
             opt[Long]("height")
               .action((x, c) => c.copy(height = x))
               .text("The height of the block. (mandatory)")
+              .validate(x =>
+                if (x >= 0) success
+                else failure("Height must be greater than or equal to 0")
+              )
           )): _*
         ),
       cmd("block-by-id")
-        .action((_, c) => c.copy(subcmd = "blockbyid"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.blockbyid))
         .text("Get the block with a given id")
         .children(
           (hostPort ++ Seq(
-            opt[Option[String]]("block-id")
+            opt[String]("block-id")
+              .validate(x =>
+                Encoding.decodeFromBase58(x) match {
+                  case Left(_)  => failure("Invalid block id")
+                  case Right(_) => success
+                }
+              )
               .action((x, c) => c.copy(blockId = x))
               .text("The id of the block in base 58. (mandatory)")
           )): _*
         ),
       cmd("transaction-by-id")
-        .action((_, c) => c.copy(subcmd = "transactionbyid"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.transactionbyid))
         .text("Get the transaction with a given id")
         .children(
           (hostPort ++ Seq(
-            opt[Option[String]]("transaction-id")
+            opt[String]("transaction-id")
+              .validate(x =>
+                Encoding.decodeFromBase58(x) match {
+                  case Left(_)  => failure("Invalid transaction id")
+                  case Right(_) => success
+                }
+              )
               .action((x, c) => c.copy(transactionId = x))
               .text("The id of the transaction in base 58. (mandatory)")
           )): _*
@@ -179,165 +288,119 @@ object BramblCliParamsParserModule {
     )
 
   val walletMode = cmd("wallet")
-    .action((_, c) => c.copy(mode = "wallet"))
+    .action((_, c) => c.copy(mode = BramblCliMode.wallet))
     .text("Wallet mode")
     .children(
       cmd("sync")
-        .action((_, c) => c.copy(subcmd = "sync"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.sync))
         .text("Sync wallet")
         .children(
-          (hostPortNetwork ++ (Seq(
-            opt[String]("party-name")
-              .action((x, c) => c.copy(partyName = x))
-              .text("Name of the party. (mandatory)"),
-            opt[String]("contract-name")
-              .action((x, c) => c.copy(contractName = x))
-              .text("Name of the contract. (mandatory)"),
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)")
+          (hostPortNetwork ++ keyfileAndPassword ++ (Seq(
+            partyNameArg,
+            contractNameArg,
+            walletDbArg
           ))): _*
         ),
       cmd("init")
-        .action((_, c) => c.copy(subcmd = "init"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.init))
         .text("Initialize wallet")
         .children(
-          (Seq(
-            opt[String]('n', "network")
-              .action((x, c) => c.copy(network = x))
-              .text(
-                "Network name: Possible values: mainnet, testnet, private. (mandatory)"
-              ),
-            opt[String]('w', "password")
-              .action((x, c) => c.copy(password = x))
-              .text("Password for the encrypted key. (mandatory)"),
-            opt[String]('o', "output")
-              .action((x, c) => c.copy(someOutputFile = Some(x)))
-              .text("The output file. (optional)"),
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)"),
-            opt[Option[String]]("mnemonicfile")
-              .action((x, c) => c.copy(someMnemonicFile = x))
-              .text("Mnemonic output file. (mandatory)")
-          ) ++
+          (
             Seq(
-              opt[String]('P', "passphrase")
-                .action((x, c) => c.copy(somePassphrase = Some(x)))
-                .text("Passphrase for the encrypted key. (optional))")
-            )): _*
+              networkArg.required(),
+              passwordArg.required(),
+              outputArg.optional(),
+              newwalletdbArg.required(),
+              passphraseArg.optional(),
+              opt[Option[String]]("mnemonicfile")
+                .action((x, c) => c.copy(someMnemonicFile = x))
+                .text("Mnemonic output file. (mandatory)")
+                .required()
+            )
+          ): _*
         ),
       cmd("recover-keys")
-        .action((_, c) => c.copy(subcmd = "recoverkeys"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.recoverkeys))
         .text("Recover Wallet Main Key")
         .children(
-          (Seq(
-            opt[String]('n', "network")
-              .action((x, c) => c.copy(network = x))
-              .text(
-                "Network name: Possible values: mainnet, testnet, private. (mandatory)"
-              ),
-            opt[Seq[String]]('m', "mnemonic")
-              .action((x, c) => c.copy(mnemonic = x))
-              .text("Mnemonic for the key. (mandatory)"),
-            opt[String]('w', "password")
-              .action((x, c) => c.copy(password = x))
-              .text("Password for the encrypted key. (mandatory)"),
-            opt[String]('o', "output")
-              .action((x, c) => c.copy(someOutputFile = Some(x)))
-              .text("The output file. (optional)"),
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)")
-          ) ++
+          (
             Seq(
-              opt[String]('P', "passphrase")
-                .action((x, c) => c.copy(somePassphrase = Some(x)))
-                .text("Passphrase for the encrypted key. (optional))")
-            )): _*
+              networkArg,
+              opt[Seq[String]]('m', "mnemonic")
+                .action((x, c) => c.copy(mnemonic = x))
+                .text("Mnemonic for the key. (mandatory)")
+                .validate(x =>
+                  if (List(12, 15, 18, 21, 24).contains(x.length)) success
+                  else failure("Mnemonic must be 12, 15, 18, 21 or 24 words")
+                ),
+              passwordArg,
+              outputArg,
+              newwalletdbArg,
+              passphraseArg
+            )
+          ): _*
         ),
       cmd("current-address")
-        .action((_, c) => c.copy(subcmd = "currentaddress"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
         .text("Obtain current address")
         .children(
-          opt[Option[String]]("walletdb")
-            .action((x, c) => c.copy(someWalletFile = x))
-            .text("Wallet DB file. (mandatory)")
+          walletDbArg
         ),
       cmd("export-vk")
-        .action((_, c) => c.copy(subcmd = "exportvk"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.exportvk))
         .text("Export verification key")
         .children(
           (keyfileAndPassword ++ Seq(
-            opt[String]('o', "output")
-              .action((x, c) => c.copy(someOutputFile = Some(x)))
-              .text("The output file."),
-            opt[Option[String]]("walletdb")
-              .action((x, c) => c.copy(someWalletFile = x))
-              .text("Wallet DB file. (mandatory)"),
-            opt[String]("party-name")
-              .action((x, c) => c.copy(partyName = x))
-              .text("Name of the party. (mandatory)"),
-            opt[String]("contract-name")
-              .action((x, c) => c.copy(contractName = x))
-              .text("Name of the contract. (mandatory)"),
-            opt[Option[String]]("state")
+            outputArg,
+            walletDbArg,
+            partyNameArg,
+            contractNameArg,
+            opt[Option[Int]]("state")
               .action((x, c) => c.copy(someFromState = x))
               .text("State from where we are sending the funds from")
           )): _*
         ),
       cmd("import-vks")
-        .action((_, c) => c.copy(subcmd = "importvks"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.importvks))
         .text("Import verification key")
         .children(
-          opt[Option[String]]("walletdb")
-            .action((x, c) => c.copy(someWalletFile = x))
-            .text("Wallet DB file. (mandatory)"),
-          opt[String]("party-name")
-            .action((x, c) => c.copy(partyName = x))
-            .text("Name of the party. (mandatory)"),
-          opt[String]("contract-name")
-            .action((x, c) => c.copy(contractName = x))
-            .text("Name of the contract. (mandatory)"),
-          opt[Seq[String]]("input-vks")
-            .action((x, c) => c.copy(inputVks = x))
-            .text("The keys to import. (mandatory)")
+          (keyfileAndPassword ++ Seq(
+            partyNameArg,
+            contractNameArg,
+            opt[Seq[File]]("input-vks")
+              .action((x, c) => c.copy(inputVks = x))
+              .text("The keys to import. (mandatory)")
+          )): _*
         )
     )
 
   val transactionMode = cmd("tx")
-    .action((_, c) => c.copy(mode = "tx"))
+    .action((_, c) => c.copy(mode = BramblCliMode.tx))
     .text("Transaction mode")
     .children(
       cmd("create")
-        .action((_, c) => c.copy(subcmd = "create"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")
         .children(
           ((hostPortNetwork ++ Seq(
-            opt[String]('o', "output")
-              .action((x, c) => c.copy(someOutputFile = Some(x)))
-              .text("The output file. (mandatory)"),
-            opt[String]('i', "input")
-              .action((x, c) => c.copy(someInputFile = Some(x)))
-              .text("The input file. (mandatory)")
+            outputArg,
+            inputFileArg
           ))): _*
         )
     )
   val simpleTransactionMode = cmd("simpletransaction")
-    .action((_, c) => c.copy(mode = "simpletransaction"))
+    .action((_, c) => c.copy(mode = BramblCliMode.simpletransaction))
     .text("Simple transaction mode")
     .children(
       cmd("create")
-        .action((_, c) => c.copy(subcmd = "create"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")
         .children(
           ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
-            opt[String]('o', "output")
-              .action((x, c) => c.copy(someOutputFile = Some(x)))
-              .text("The output file. (mandatory)")
+            outputArg.required()
           )) ++
             Seq(
-              opt[Option[String]]('t', "to")
+              opt[Option[LockAddress]]('t', "to")
                 .action((x, c) => c.copy(toAddress = x))
                 .text(
                   "Address to send LVLs to. (mandatory if to-party and to-contract are not provided)"
@@ -355,29 +418,44 @@ object BramblCliParamsParserModule {
               opt[Long]('a', "amount")
                 .action((x, c) => c.copy(amount = x))
                 .text("Amount to send simple transaction")
+                .validate(x =>
+                  if (x > 0) success
+                  else failure("Amount must be greater than 0")
+                ),
+              checkConfig(c =>
+                if (
+                  c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
+                )
+                  (c.toAddress, c.someToParty, c.someToContract) match {
+                    case (Some(_), None, None) =>
+                      success
+                    case (None, Some(_), Some(_)) =>
+                      success
+                    case _ =>
+                      failure(
+                        "Exactly toParty and toContract together or only toAddress must be specified"
+                      )
+                  }
+                else
+                  success
+              )
             )): _*
         ),
       cmd("broadcast")
-        .action((_, c) => c.copy(subcmd = "broadcast"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.broadcast))
         .text("Broadcast transaction")
         .children(
           ((hostPortNetwork ++ Seq(
-            opt[String]('i', "input")
-              .action((x, c) => c.copy(someInputFile = Some(x)))
-              .text("The input file. (mandatory)")
+            inputFileArg.required()
           ))): _*
         ),
       cmd("prove")
-        .action((_, c) => c.copy(subcmd = "prove"))
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.prove))
         .text("Prove transaction")
         .children(
           ((keyfileAndPassword ++ Seq(
-            opt[String]('o', "output")
-              .action((x, c) => c.copy(someOutputFile = Some(x)))
-              .text("The output file. (mandatory)"),
-            opt[String]('i', "input")
-              .action((x, c) => c.copy(someInputFile = Some(x)))
-              .text("The input file. (mandatory)")
+            outputArg.required(),
+            inputFileArg.required()
           ))): _*
         )
     )

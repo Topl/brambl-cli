@@ -2,9 +2,9 @@ package co.topl.brambl.cli.modules
 
 import cats.effect.IO
 import co.topl.brambl.cli.BramblCliSubCmd
-import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.controllers.WalletController
 import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.cli.BramblCliParams
 
 trait WalletModeModule
     extends WalletStateAlgebraModule
@@ -15,7 +15,7 @@ trait WalletModeModule
     with ChannelResourceModule {
 
   def walletModeSubcmds(
-      validateParams: BramblCliValidatedParams
+      validateParams: BramblCliParams
   ): IO[Either[String, String]] = {
     val walletController = new WalletController(
       walletStateAlgebra(

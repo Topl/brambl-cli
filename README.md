@@ -12,7 +12,7 @@ Your system needs to have the following software installed.
  
 ```shell
 $ cd csInstallPath
-$  csInstallPath ./cs version  
+$ ./cs version  
 2.1.6
 ```
 
@@ -24,7 +24,7 @@ $  csInstallPath ./cs version
 
 ```shell
 $ cd csInstallPath
-$  csInstallPath ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
+$ ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
 ```
 
 ### Usage mode
@@ -59,6 +59,9 @@ List existing parties
   --walletdb <value>       Wallet DB file. (mandatory)
 Command: parties add
 Add a new parties
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
   --party-name <value>     Name of the party. (mandatory)
 
@@ -77,6 +80,7 @@ Query utxo
   -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
+  --token <value>          The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'
 ```
 
 ### Bifrost query mode
@@ -121,7 +125,7 @@ Initialize wallet
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -w, --password <value>   Password for the encrypted key. (mandatory)
   -o, --output <value>     The output file. (optional)
-  --walletdb <value>       Wallet DB file. (mandatory)
+  --newwallet <value>      Wallet DB file. (mandatory)
   --mnemonicfile <value>   Mnemonic output file. (mandatory)
   -P, --passphrase <value>
                            Passphrase for the encrypted key. (optional))
@@ -136,6 +140,7 @@ Recover Wallet Main Key
                            Passphrase for the encrypted key. (optional))
 Command: wallet current-address
 Obtain current address
+  --walletdb <value>       Wallet DB file. (mandatory)
 Command: wallet export-vk
 Export verification key
   -k, --keyfile <value>    The key file.
@@ -199,9 +204,6 @@ Broadcast transaction
   -i, --input <value>      The input file. (mandatory)
 Command: simpletransaction prove
 Prove transaction
-  --from-party <value>     Party where we are sending the funds from
-  --from-contract <value>  Contract where we are sending the funds from
-  --from-state <value>     State from where we are sending the funds from
   -k, --keyfile <value>    The key file.
   -w, --password <value>   Password for the encrypted key. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
@@ -211,17 +213,21 @@ Prove transaction
 
 ## Launch Examples
  
-The below examples assumes:
+The below examples assume:
 
-- Coursier is installed
-- Previously was downloaded a specific version of the app using a resolver, In examples "co.topl:brambl-cli_2.13:2.0.0.beta-1"
+- Coursier is installed.
+- That the command to lauch has been aliased to `brambl-cli`.
+
+```
+alias brambl-cli="cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 --"
+```
 
 ### Initialize a wallet
 
 To create a keyfile for the valhalla network and a new mnemonic, with password `test` and passphrase `passphrase`, and to store the keyfile in the file `mainkey.json` and the mnemonic in the file `mnemonic.txt`, and initialize a `wallet.db` file run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet init -w test --passphrase passphrase -n private -o mainkey.json --walletdb wallet.db --mnemonicfile mnemonic.txt
+brambl-cli wallet init -w test --passphrase passphrase -n private -o mainkey.json --newwalletdb wallet.db --mnemonicfile mnemonic.txt
 ```
 
 ### Recover a wallet keyfile
@@ -229,7 +235,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet init -w test --passphra
 To recover a keyfile for the valhalla network using a mnemonic, with password `test`, passphrase `passphrase` and an existing mnemonic consisting of a comma-separated list of words, and to store the recovered keyfile in the file `mainkey.json` run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet recover-keys -w test --passphrase passphrase -n private -o mainkey.json --walletdb wallet.db --mnemonic this,is,an,example,of,a,mnemonic,string,that,contains,12,words
+brambl-cli wallet recover-keys -w test --passphrase passphrase -n private -o mainkey.json --walletdb wallet.db --mnemonic this,is,an,example,of,a,mnemonic,string,that,contains,12,words
 ```
 
 Note that the passphrase **must** be the same passphrase used to initially generate the mnemonic. The password can be different.
@@ -239,7 +245,7 @@ Note that the passphrase **must** be the same passphrase used to initially gener
 To get the current address of the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet current-address --walletdb $WALLET
+brambl-cli wallet current-address --walletdb $WALLET
 ```
 
 This will output the current address of the wallet.
@@ -249,7 +255,7 @@ This will output the current address of the wallet.
 To create a simple transaction to spend the genesis block run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction create --from-party noparty --from-contract genesis --from-state 1 -t ptetP7jshHVRuMURLWzn5RNsEBPth1CParqz5Rug99R4m1pjFN9BrChgbHCY -w test -p 9091 -o $TX_FILE -n private -a 100 -h localhost -i $MAIN_KEY --walletdb $WALLET
+brambl-cli simpletransaction create --from-party noparty --from-contract genesis --from-state 1 -t ptetP7jshHVRuMURLWzn5RNsEBPth1CParqz5Rug99R4m1pjFN9BrChgbHCY -w test -p 9091 -o $TX_FILE -n private -a 100 -h localhost -i $MAIN_KEY --walletdb $WALLET
 ```
 
 This will create a transaction that spends the genesis block and sends 100 polys to the address `ptetP7jshHVRuMURLWzn5RNsEBPth1CParqz5Rug99R4m1pjFN9BrChgbHCY`. The transaction will be stored in the file `$TX_FILE`.
@@ -257,7 +263,7 @@ This will create a transaction that spends the genesis block and sends 100 polys
 Alternatively, instead of providing an output address, the party and contract of the output can be used instead. To do this, run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction create --from-party noparty --from-contract genesis --from-state 1 --from-party self --from-contract default -w test -p 9091 -o $TX_FILE -n private -a 100 -h localhost -i $MAIN_KEY --walletdb $WALLET
+brambl-cli simpletransaction create --from-party noparty --from-contract genesis --from-state 1 --from-party self --from-contract default -w test -p 9091 -o $TX_FILE -n private -a 100 -h localhost -i $MAIN_KEY --walletdb $WALLET
 ```
 
 ### Prove a simple transaction
@@ -265,7 +271,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction create --fr
 To prove a simple transaction run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 --  simpletransaction prove -w test --keyfile $MAIN_KEY -n private -i $TX_FILE -o $TX_PROVED_FILE --walletdb $WALLET
+brambl-cli simpletransaction prove -w test --keyfile $MAIN_KEY -n private -i $TX_FILE -o $TX_PROVED_FILE --walletdb $WALLET
 ```
 
 This will prove the transaction in the file `$TX_FILE` and store the result in the file `$TX_PROVED_FILE`. The right indexes to derive the keys are taken from the wallet database.
@@ -275,7 +281,7 @@ This will prove the transaction in the file `$TX_FILE` and store the result in t
 To broadcast a simple transaction run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- broadcast -n private -i $TX_PROVED_FILE -h localhost --bifrost-port 9084 --walletdb $WALLET
+brambl-cli broadcast -n private -i $TX_PROVED_FILE -h localhost --bifrost-port 9084 --walletdb $WALLET
 ```
 
 This will broadcast the transaction in the file `$TX_PROVED_FILE` to the network.
@@ -285,7 +291,7 @@ This will broadcast the transaction in the file `$TX_PROVED_FILE` to the network
 To query a block by id run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-id --block-id $BLOCK_ID -h localhost --bifrost-port 9084
+brambl-cli bifrost-query block-by-id --block-id $BLOCK_ID -h localhost --bifrost-port 9084
 ```
 
 This will query the block with id `$BLOCK_ID` from the bifrost node running on `localhost` on port `9084`.
@@ -295,7 +301,7 @@ This will query the block with id `$BLOCK_ID` from the bifrost node running on `
 To query a block by height run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query block-by-height --height $HEIGHT -h localhost --bifrost-port 9084
+brambl-cli bifrost-query block-by-height --height $HEIGHT -h localhost --bifrost-port 9084
 ```
 
 This will query the block with height `$HEIGHT` from the bifrost node running on `localhost` on port `9084`.
@@ -305,7 +311,7 @@ This will query the block with height `$HEIGHT` from the bifrost node running on
 To query a transaction by id run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- bifrost-query transaction-by-id --transaction-id $TX_ID -h localhost --bifrost-port 9084
+brambl-cli bifrost-query transaction-by-id --transaction-id $TX_ID -h localhost --bifrost-port 9084
 ```
 
 This will query the transaction with id `$TX_ID` from the bifrost node running on `localhost` on port `9084`.
@@ -315,7 +321,7 @@ This will query the transaction with id `$TX_ID` from the bifrost node running o
 To query UXTOs by address run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- genus-query utxo-by-address --from-party self --from-contract default -h localhost --bifrost-port 9084 --walletdb $WALLET
+brambl-cli genus-query utxo-by-address --from-party self --from-contract default -h localhost --bifrost-port 9084 --walletdb $WALLET
 ```
 
 This will query the UXTOs for the address in the genus node. It uses the wallet to derive the right address to query.
@@ -325,7 +331,7 @@ This will query the UXTOs for the address in the genus node. It uses the wallet 
 To add a new party to the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties add --party-name $PARTY_NAME --walletdb $WALLET
+brambl-cli parties add --party-name $PARTY_NAME --walletdb $WALLET
 ```
 
 ### List all parties
@@ -333,7 +339,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties add --party-name $PART
 To list all parties in the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties list --walletdb $WALLET
+brambl-cli parties list --walletdb $WALLET
 ```
 
 ### Add a new contract
@@ -341,7 +347,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- parties list --walletdb $WALLE
 To add a new contract to the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts add --walletdb $WALLET --contract-name $CONTRACT_NAME --contract-template $CONTRACT_TEMPLATE
+brambl-cli contracts add --walletdb $WALLET --contract-name $CONTRACT_NAME --contract-template $CONTRACT_TEMPLATE
 ```
 
 ### List all contracts
@@ -349,7 +355,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts add --walletdb $WALL
 To list all contracts in the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts list --walletdb $WALLET
+brambl-cli contracts list --walletdb $WALLET
 ```
 
 ### Export a base verification key
@@ -357,7 +363,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- contracts list --walletdb $WAL
 To export a base verification key run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet export-vk -w test -o $OUTPUT_FILE --walletdb $WALLET --party-name $PARTY_NAME --contract-name $CONTRACT_NAME --keyfile $KEYFILE -n private
+brambl-cli wallet export-vk -w test -o $OUTPUT_FILE --walletdb $WALLET --party-name $PARTY_NAME --contract-name $CONTRACT_NAME --keyfile $KEYFILE -n private
 ```
 
 This will export the base verification key for the party `$PARTY_NAME` and contract `$CONTRACT_NAME` to the file `$OUTPUT_FILE`. The keyfile `$KEYFILE` is used to derive the exported key.
@@ -369,7 +375,7 @@ This command is also used to export a final verification key. To do this, use th
 To import one or many base verification keys run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet import-vks --input-vks $BASE_VK_1,$BASE_VK_2 --party-name $PARTY_NAME --contract-name $CONTRACT_NAME -n private --walletdb $WALLET
+brambl-cli wallet import-vks --input-vks $BASE_VK_1,$BASE_VK_2 --party-name $PARTY_NAME --contract-name $CONTRACT_NAME -n private --walletdb $WALLET
 ```
 
 ### Sync the wallet
@@ -377,7 +383,7 @@ cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet import-vks --input-vks 
 To sync the wallet run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- wallet sync --contract-name $CONTRACT_NAME --party-name $PARTY_NAME --walletdb $WALLET -n private -h localhost --bifrost-port 9084 --keyfile $KEYFILE -w $PASSWORD
+brambl-cli wallet sync --contract-name $CONTRACT_NAME --party-name $PARTY_NAME --walletdb $WALLET -n private -h localhost --bifrost-port 9084 --keyfile $KEYFILE -w $PASSWORD
 ```
 
 This will sync the wallet for the party `$PARTY_NAME` and contract `$CONTRACT_NAME` with the bifrost node running on `localhost` on port `9084`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`.
@@ -387,7 +393,7 @@ This will sync the wallet for the party `$PARTY_NAME` and contract `$CONTRACT_NA
 To create a transaction from a file run the following command:
 
 ```bash
-cs launch co.topl:brambl-cli_2.13:2.0.0.beta-1 -- tx create -i $INPUT_FILE --bifrost-port 9084 -o $OUTPUT_FILE -n private -h localhost
+brambl-cli tx create -i $INPUT_FILE --bifrost-port 9084 -o $OUTPUT_FILE -n private -h localhost
 ```
 
 This will create a transaction from the file `$INPUT_FILE` and store the result in the file `$OUTPUT_FILE`.

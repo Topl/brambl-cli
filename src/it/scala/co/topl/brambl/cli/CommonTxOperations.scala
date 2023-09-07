@@ -60,8 +60,6 @@ trait CommonTxOperations
         c.password,
         "--keyfile",
         c.keyFile,
-        "-n",
-        "private",
         "-i",
         inputTx,
         "-o",
@@ -163,8 +161,6 @@ trait CommonTxOperations
           s"$BIFROST_PORT",
           "-o",
           outputFile, // BOB_SECOND_TX_RAW,
-          "-n",
-          "private",
           "-a",
           amount.toString(),
           "-h",
@@ -198,7 +194,9 @@ trait CommonTxOperations
           "--bifrost-port",
           s"$BIFROST_PORT",
           "--walletdb",
-          c.walletFile
+          c.walletFile,
+          "--token",
+          "lvl"
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)
@@ -215,8 +213,6 @@ trait CommonTxOperations
           c.password,
           "-o",
           vkFile,
-          "-n",
-          "private",
           "--walletdb",
           c.walletFile,
           "--party-name",
@@ -244,8 +240,6 @@ trait CommonTxOperations
           c.password,
           "-o",
           vkFile,
-          "-n",
-          "private",
           "--walletdb",
           c.walletFile,
           "--party-name",
@@ -266,8 +260,6 @@ trait CommonTxOperations
         List(
           "wallet",
           "import-vks",
-          "-n",
-          "private",
           "--input-vks",
           vkFile,
           "--party-name",
@@ -279,7 +271,7 @@ trait CommonTxOperations
           "--keyfile",
           c.keyFile,
           "-w",
-          c.password
+          c.password,
         )
       )
     )
@@ -329,7 +321,7 @@ trait CommonTxOperations
           "private",
           "-o",
           c.keyFile,
-          "--walletdb",
+          "--newwalletdb",
           c.walletFile,
           "--mnemonicfile",
           c.mnemonicFile
@@ -348,7 +340,7 @@ trait CommonTxOperations
           "private",
           "-o",
           c.keyFile,
-          "--walletdb",
+          "--newwalletdb",
           c.walletFile,
           "--mnemonic",
           mnemonic
@@ -385,9 +377,7 @@ trait CommonTxOperations
       "-h",
       HOST,
       "--bifrost-port",
-      s"$BIFROST_PORT",
-      "--walletdb",
-      wallet
+      s"$BIFROST_PORT"
     )
   )
 }

@@ -3,7 +3,6 @@ package co.topl.brambl.cli.controllers
 import cats.data.OptionT
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import co.topl.brambl.cli.BramblCliValidatedParams
 import co.topl.brambl.cli.impl.WalletAlgebra
 import co.topl.brambl.cli.impl.WalletManagementUtils
 import co.topl.brambl.dataApi
@@ -21,6 +20,7 @@ import co.topl.brambl.models.Indices
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.LockId
+import co.topl.brambl.cli.BramblCliParams
 
 class WalletController[F[_]: Sync](
     walletStateAlgebra: dataApi.WalletStateAlgebra[F],
@@ -201,7 +201,7 @@ class WalletController[F[_]: Sync](
   }
 
   def createWalletFromParams(
-      params: BramblCliValidatedParams
+      params: BramblCliParams
   ): F[Either[String, String]] = {
     import cats.implicits._
     walletAlgebra
@@ -217,12 +217,12 @@ class WalletController[F[_]: Sync](
   }
 
   def recoverKeysFromParams(
-      params: BramblCliValidatedParams
+      params: BramblCliParams
   ): F[Either[String, String]] = {
     import cats.implicits._
     walletAlgebra
       .recoverKeysFromParams(
-        params.mnemonic,
+        params.mnemonic.toIndexedSeq,
         params.password,
         params.somePassphrase,
         params.someOutputFile
