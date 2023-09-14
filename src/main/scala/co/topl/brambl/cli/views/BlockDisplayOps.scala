@@ -123,7 +123,7 @@ Value      : ${display(txo.transactionOutput.value.value)}
       BigInt(txoValue.lvl.get.quantity.value.toByteArray()).toString()
     else if (txoValue.isAsset)
       BigInt(txoValue.asset.get.quantity.value.toByteArray())
-        .toString() + txoValue.asset.get.label
+        .toString() + txoValue.asset.get.groupId.get // TODO: adapt to when we need
     else if (txoValue.isTopl)
       BigInt(txoValue.topl.get.quantity.value.toByteArray()).toString()
     else "Undefine type"

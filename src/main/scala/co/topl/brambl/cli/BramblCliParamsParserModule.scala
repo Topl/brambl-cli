@@ -113,6 +113,12 @@ object BramblCliParamsParserModule {
       portArg
     )
 
+  val tokenType = opt[TokenType.Value]("token")
+    .action((x, c) => c.copy(tokenType = x))
+    .text(
+      "The token type. The valid token types are 'lvl', 'topl', 'asset', 'group', 'series', and 'all'"
+    )
+
   val coordinates = {
     import builder._
     Seq(
@@ -226,12 +232,7 @@ object BramblCliParamsParserModule {
         .children(
           (coordinates ++ hostPort ++ Seq(
             walletDbArg,
-            opt[TokenType.Value]("token")
-              .action((x, c) => c.copy(tokenType = x))
-              .text(
-                "The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'"
-              )
-              .optional()
+            tokenType.optional()
           )): _*
         )
     )
@@ -388,6 +389,47 @@ object BramblCliParamsParserModule {
           ))): _*
         )
     )
+
+  val simpleMintingMode = cmd("simple-minting")
+    .action((_, c) => c.copy(mode = BramblCliMode.simpleminting))
+    .text("Simple minting mode")
+    .children(
+      cmd("create")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
+        .text("Create minting transaction")
+        .children(
+          ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
+            outputArg.required(),
+            inputFileArg.required()
+          )) ++
+            Seq(
+              opt[Long]('a', "amount")
+                .action((x, c) => c.copy(amount = x))
+                .text("Amount to mint")
+                .validate(x =>
+                  if (x > 0) success
+                  else failure("Amount must be greater than 0")
+                ),
+              opt[Long]("fee")
+                .action((x, c) => c.copy(fee = x))
+                .text("Fee paid for the minting transaction")
+                .validate(x =>
+                  if (x > 0) success
+                  else failure("Amount must be greater than 0")
+                ).required(),
+              tokenType.required(),
+              checkConfig(c =>
+                if (c.tokenType != TokenType.group)
+                  failure(
+                    "Only group minting is supported at the moment"
+                  )
+                else
+                  success
+              )
+            )): _*
+        )
+    )
+
   val simpleTransactionMode = cmd("simpletransaction")
     .action((_, c) => c.copy(mode = BramblCliMode.simpletransaction))
     .text("Simple transaction mode")
@@ -468,7 +510,8 @@ object BramblCliParamsParserModule {
       bifrostQueryMode,
       walletMode,
       transactionMode,
-      simpleTransactionMode
+      simpleTransactionMode,
+      simpleMintingMode
     )
   }
 }

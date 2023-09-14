@@ -24,9 +24,10 @@ import quivr.models.KeyPair
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-sealed trait SimpleTransactionAlgebraError {
+sealed trait SimpleTransactionAlgebraError extends Throwable {
 
   def description: String
+
 }
 
 case class CannotInitializeProtobuf(description: String)
@@ -86,13 +87,7 @@ object SimpleTransactionAlgebra {
   ) =
     new SimpleTransactionAlgebra[F] {
 
-      private def lift[A](a: F[Either[SimpleTransactionAlgebraError, A]]) =
-        EitherT[F, SimpleTransactionAlgebraError, A](a)
-
-      private def liftF[A](a: F[A]) = {
-        import cats.implicits._
-        EitherT[F, SimpleTransactionAlgebraError, A](a.map(Right(_)))
-      }
+      import TransactionUtils._
 
       override def broadcastSimpleTransactionFromParams(
           provedTxFile: String
@@ -105,7 +100,7 @@ object SimpleTransactionAlgebra {
               .delay(new FileInputStream(provedTxFile))
           }(fos => Sync[F].delay(fos.close()))
         (for {
-          provedTransaction <- lift[IoTransaction](
+          provedTransaction <- lift[F, IoTransaction](
             inputRes.use(fis =>
               Sync[F].blocking(
                 Either
@@ -122,7 +117,7 @@ object SimpleTransactionAlgebra {
           channel <- channelResource
         } yield channel).use { channel =>
           (for {
-            blockingStub <- lift[NodeRpcGrpc.NodeRpcBlockingStub](
+            blockingStub <- lift[F, NodeRpcGrpc.NodeRpcBlockingStub](
               Sync[F]
                 .point(
                   Either
@@ -132,7 +127,7 @@ object SimpleTransactionAlgebra {
                     )
                 )
             )
-            response <- lift[BroadcastTransactionRes](
+            response <- lift[F, BroadcastTransactionRes](
               Sync[F].blocking(
                 Either
                   .catchNonFatal(
@@ -160,7 +155,7 @@ object SimpleTransactionAlgebra {
         import cats.implicits._
 
         (for {
-          ioTransaction <- lift[IoTransaction](
+          ioTransaction <- lift[F, IoTransaction](
             inputRes.use(fis =>
               Sync[F].blocking(
                 Either
@@ -169,7 +164,7 @@ object SimpleTransactionAlgebra {
               )
             )
           )
-          keyPair <- lift[KeyPair](
+          keyPair <- lift[F, KeyPair](
             walletManagementUtils
               .loadKeys(
                 keyFile,
@@ -177,7 +172,7 @@ object SimpleTransactionAlgebra {
               )
               .map(Right(_))
           )
-          credentialer <- lift[Credentialler[F]](
+          credentialer <- lift[F, Credentialler[F]](
             Sync[F]
               .delay(
                 CredentiallerInterpreter
@@ -185,10 +180,10 @@ object SimpleTransactionAlgebra {
               )
               .map(Right(_))
           )
-          provedTransaction <- lift[IoTransaction](
+          provedTransaction <- lift[F, IoTransaction](
             credentialer.prove(ioTransaction).map(Right(_))
           )
-          _ <- lift[Unit](
+          _ <- lift[F, Unit](
             outputRes.use(fos =>
               Sync[F]
                 .delay(
@@ -347,7 +342,7 @@ object SimpleTransactionAlgebra {
           lvlTxos = response.filter(
             _.transactionOutput.value.value.isLvl
           )
-          // // either toAddress or both toContract and toParty must be defined
+          // either toAddress or both toContract and toParty must be defined
           toAddressOpt <- liftF(
             (
               someToAddress,
@@ -368,7 +363,7 @@ object SimpleTransactionAlgebra {
           )
           _ <-
             (if (lvlTxos.isEmpty) {
-               lift[Unit](
+               lift[F, Unit](
                  Sync[F].delay(Left(CreateTxError("No LVL txos found")))
                )
              } else {
@@ -385,13 +380,13 @@ object SimpleTransactionAlgebra {
                      outputFile
                    )
                  case (None, _) =>
-                   lift[Unit](
+                   lift[F, Unit](
                      Sync[F].delay(
                        Left(CreateTxError("Unable to generate change lock"))
                      )
                    )
                  case (_, _) =>
-                   lift[Unit](
+                   lift[F, Unit](
                      Sync[F].delay(
                        Left(CreateTxError("Unable to derive recipient address"))
                      )
