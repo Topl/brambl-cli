@@ -8,6 +8,10 @@ import scopt.OParser
 import java.io.File
 
 object BramblCliParamsParserModule {
+
+  implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
+    scopt.Read.reads(TokenType.withName)
+
   val builder = OParser.builder[BramblCliParams]
 
   import builder._
@@ -211,9 +215,6 @@ object BramblCliParamsParserModule {
         )
     )
 
-  implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
-    scopt.Read.reads(TokenType.withName)
-
   implicit val lockAddressRead: scopt.Read[LockAddress] =
     scopt.Read.reads(
       AddressCodecs
@@ -416,10 +417,13 @@ object BramblCliParamsParserModule {
                 .validate(x =>
                   if (x > 0) success
                   else failure("Amount must be greater than 0")
-                ).required(),
+                )
+                .required(),
               tokenType.required(),
               checkConfig(c =>
-                if (c.tokenType != TokenType.group)
+                if (
+                  c.mode == BramblCliMode.simpleminting &&
+                  c.tokenType != TokenType.group)
                   failure(
                     "Only group minting is supported at the moment"
                   )
