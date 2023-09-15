@@ -90,7 +90,7 @@ class ComplexTransactionWithFileTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_FIRST_COMPLEX_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_FIRST_COMPLEX_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println("Check alice's address")
@@ -268,7 +268,7 @@ class ComplexTransactionWithFileTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_SECOND_COMPLEX_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_SECOND_COMPLEX_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
@@ -397,7 +397,7 @@ class ComplexTransactionWithFileTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_THIRD_COMPLEX_TX_PROVED_BY_BOTH, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_THIRD_COMPLEX_TX_PROVED_BY_BOTH),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)

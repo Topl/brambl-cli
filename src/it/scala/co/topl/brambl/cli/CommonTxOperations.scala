@@ -366,7 +366,7 @@ trait CommonTxOperations
     genusQueryAlgebra
   )
 
-  def broadcastSimpleTx(provedTx: String, wallet: String) = Main.run(
+  def broadcastSimpleTx(provedTx: String) = Main.run(
     List(
       "simpletransaction",
       "broadcast",

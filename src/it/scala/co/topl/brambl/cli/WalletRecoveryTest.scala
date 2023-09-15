@@ -70,7 +70,7 @@ class WalletRecoveryTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(WALLET_FIRST_TX_PROVED, WALLET),
+          broadcastSimpleTx(WALLET_FIRST_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println("Query Account")
@@ -129,7 +129,7 @@ class WalletRecoveryTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(WALLET_SECOND_TX_PROVED, WALLET),
+          broadcastSimpleTx(WALLET_SECOND_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)

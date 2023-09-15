@@ -69,7 +69,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_FIRST_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_FIRST_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println("Check alice's address (is contained in the change)")
@@ -162,7 +162,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_SECOND_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_SECOND_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
@@ -261,7 +261,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_THIRD_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_THIRD_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
@@ -318,7 +318,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(BOB_SECOND_TX_PROVED, BOB_WALLET),
+          broadcastSimpleTx(BOB_SECOND_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println(
@@ -395,7 +395,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_FOURTH_TX_PROVED, BOB_WALLET),
+          broadcastSimpleTx(ALICE_FOURTH_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println(
