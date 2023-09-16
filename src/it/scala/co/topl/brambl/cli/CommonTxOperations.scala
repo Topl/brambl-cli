@@ -176,7 +176,7 @@ trait CommonTxOperations
           .getOrElse(List.empty)
       )
     )
-  def createSimpleMintingTransaction(
+  def createSimpleGroupMintingTransaction(
       fromParty: String,
       fromContract: String,
       someFromState: Option[Int],
@@ -244,6 +244,33 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "lvl"
+        ) ++ someFromState
+          .map(s => List("--from-state", s.toString()))
+          .getOrElse(List.empty)
+      )
+    )
+  def queryAccountAllTokens(
+      partyName: String,
+      contractName: String,
+      someFromState: Option[Int] = None
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "genus-query",
+          "utxo-by-address",
+          "--from-party",
+          partyName,
+          "--from-contract",
+          contractName,
+          "-h",
+          HOST,
+          "--bifrost-port",
+          s"$BIFROST_PORT",
+          "--walletdb",
+          c.walletFile,
+          "--token",
+          "all"
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)

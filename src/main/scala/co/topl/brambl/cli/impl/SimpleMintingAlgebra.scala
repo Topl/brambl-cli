@@ -88,8 +88,8 @@ object SimpleMintingAlgebra {
         lvlTxos: Seq[Txo],
         lockPredicateFrom: Lock.Predicate,
         recipientLockAddress: LockAddress,
-        fee: Long,
         amount: Long,
+        fee: Long,
         groupId: GroupId,
         fixedSeries: Option[SeriesId]
     ): F[IoTransaction] =
@@ -138,8 +138,8 @@ object SimpleMintingAlgebra {
         predicateFundsToUnlock: Lock.Predicate,
         lockForChange: Lock,
         recipientLockAddress: LockAddress,
-        fee: Long,
         amount: Long,
+        fee: Long,
         someNextIndices: Option[Indices],
         keyPair: KeyPair,
         outputFile: String,
@@ -152,8 +152,8 @@ object SimpleMintingAlgebra {
             lvlTxos,
             predicateFundsToUnlock,
             recipientLockAddress,
-            fee,
             amount,
+            fee,
             groupId,
             fixedSeries
           )
@@ -207,8 +207,8 @@ object SimpleMintingAlgebra {
     private def buildTxAux(
         lvlTxos: Seq[Txo],
         predicateFundsToUnlock: Lock.Predicate,
-        fee: Long,
         amount: Long,
+        fee: Long,
         someNextIndices: Option[Indices],
         keyPair: KeyPair,
         outputFile: String,
@@ -284,8 +284,8 @@ object SimpleMintingAlgebra {
       _ <- buildTxAux(
         lvlTxos,
         predicateFundsToUnlock.get.getPredicate,
-        fee,
         amount,
+        fee,
         someNextIndices,
         keyPair,
         outputFile,

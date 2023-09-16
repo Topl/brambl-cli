@@ -114,6 +114,7 @@ Value      : ${display(txo.transactionOutput.value.value)}
 
   def displayType(txoValue: Value.Value) =
     if (txoValue.isLvl) "LVL"
+    else if (txoValue.isGroup) "Group Constructor"
     else if (txoValue.isAsset) "Asset"
     else if (txoValue.isTopl) "TOPL"
     else "Unknown txo type"
@@ -126,6 +127,8 @@ Value      : ${display(txo.transactionOutput.value.value)}
         .toString() + txoValue.asset.get.groupId.get // TODO: adapt to when we need
     else if (txoValue.isTopl)
       BigInt(txoValue.topl.get.quantity.value.toByteArray()).toString()
+    else if (txoValue.isGroup)
+      BigInt(txoValue.group.get.quantity.value.toByteArray()).toString()
     else "Undefine type"
 
 }
