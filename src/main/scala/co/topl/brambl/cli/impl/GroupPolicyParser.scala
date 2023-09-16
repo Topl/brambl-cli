@@ -11,7 +11,7 @@ import co.topl.brambl.models.SeriesId
 case class GroupPolicy(
     label: String,
     fixedSeries: Option[String],
-    registrationUtxo: UtxoAddress
+    registrationUtxo: String
 )
 
 trait GroupPolicyParser[F[_]] {
@@ -23,7 +23,7 @@ trait GroupPolicyParser[F[_]] {
 object GroupPolicyParser {
 
   def make[F[_]: Sync](
-    networkId: Int
+      networkId: Int
   ): GroupPolicyParser[F] = new GroupPolicyParser[F] {
     import cats.implicits._
     import io.circe.generic.auto._
@@ -40,7 +40,7 @@ object GroupPolicyParser {
         registrationUtxo <- Sync[F].fromEither(
           CommonParsingOps.parseTransactionOuputAddress(
             networkId,
-            groupPolicy.registrationUtxo.address
+            groupPolicy.registrationUtxo
           )
         )
         someSeriesId <-
@@ -70,8 +70,8 @@ object GroupPolicyParser {
           yaml.v12.parser
             .parse(inputString)
             .flatMap(tx => tx.as[GroupPolicy])
-            .leftMap { _ =>
-              InvalidYaml
+            .leftMap { e =>
+              InvalidYaml(e)
             }
         )
       gp <- groupPolicyToPBGroupPolicy(groupPolicy)

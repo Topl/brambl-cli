@@ -209,8 +209,7 @@ object TxParserAlgebra {
               .parse(inputString)
               .flatMap(tx => tx.as[Tx])
               .leftMap { e =>
-                println("Error parsing yaml: " + e)
-                InvalidYaml
+                InvalidYaml(e)
               }
           )
         )

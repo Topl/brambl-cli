@@ -38,6 +38,14 @@ object BramblCliParamsParserModule {
         else success
       )
 
+  val amountArg = opt[Long]('a', "amount")
+    .action((x, c) => c.copy(amount = x))
+    .text("Amount to send or mint")
+    .validate(x =>
+      if (x > 0) success
+      else failure("Amount must be greater than 0")
+    )
+
   val newwalletdbArg = opt[String]("newwalletdb")
     .action((x, c) => c.copy(walletFile = x))
     .text("Wallet DB file. (mandatory)")
@@ -404,16 +412,10 @@ object BramblCliParamsParserModule {
             inputFileArg.required()
           )) ++
             Seq(
-              opt[Long]('a', "amount")
-                .action((x, c) => c.copy(amount = x))
-                .text("Amount to mint")
-                .validate(x =>
-                  if (x > 0) success
-                  else failure("Amount must be greater than 0")
-                ),
+              amountArg,
               opt[Long]("fee")
                 .action((x, c) => c.copy(fee = x))
-                .text("Fee paid for the minting transaction")
+                .text("Fee paid for the transaction")
                 .validate(x =>
                   if (x > 0) success
                   else failure("Amount must be greater than 0")
@@ -423,7 +425,8 @@ object BramblCliParamsParserModule {
               checkConfig(c =>
                 if (
                   c.mode == BramblCliMode.simpleminting &&
-                  c.tokenType != TokenType.group)
+                  c.tokenType != TokenType.group
+                )
                   failure(
                     "Only group minting is supported at the moment"
                   )
@@ -461,13 +464,7 @@ object BramblCliParamsParserModule {
                 .text(
                   "Contract to send LVLs to. (mandatory if to is not provided)"
                 ),
-              opt[Long]('a', "amount")
-                .action((x, c) => c.copy(amount = x))
-                .text("Amount to send simple transaction")
-                .validate(x =>
-                  if (x > 0) success
-                  else failure("Amount must be greater than 0")
-                ),
+              amountArg,
               checkConfig(c =>
                 if (
                   c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create

@@ -165,10 +165,57 @@ trait CommonTxOperations
           amount.toString(),
           "-h",
           HOST,
+          "-n",
+          "private",
           "--keyfile",
           c.keyFile,
           "--walletdb",
           c.walletFile
+        ) ++ someFromState
+          .map(s => List("--from-state", s.toString()))
+          .getOrElse(List.empty)
+      )
+    )
+  def createSimpleMintingTransaction(
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      amount: Long,
+      fee: Long,
+      groupPolicy: String,
+      outputFile: String
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "simple-minting",
+          "create",
+          "--from-party",
+          fromParty, 
+          "--from-contract",
+          fromContract, 
+          "-h",
+          HOST,
+          "--bifrost-port",
+          s"$BIFROST_PORT",
+          "-n",
+          "private",
+          "--keyfile",
+          c.keyFile,
+          "-w",
+          c.password,
+          "-o",
+          outputFile, 
+          "-i",
+          groupPolicy,
+          "-a",
+          amount.toString(),
+          "--fee",
+          fee.toString(),
+          "--walletdb",
+          c.walletFile,
+          "--token",
+          "group"
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)

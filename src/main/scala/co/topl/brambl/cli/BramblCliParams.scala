@@ -9,8 +9,8 @@ import scala.collection.immutable.IndexedSeq
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val invalid, wallet, genusquery, bifrostquery, simpletransaction, simpleminting, parties,
-      contracts, tx =
+  val invalid, wallet, genusquery, bifrostquery, simpletransaction,
+      simpleminting, parties, contracts, tx =
     Value
 }
 
@@ -54,6 +54,12 @@ case object Privatenet
       "private",
       NetworkConstants.PRIVATE_NETWORK_ID
     )
+case object InvalidNet
+    extends NetworkIdentifiers(
+      -1,
+      "invalid",
+      NetworkConstants.PRIVATE_NETWORK_ID
+    )
 
 object TokenType extends Enumeration {
   type TokenType = Value
@@ -65,7 +71,7 @@ final case class BramblCliParams(
     mode: BramblCliMode.Value = BramblCliMode.invalid,
     subcmd: BramblCliSubCmd.Value = BramblCliSubCmd.invalid,
     tokenType: TokenType.Value = TokenType.all,
-    network: NetworkIdentifiers = Privatenet,
+    network: NetworkIdentifiers = InvalidNet,
     partyName: String = "",
     contractName: String = "",
     lockTemplate: String = "",

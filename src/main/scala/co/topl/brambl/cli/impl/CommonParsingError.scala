@@ -7,7 +7,7 @@ sealed trait CommonParserError extends Throwable {
 case object InvalidNetwork extends CommonParserError {
   val description = "Invalid network"
 }
-case object InvalidYaml extends CommonParserError {
+case class InvalidYaml(error: Throwable) extends CommonParserError {
   val description = "Invalid yaml"
 }
 
