@@ -53,6 +53,17 @@ object GroupPolicyParser {
               )
             )
             .sequence
+        _ <- someSeriesId
+          .map(seriesId =>
+            if (seriesId.length != 32)
+              Sync[F].raiseError(
+                InvalidHex(
+                  "The hex string for the series must be 32 bytes long"
+                )
+              )
+            else Sync[F].point(())
+          )
+          .getOrElse(Sync[F].point(()))
       } yield Event.GroupPolicy(
         label,
         registrationUtxo,

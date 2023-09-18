@@ -6,6 +6,7 @@ import co.topl.brambl.utils.Encoding
 import scopt.OParser
 
 import java.io.File
+import java.nio.file.Paths
 
 object BramblCliParamsParserModule {
 
@@ -49,14 +50,26 @@ object BramblCliParamsParserModule {
   val newwalletdbArg = opt[String]("newwalletdb")
     .action((x, c) => c.copy(walletFile = x))
     .text("Wallet DB file. (mandatory)")
+    .validate(x =>
+      if (Paths.get(x).toFile().exists()) {
+        failure("Wallet file " + x + " already exists")
+      } else {
+        success
+      }
+    )
 
   val outputArg = opt[String]('o', "output")
     .action((x, c) => c.copy(someOutputFile = Some(x)))
-    .text("The output file. (optional)")
+    .text("The output file. (mandatory)")
     .validate(x =>
       if (x.trim().isEmpty) failure("Output file may not be empty")
-      else success
+      else if (Paths.get(x).toFile().exists()) {
+        failure("Output file already exists")
+      } else {
+        success
+      }
     )
+    .required()
 
   val walletDbArg = opt[String]("walletdb")
     .action((x, c) => c.copy(walletFile = x))
@@ -326,6 +339,15 @@ object BramblCliParamsParserModule {
                 .action((x, c) => c.copy(someMnemonicFile = x))
                 .text("Mnemonic output file. (mandatory)")
                 .required()
+                .validate(x =>
+                  x.map(f =>
+                    if (Paths.get(f).toFile().exists()) {
+                      failure("Mnemonic file already exists")
+                    } else {
+                      success
+                    }
+                  ).getOrElse(success)
+                )
             )
           ): _*
         ),

@@ -20,6 +20,8 @@ trait WalletAlgebra[F[_]] {
   def recoverKeysFromParams(
       mnemonic: IndexedSeq[String],
       password: String,
+      networkId: Int,
+      ledgerId: Int,
       somePassphrase: Option[String],
       someOutputFile: Option[String]
   ): F[Unit]
@@ -144,6 +146,8 @@ object WalletAlgebra {
     def recoverKeysFromParams(
         mnemonic: IndexedSeq[String],
         password: String,
+        networkId: Int,
+        ledgerId: Int,
         somePassphrase: Option[String],
         someOutputFile: Option[String]
     ) = {
@@ -152,6 +156,9 @@ object WalletAlgebra {
 
       for {
         wallet <- recoverWalletKey(mnemonic, password, somePassphrase)
+        keyPair <- extractMainKey(wallet, password)
+        derivedKey <- walletApi.deriveChildKeysPartial(keyPair, 1, 1)
+        _ <- walletStateApi.initWalletState(networkId, ledgerId, derivedKey.vk)
         _ <- someOutputFile
           .map { outputFile =>
             saveWallet(

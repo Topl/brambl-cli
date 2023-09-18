@@ -224,6 +224,8 @@ class WalletController[F[_]: Sync](
       .recoverKeysFromParams(
         params.mnemonic.toIndexedSeq,
         params.password,
+        params.network.networkId,
+        NetworkConstants.MAIN_LEDGER_ID,
         params.somePassphrase,
         params.someOutputFile
       )

@@ -8,7 +8,7 @@ case object InvalidNetwork extends CommonParserError {
   val description = "Invalid network"
 }
 case class InvalidYaml(error: Throwable) extends CommonParserError {
-  val description = "Invalid yaml"
+  val description = error.toString()
 }
 
 case class UnknownError(t: Throwable) extends CommonParserError {

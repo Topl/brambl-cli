@@ -41,18 +41,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
     ): F[Seq[Txo]] = Monad[F].pure(Seq.empty)
 
   }
-  def makeGenusQueryAlgebraMockWithAddress[F[_]: Monad] =
-    new GenusQueryAlgebra[F] {
 
-      override def queryUtxo(
-          fromAddress: LockAddress,
-          txoState: TxoState
-      ): F[Seq[Txo]] = {
-        Monad[F].pure(
-          Seq(txo01)
-        )
-      }
-    }
   test(
     "queryUtxoFromParams should return an error if the address is not there"
   ) {

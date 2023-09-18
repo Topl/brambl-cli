@@ -5,6 +5,7 @@ import cats.effect.kernel.Sync
 import co.topl.brambl.cli.impl.GroupPolicyParser
 import co.topl.brambl.cli.impl.SimpleMintingAlgebra
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebraError
+import co.topl.brambl.cli.impl.CreateTxError
 
 class SimpleMintingController[F[_]: Sync](
     groupPolicyParserAlgebra: GroupPolicyParser[F],
@@ -32,6 +33,7 @@ class SimpleMintingController[F[_]: Sync](
             Sync[F].delay(scala.io.Source.fromFile(inputFile))
           )(source => Sync[F].delay(source.close()))
         )
+        .map(_.leftMap(e => CreateTxError("Error parsing group policy: " + e.description)))
       policy <- Sync[F].fromEither(gp)
       groupPolicy <- simpleMintingOps
         .createSimpleGroupMintingTransactionFromParams(
@@ -51,7 +53,7 @@ class SimpleMintingController[F[_]: Sync](
         case Right(_) => Right("Transaction successfully created")
         case Left(value: SimpleTransactionAlgebraError) =>
           Left(value.description)
-        case Left(e) => Left(e.getMessage())
+        case Left(e) => Left(e.toString())
       })
 
 }
