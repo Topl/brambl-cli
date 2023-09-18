@@ -54,7 +54,7 @@ object Main
         for {
           output <- op
           res <- output.fold(
-            x => IO.consoleForIO.errorln(x).map(_ => (ExitCode.Error)),
+            x => IO.consoleForIO.errorln(x).map(_ => ExitCode.Error),
             x => IO.consoleForIO.println(x).map(_ => ExitCode.Success)
           )
         } yield res
