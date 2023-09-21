@@ -1,20 +1,43 @@
 package co.topl.brambl.cli.mockbase
 
+import co.topl.brambl.builders.BuilderError
 import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.models.Datum
+import co.topl.brambl.models.Event
+import co.topl.brambl.models.GroupId
 import co.topl.brambl.models.LockAddress
+import co.topl.brambl.models.SeriesId
+import co.topl.brambl.models.box.AssetMintingStatement
 import co.topl.brambl.models.box.Attestation
+import co.topl.brambl.models.box.FungibilityType
 import co.topl.brambl.models.box.Lock
+import co.topl.brambl.models.box.QuantityDescriptorType
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.UnspentTransactionOutput
+import co.topl.brambl.syntax.AssetType
+import co.topl.brambl.syntax.GroupType
+import co.topl.brambl.syntax.SeriesType
 import co.topl.genus.services.Txo
-import quivr.models.Int128
-import co.topl.brambl.models.Event
-import co.topl.brambl.builders.BuilderError
-import co.topl.brambl.models.box.AssetMintingStatement
+import com.google.protobuf.ByteString
 import com.google.protobuf.struct.Struct
+import quivr.models.Int128
 
 class BaseTransactionBuilderApi[F[_]] extends TransactionBuilderApi[F] {
+
+  override def groupOutput(lockAddress: LockAddress, quantity: Int128, groupId: GroupId, fixedSeries: Option[SeriesId]): F[UnspentTransactionOutput] = ???
+
+  override def seriesOutput(lockAddress: LockAddress, quantity: Int128, seriesId: SeriesId, tokenSupply: Option[Int], fungibility: FungibilityType, quantityDescriptor: QuantityDescriptorType): F[UnspentTransactionOutput] = ???
+
+  override def assetOutput(lockAddress: LockAddress, quantity: Int128, groupId: GroupId, seriesId: SeriesId, fungibilityType: FungibilityType, quantityDescriptorType: QuantityDescriptorType, metadata: Option[Struct], commitment: Option[ByteString]): F[UnspentTransactionOutput] = ???
+
+  override def buildLvlTransferTransaction(txos: Seq[Txo], lockPredicateFrom: Lock.Predicate, amount: Long, recipientLockAddress: LockAddress, changeLockAddress: LockAddress, fee: Long): F[Either[BuilderError,IoTransaction]] = ???
+
+  override def buildGroupTransferTransaction(groupId: GroupType, txos: Seq[Txo], lockPredicateFrom: Lock.Predicate, amount: Long, recipientLockAddress: LockAddress, changeLockAddress: LockAddress, fee: Long): F[Either[BuilderError,IoTransaction]] = ???
+
+  override def buildSeriesTransferTransaction(seriesId: SeriesType, txos: Seq[Txo], lockPredicateFrom: Lock.Predicate, amount: Long, recipientLockAddress: LockAddress, changeLockAddress: LockAddress, fee: Long): F[Either[BuilderError,IoTransaction]] = ???
+
+  override def buildAssetTransferTransaction(assetId: AssetType, txos: Seq[Txo], lockPredicateFrom: Lock.Predicate, amount: Long, recipientLockAddress: LockAddress, changeLockAddress: LockAddress, fee: Long): F[Either[BuilderError,IoTransaction]] = ???
+
 
   override def buildSimpleGroupMintingTransaction(
       registrationTxo: Txo,
