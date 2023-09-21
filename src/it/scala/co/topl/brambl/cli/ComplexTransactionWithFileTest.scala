@@ -54,22 +54,33 @@ class ComplexTransactionWithFileTest
         ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress()
         genesisAddress <- walletController(ALICE_WALLET)
           .currentaddress("noparty", "genesis", Some(1))
-        utxos <- genusQueryAlgebra.queryUtxo(
-          decodeAddress(genesisAddress.get).toOption.get
-        ).map(_.filter(_.transactionOutput.value.value.isLvl))
+        utxos <- genusQueryAlgebra
+          .queryUtxo(
+            decodeAddress(genesisAddress.get).toOption.get
+          )
+          .map(_.filter(_.transactionOutput.value.value.isLvl))
         _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")
-        genesisUtxoAddress = Encoding.encodeToBase58(
-          utxos.head.outputAddress.id.value.toByteArray
-        ) + "#" + utxos.head.outputAddress.index.toString
-        genesisAmount = BigInt(
-          utxos.head.transactionOutput.value.value.lvl.get.quantity.value
-            .toByteArray()
-        ).toLong
-        _ <- IO.println(s"GENESIS_UTXO_ADDRESS is $genesisUtxoAddress")
+        genesisUtxoAddresses = utxos.map { utxo =>
+          (
+            Encoding.encodeToBase58(
+              utxo.outputAddress.id.value.toByteArray
+            ) + "#" + utxo.outputAddress.index.toString,
+            BigInt(
+              utxo.transactionOutput.value.value.lvl.get.quantity.value
+                .toByteArray()
+            ).toLong
+          )
+        }
+        genesisAmount = utxos.foldLeft(0L) { (acc, utxo) =>
+          acc + BigInt(
+            utxo.transactionOutput.value.value.lvl.get.quantity.value
+              .toByteArray()
+          ).toLong
+        }
         _ <- IO.println("Moving funds from genesis to alice")
         _ <- createComplexTxFileFromGenesisToAlice(
           ALICE_FIRST_COMPLEX_TX,
-          genesisUtxoAddress,
+          genesisUtxoAddresses.toList,
           genesisAmount,
           ALICE_TO_ADDRESS.toOption.get
         )
@@ -211,9 +222,11 @@ class ComplexTransactionWithFileTest
         )
         aliceAddress <- walletController(ALICE_WALLET)
           .currentaddress("self", "default", Some(1))
-        utxos <- genusQueryAlgebra.queryUtxo(
-          decodeAddress(aliceAddress.get).toOption.get
-        ).map(_.filter(_.transactionOutput.value.value.isLvl))
+        utxos <- genusQueryAlgebra
+          .queryUtxo(
+            decodeAddress(aliceAddress.get).toOption.get
+          )
+          .map(_.filter(_.transactionOutput.value.value.isLvl))
         aliceChangeAddress <- walletController(ALICE_WALLET)
           .currentaddress("self", "default", Some(1))
         addressAliceBobOr <- walletController(ALICE_WALLET)
@@ -310,12 +323,16 @@ class ComplexTransactionWithFileTest
           .currentaddress("alice_bob_0", "and_sign", Some(1))
         orAddress <- walletController(ALICE_WALLET)
           .currentaddress("alice_bob_0", "or_sign", Some(1))
-        utxosAnd <- genusQueryAlgebra.queryUtxo(
-          decodeAddress(andAddress.get).toOption.get
-        ).map(_.filter(_.transactionOutput.value.value.isLvl))
-        utxosOr <- genusQueryAlgebra.queryUtxo(
-          decodeAddress(orAddress.get).toOption.get
-        ).map(_.filter(_.transactionOutput.value.value.isLvl))
+        utxosAnd <- genusQueryAlgebra
+          .queryUtxo(
+            decodeAddress(andAddress.get).toOption.get
+          )
+          .map(_.filter(_.transactionOutput.value.value.isLvl))
+        utxosOr <- genusQueryAlgebra
+          .queryUtxo(
+            decodeAddress(orAddress.get).toOption.get
+          )
+          .map(_.filter(_.transactionOutput.value.value.isLvl))
         orUtxo = Encoding.encodeToBase58(
           utxosOr.head.outputAddress.id.value.toByteArray
         ) + "#" + utxosOr.head.outputAddress.index.toString

@@ -60,7 +60,6 @@ object SimpleTransactionAlgebra {
   ) =
     new SimpleTransactionAlgebra[F] {
 
-
       override def broadcastSimpleTransactionFromParams(
           provedTxFile: String
       ): F[Either[SimpleTransactionAlgebraError, Unit]] = {
@@ -93,7 +92,10 @@ object SimpleTransactionAlgebra {
                       BroadcastTransactionReq(provedTransaction)
                     )
                 )
-                .adaptErr(_ => NetworkProblem("Problem connecting to node"))
+                .adaptErr { e =>
+                  e.printStackTrace()
+                  NetworkProblem("Problem connecting to node")
+                }
             } yield response)
           }
         } yield response).attempt.map(e =>
