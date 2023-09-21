@@ -6,7 +6,6 @@ import munit.CatsEffectSuite
 import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.duration.Duration
 
-
 import cats.effect.kernel.{Resource, Sync}
 
 import java.io.FileInputStream
@@ -70,7 +69,7 @@ class WalletRecoveryTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(WALLET_FIRST_TX_PROVED, WALLET),
+          broadcastSimpleTx(WALLET_FIRST_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println("Query Account")
@@ -104,7 +103,14 @@ class WalletRecoveryTest
       for {
         _ <- IO.println("Recover wallet key")
         mnemonic <- extractMnemonic(WALLET_MNEMONIC)
-        _ <- assertIO(recoverWallet(mnemonic).run(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)), ExitCode.Success)
+        _ <- IO(Files.deleteIfExists(Paths.get(WALLET)))
+        _ <- assertIO(
+          recoverWallet(mnemonic).run(
+            walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)
+          ),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
         next_address <- walletController(WALLET).currentaddress()
         _ <- IO.println(s"Next address is $next_address")
         _ <- IO.println("Spend funds (500 LVLs) using new key")
@@ -129,14 +135,16 @@ class WalletRecoveryTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(WALLET_SECOND_TX_PROVED, WALLET),
+          broadcastSimpleTx(WALLET_SECOND_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
         _ <- IO.println("Query account")
         res <- IO.asyncForIO.timeout(
           (for {
-            queryRes <- queryAccount("self", "default").run(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED))
+            queryRes <- queryAccount("self", "default").run(
+              walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)
+            )
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),

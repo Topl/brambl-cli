@@ -12,6 +12,10 @@ import co.topl.consensus.models.BlockId
 import co.topl.node.models.BlockBody
 import co.topl.brambl.models.box.Attestation
 import co.topl.brambl.models.Datum
+import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.models.LockAddress
+import co.topl.genus.services.TxoState
+import cats.Monad
 trait DummyObjects {
 
   lazy val transactionId01 = TransactionId(
@@ -79,5 +83,18 @@ trait DummyObjects {
       Seq(utxo01),
       Datum.IoTransaction.defaultInstance
     )
+
+  def makeGenusQueryAlgebraMockWithAddress[F[_]: Monad] =
+    new GenusQueryAlgebra[F] {
+
+      override def queryUtxo(
+          fromAddress: LockAddress,
+          txoState: TxoState
+      ): F[Seq[Txo]] = {
+        Monad[F].pure(
+          Seq(txo01)
+        )
+      }
+    }
 
 }

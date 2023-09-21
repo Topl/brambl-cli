@@ -16,3 +16,5 @@ vk.txt
 *.worksheet.sc
 tmp/
 *.vk
+mnemonic.txt
+grouppolicy.yaml

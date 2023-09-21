@@ -57,7 +57,7 @@ trait IntegrationTearDown
       _ <- IO.sleep(5.seconds)
       _ <- IO.println(s"Broadcasting teardown transaction")
       _ <- assertIO(
-        broadcastSimpleTx(txFileLocation("proved"), walletKeyConfig.walletFile),
+        broadcastSimpleTx(txFileLocation("proved")),
         ExitCode.Success
       )
       _ <- IO.sleep(5.seconds)

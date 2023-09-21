@@ -11,6 +11,10 @@ import quivr.models.VerificationKey
 
 class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
+  override def getLockByAddress(
+      lockAddress: String
+  ): F[Option[Lock.Predicate]] = ???
+
   override def initWalletState(
       networkId: Int,
       ledgerId: Int,

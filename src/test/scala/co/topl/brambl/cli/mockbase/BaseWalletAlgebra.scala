@@ -16,6 +16,8 @@ class BaseWalletAlgebra[F[_]] extends WalletAlgebra[F] {
   def recoverKeysFromParams(
       mnemonic: IndexedSeq[String],
       password: String,
+      networkId: Int,
+      ledgerId: Int,
       somePassphrase: Option[String],
       someOutputFile: Option[String]
   ): F[Unit] = ???

@@ -1,12 +1,11 @@
 package co.topl.brambl.cli.controllers
 
-import cats.effect.kernel.Sync
-import co.topl.brambl.cli.impl.TxParserAlgebra
 import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
+import co.topl.brambl.cli.impl.CommonParserError
+import co.topl.brambl.cli.impl.TxParserAlgebra
+
 import java.io.FileOutputStream
-import co.topl.brambl.cli.impl.TxParserError
-import cats.data.EitherT
-import co.topl.brambl.models.transaction.IoTransaction
 
 class TxController[F[_]: Sync](
     txParserAlgebra: TxParserAlgebra[F]
@@ -18,24 +17,25 @@ class TxController[F[_]: Sync](
   ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
-      tx <- EitherT[F, TxParserError, IoTransaction](
-        txParserAlgebra.parseComplexTransaction(
-          Resource.make(
-            Sync[F].delay(scala.io.Source.fromFile(inputFile))
-          )(source => Sync[F].delay(source.close()))
-        )
+      eitherTx <- txParserAlgebra.parseComplexTransaction(
+        Resource.make(
+          Sync[F].delay(scala.io.Source.fromFile(inputFile))
+        )(source => Sync[F].delay(source.close()))
       )
-      _ <- EitherT.liftF[F, TxParserError, Unit](
-        Resource
-          .make(
-            Sync[F]
-              .delay(new FileOutputStream(outputFile))
-          )(fos => Sync[F].delay(fos.close()))
-          .use(fos => Sync[F].delay(tx.writeTo(fos)))
-      )
+      tx <- Sync[F].fromEither(eitherTx)
+      _ <- Resource
+        .make(
+          Sync[F]
+            .delay(new FileOutputStream(outputFile))
+        )(fos => Sync[F].delay(fos.close()))
+        .use(fos => Sync[F].delay(tx.writeTo(fos)))
     } yield {
       "Transaction created"
-    }).value.map(_.leftMap(_.description))
+    }).attempt.map(_ match {
+      case Right(_)                       => Right("Transaction created")
+      case Left(value: CommonParserError) => Left(value.description)
+      case Left(e)                        => Left(e.getMessage())
+    })
   }
 
 }

@@ -1,6 +1,5 @@
 package co.topl.brambl.cli.impl
 
-import cats.data.EitherT
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.builders.TransactionBuilderApi
@@ -11,41 +10,16 @@ import co.topl.brambl.models.Indices
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
-import co.topl.brambl.wallet.Credentialler
 import co.topl.brambl.wallet.CredentiallerInterpreter
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
 import co.topl.node.services.BroadcastTransactionReq
-import co.topl.node.services.BroadcastTransactionRes
 import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
 import quivr.models.KeyPair
 
 import java.io.FileInputStream
 import java.io.FileOutputStream
-
-sealed trait SimpleTransactionAlgebraError {
-
-  def description: String
-}
-
-case class CannotInitializeProtobuf(description: String)
-    extends SimpleTransactionAlgebraError
-
-case class InvalidProtobufFile(description: String)
-    extends SimpleTransactionAlgebraError
-
-case class CannotSerializeProtobufFile(description: String)
-    extends SimpleTransactionAlgebraError
-
-case class NetworkProblem(description: String)
-    extends SimpleTransactionAlgebraError
-
-case class UnexpectedError(description: String)
-    extends SimpleTransactionAlgebraError
-
-case class CreateTxError(description: String)
-    extends SimpleTransactionAlgebraError
 
 trait SimpleTransactionAlgebra[F[_]] {
 
@@ -86,14 +60,6 @@ object SimpleTransactionAlgebra {
   ) =
     new SimpleTransactionAlgebra[F] {
 
-      private def lift[A](a: F[Either[SimpleTransactionAlgebraError, A]]) =
-        EitherT[F, SimpleTransactionAlgebraError, A](a)
-
-      private def liftF[A](a: F[A]) = {
-        import cats.implicits._
-        EitherT[F, SimpleTransactionAlgebraError, A](a.map(Right(_)))
-      }
-
       override def broadcastSimpleTransactionFromParams(
           provedTxFile: String
       ): F[Either[SimpleTransactionAlgebraError, Unit]] = {
@@ -104,50 +70,41 @@ object SimpleTransactionAlgebra {
             Sync[F]
               .delay(new FileInputStream(provedTxFile))
           }(fos => Sync[F].delay(fos.close()))
+
         (for {
-          provedTransaction <- lift[IoTransaction](
+          provedTransaction <-
             inputRes.use(fis =>
-              Sync[F].blocking(
-                Either
-                  .catchNonFatal(IoTransaction.parseFrom(fis))
-                  .leftMap(_ => InvalidProtobufFile("Invalid protobuf file"))
-              )
-            )
-          )
-        } yield EitherT[
-          F,
-          SimpleTransactionAlgebraError,
-          BroadcastTransactionRes
-        ]((for {
-          channel <- channelResource
-        } yield channel).use { channel =>
-          (for {
-            blockingStub <- lift[NodeRpcGrpc.NodeRpcBlockingStub](
               Sync[F]
-                .point(
-                  Either
-                    .catchNonFatal(NodeRpcGrpc.blockingStub(channel))
-                    .leftMap(_ =>
-                      CannotInitializeProtobuf("Cannot obtain stub")
+                .blocking(IoTransaction.parseFrom(fis))
+                .adaptErr({ case _ =>
+                  InvalidProtobufFile("Invalid protobuf file")
+                })
+            )
+          response <- channelResource.use { channel =>
+            (for {
+              blockingStub <- Sync[F]
+                .point(NodeRpcGrpc.blockingStub(channel))
+                .adaptErr(_ => CannotInitializeProtobuf("Cannot obtain stub"))
+              response <- Sync[F]
+                .blocking(
+                  blockingStub
+                    .broadcastTransaction(
+                      BroadcastTransactionReq(provedTransaction)
                     )
                 )
-            )
-            response <- lift[BroadcastTransactionRes](
-              Sync[F].blocking(
-                Either
-                  .catchNonFatal(
-                    blockingStub
-                      .broadcastTransaction(
-                        BroadcastTransactionReq(provedTransaction)
-                      )
-                  )
-                  .leftMap(_ => NetworkProblem("Problem connecting to node"))
-              )
-            )
-          } yield {
-            response
-          }).value
-        })).flatten.value.map(_.void)
+                .adaptErr { e =>
+                  e.printStackTrace()
+                  NetworkProblem("Problem connecting to node")
+                }
+            } yield response)
+          }
+        } yield response).attempt.map(e =>
+          e match {
+            case Right(_)                               => ().asRight
+            case Left(e: SimpleTransactionAlgebraError) => e.asLeft
+            case Left(e) => UnexpectedError(e.getMessage()).asLeft
+          }
+        )
       }
 
       override def proveSimpleTransactionFromParams(
@@ -160,47 +117,36 @@ object SimpleTransactionAlgebra {
         import cats.implicits._
 
         (for {
-          ioTransaction <- lift[IoTransaction](
-            inputRes.use(fis =>
-              Sync[F].blocking(
-                Either
-                  .catchNonFatal(IoTransaction.parseFrom(fis))
-                  .leftMap(_ => InvalidProtobufFile("Invalid protobuf file"))
-              )
-            )
-          )
-          keyPair <- lift[KeyPair](
-            walletManagementUtils
-              .loadKeys(
-                keyFile,
-                password
-              )
-              .map(Right(_))
-          )
-          credentialer <- lift[Credentialler[F]](
+          ioTransaction <- inputRes.use(fis =>
             Sync[F]
-              .delay(
-                CredentiallerInterpreter
-                  .make[F](walletApi, walletStateApi, keyPair)
-              )
-              .map(Right(_))
+              .blocking(IoTransaction.parseFrom(fis))
+              .adaptErr(_ => InvalidProtobufFile("Invalid protobuf file"))
           )
-          provedTransaction <- lift[IoTransaction](
-            credentialer.prove(ioTransaction).map(Right(_))
-          )
-          _ <- lift[Unit](
-            outputRes.use(fos =>
-              Sync[F]
-                .delay(
-                  Either
-                    .catchNonFatal(provedTransaction.writeTo(fos))
-                    .leftMap(_ =>
-                      CannotSerializeProtobufFile("Cannot write to file")
-                    )
-                )
+          keyPair <- walletManagementUtils
+            .loadKeys(
+              keyFile,
+              password
             )
+          credentialer <- Sync[F]
+            .delay(
+              CredentiallerInterpreter
+                .make[F](walletApi, walletStateApi, keyPair)
+            )
+          provedTransaction <- credentialer.prove(ioTransaction)
+          _ <- outputRes.use(fos =>
+            Sync[F]
+              .delay(provedTransaction.writeTo(fos))
+              .adaptErr(_ =>
+                CannotSerializeProtobufFile("Cannot write to file")
+              )
           )
-        } yield ()).value
+        } yield ()).attempt.map(e =>
+          e match {
+            case Right(_)                               => ().asRight
+            case Left(e: SimpleTransactionAlgebraError) => e.asLeft
+            case Left(e) => UnexpectedError(e.getMessage()).asLeft
+          }
+        )
       }
 
       private def buildTransaction(
@@ -215,69 +161,59 @@ object SimpleTransactionAlgebra {
       ) = {
         import cats.implicits._
         import TransactionBuilderApi.implicits._
+
         for {
-          ioTransaction <- liftF(
-            transactionBuilderApi
-              .buildSimpleLvlTransaction(
-                lvlTxos,
-                predicateFundsToUnlock,
-                lockForChange.getPredicate,
-                recipientLockAddress,
-                amount
-              )
-          )
+          ioTransaction <- transactionBuilderApi
+            .buildSimpleLvlTransaction(
+              lvlTxos,
+              predicateFundsToUnlock,
+              lockForChange.getPredicate,
+              recipientLockAddress,
+              amount
+            )
           // Only save to wallet state if there is a change output in the transaction
           _ <-
             if (ioTransaction.outputs.length >= 2) for {
-              lockAddress <- liftF(
+              lockAddress <-
                 transactionBuilderApi.lockAddress(
                   lockForChange
                 )
-              )
-              vk <- liftF(
-                someNextIndices
-                  .map(nextIndices =>
-                    walletApi
-                      .deriveChildKeys(keyPair, nextIndices)
-                      .map(_.vk)
-                  )
-                  .sequence
-              )
-              _ <- liftF(
-                walletStateApi.updateWalletState(
-                  Encoding.encodeToBase58Check(
-                    lockForChange.getPredicate.toByteArray
-                  ),
-                  lockAddress.toBase58(),
-                  vk.map(_ => "ExtendedEd25519"),
-                  vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
-                  someNextIndices.get
+              vk <- someNextIndices
+                .map(nextIndices =>
+                  walletApi
+                    .deriveChildKeys(keyPair, nextIndices)
+                    .map(_.vk)
                 )
+                .sequence
+              _ <- walletStateApi.updateWalletState(
+                Encoding.encodeToBase58Check(
+                  lockForChange.getPredicate.toByteArray
+                ),
+                lockAddress.toBase58(),
+                vk.map(_ => "ExtendedEd25519"),
+                vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
+                someNextIndices.get
               )
             } yield ()
             else {
-              liftF(Sync[F].delay(()))
+              Sync[F].delay(())
             }
-          _ <- EitherT(
-            Resource
-              .make(
-                Sync[F]
-                  .delay(
-                    new FileOutputStream(outputFile)
-                  )
-              )(fos => Sync[F].delay(fos.close()))
-              .use { fos =>
-                Sync[F].delay(
-                  Either
-                    .catchNonFatal(ioTransaction.writeTo(fos))
-                    .leftMap(_ =>
-                      CannotSerializeProtobufFile(
-                        "Cannot write to file"
-                      ): SimpleTransactionAlgebraError
-                    )
+          _ <- Resource
+            .make(
+              Sync[F]
+                .delay(
+                  new FileOutputStream(outputFile)
                 )
-              }
-          )
+            )(fos => Sync[F].delay(fos.close()))
+            .use { fos =>
+              Sync[F]
+                .delay(ioTransaction.writeTo(fos))
+                .adaptErr(_ =>
+                  CannotSerializeProtobufFile(
+                    "Cannot write to file"
+                  ): SimpleTransactionAlgebraError
+                )
+            }
         } yield ()
       }
 
@@ -294,83 +230,68 @@ object SimpleTransactionAlgebra {
           outputFile: String
       ): F[Either[SimpleTransactionAlgebraError, Unit]] = {
         import cats.implicits._
+
         (for {
-          keyPair <- liftF(
-            walletManagementUtils
-              .loadKeys(
-                keyfile,
-                password
-              )
-          )
-          someCurrentIndices <- liftF(
-            walletStateApi.getCurrentIndicesForFunds(
-              fromParty,
-              fromContract,
-              someFromState
+          keyPair <- walletManagementUtils
+            .loadKeys(
+              keyfile,
+              password
             )
+          someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
+            fromParty,
+            fromContract,
+            someFromState
           )
-          predicateFundsToUnlock <- liftF(
-            someCurrentIndices
-              .map(currentIndices =>
-                walletStateApi.getLockByIndex(currentIndices)
-              )
-              .sequence
-              .map(_.flatten.map(Lock().withPredicate(_)))
-          )
-          someNextIndices <- liftF(
-            walletStateApi.getNextIndicesForFunds(
-              if (fromParty == "noparty") "self" else fromParty,
-              if (fromParty == "noparty") "default"
-              else fromContract
+          predicateFundsToUnlock <- someCurrentIndices
+            .map(currentIndices =>
+              walletStateApi.getLockByIndex(currentIndices)
             )
+            .sequence
+            .map(_.flatten.map(Lock().withPredicate(_)))
+          someNextIndices <- walletStateApi.getNextIndicesForFunds(
+            if (fromParty == "noparty") "self" else fromParty,
+            if (fromParty == "noparty") "default"
+            else fromContract
           )
           // Generate a new lock for the change, if possible
-          changeLock <- liftF(
-            someNextIndices
-              .map(idx =>
-                walletStateApi.getLock(
-                  if (fromParty == "noparty") "self" else fromParty,
-                  if (fromParty == "noparty") "default"
-                  else fromContract,
-                  idx.z
-                )
+          changeLock <- someNextIndices
+            .map(idx =>
+              walletStateApi.getLock(
+                if (fromParty == "noparty") "self" else fromParty,
+                if (fromParty == "noparty") "default"
+                else fromContract,
+                idx.z
               )
-              .sequence
-              .map(_.flatten)
-          )
-          fromAddress <- liftF(
-            transactionBuilderApi.lockAddress(
-              predicateFundsToUnlock.get
             )
+            .sequence
+            .map(_.flatten)
+          fromAddress <- transactionBuilderApi.lockAddress(
+            predicateFundsToUnlock.get
           )
-          response <- liftF(utxoAlgebra.queryUtxo(fromAddress))
+          response <- utxoAlgebra.queryUtxo(fromAddress)
           lvlTxos = response.filter(
             _.transactionOutput.value.value.isLvl
           )
-          // // either toAddress or both toContract and toParty must be defined
-          toAddressOpt <- liftF(
-            (
-              someToAddress,
-              someToParty,
-              someToContract
-            ) match {
-              case (Some(address), _, _) => Sync[F].point(Some(address))
-              case (None, Some(party), Some(contract)) =>
-                walletStateApi
-                  .getAddress(party, contract, None)
-                  .map(
-                    _.flatMap(addrStr =>
-                      AddressCodecs.decodeAddress(addrStr).toOption
-                    )
+          // either toAddress or both toContract and toParty must be defined
+          toAddressOpt <- (
+            someToAddress,
+            someToParty,
+            someToContract
+          ) match {
+            case (Some(address), _, _) => Sync[F].point(Some(address))
+            case (None, Some(party), Some(contract)) =>
+              walletStateApi
+                .getAddress(party, contract, None)
+                .map(
+                  _.flatMap(addrStr =>
+                    AddressCodecs.decodeAddress(addrStr).toOption
                   )
-              case _ => Sync[F].point(None)
-            }
-          )
+                )
+            case _ => Sync[F].point(None)
+          }
           _ <-
             (if (lvlTxos.isEmpty) {
-               lift[Unit](
-                 Sync[F].delay(Left(CreateTxError("No LVL txos found")))
-               )
+               Sync[F].raiseError(CreateTxError("No LVL txos found"))
              } else {
                (changeLock, toAddressOpt) match {
                  case (Some(lockPredicateForChange), Some(toAddress)) =>
@@ -385,20 +306,23 @@ object SimpleTransactionAlgebra {
                      outputFile
                    )
                  case (None, _) =>
-                   lift[Unit](
-                     Sync[F].delay(
-                       Left(CreateTxError("Unable to generate change lock"))
-                     )
+                   Sync[F].raiseError(
+                     CreateTxError("Unable to generate change lock")
                    )
                  case (_, _) =>
-                   lift[Unit](
-                     Sync[F].delay(
-                       Left(CreateTxError("Unable to derive recipient address"))
-                     )
+                   Sync[F].raiseError(
+                     CreateTxError("Unable to derive recipient address")
                    )
                }
              })
-        } yield ()).value
+        } yield ()).attempt.map(e =>
+          e match {
+            case Right(_)                               => ().asRight
+            case Left(e: SimpleTransactionAlgebraError) => e.asLeft
+            case Left(e) => UnexpectedError(e.getMessage()).asLeft
+          }
+        )
+
       }
     }
 }

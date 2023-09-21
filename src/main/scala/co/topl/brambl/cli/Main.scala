@@ -11,6 +11,7 @@ import co.topl.brambl.cli.modules.SimpleTransactionModeModule
 import co.topl.brambl.cli.modules.TxModeModule
 import co.topl.brambl.cli.modules.WalletModeModule
 import scopt.OParser
+import co.topl.brambl.cli.modules.SimpleMintingModeModule
 
 object Main
     extends IOApp
@@ -20,7 +21,8 @@ object Main
     with PartiesModeModule
     with WalletModeModule
     with SimpleTransactionModeModule
-    with TxModeModule {
+    with TxModeModule
+    with SimpleMintingModeModule {
 
   import BramblCliParamsParserModule._
 
@@ -39,6 +41,8 @@ object Main
               walletModeSubcmds(params)
             case BramblCliMode.simpletransaction =>
               simpleTransactionSubcmds(params)
+            case BramblCliMode.simpleminting =>
+              simpleMingingSubcmds(params)
             case BramblCliMode.genusquery =>
               genusQuerySubcmd(params)
             case BramblCliMode.bifrostquery =>
@@ -50,7 +54,7 @@ object Main
         for {
           output <- op
           res <- output.fold(
-            x => IO.consoleForIO.errorln(x).map(_ => (ExitCode.Error)),
+            x => IO.consoleForIO.errorln(x).map(_ => ExitCode.Error),
             x => IO.consoleForIO.println(x).map(_ => ExitCode.Success)
           )
         } yield res

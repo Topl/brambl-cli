@@ -9,8 +9,8 @@ import scala.collection.immutable.IndexedSeq
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
-  val invalid, wallet, genusquery, bifrostquery, simpletransaction, parties,
-      contracts, tx =
+  val invalid, wallet, genusquery, bifrostquery, simpletransaction,
+      simpleminting, parties, contracts, tx =
     Value
 }
 
@@ -54,18 +54,24 @@ case object Privatenet
       "private",
       NetworkConstants.PRIVATE_NETWORK_ID
     )
+case object InvalidNet
+    extends NetworkIdentifiers(
+      -1,
+      "invalid",
+      NetworkConstants.PRIVATE_NETWORK_ID
+    )
 
 object TokenType extends Enumeration {
   type TokenType = Value
 
-  val all, lvl, topl, asset = Value
+  val all, lvl, topl, asset, group, series = Value
 }
 
 final case class BramblCliParams(
     mode: BramblCliMode.Value = BramblCliMode.invalid,
     subcmd: BramblCliSubCmd.Value = BramblCliSubCmd.invalid,
     tokenType: TokenType.Value = TokenType.all,
-    network: NetworkIdentifiers = Privatenet,
+    network: NetworkIdentifiers = InvalidNet,
     partyName: String = "",
     contractName: String = "",
     lockTemplate: String = "",
@@ -84,10 +90,12 @@ final case class BramblCliParams(
     someToParty: Option[String] = None,
     someToContract: Option[String] = None,
     amount: Long = -1,
+    fee: Long = -1,
     somePassphrase: Option[String] = None,
     someKeyFile: Option[String] = None,
     someInputFile: Option[String] = None,
     someOutputFile: Option[String] = None,
     mnemonic: Seq[String] = IndexedSeq(),
-    someMnemonicFile: Option[String] = None
+    someMnemonicFile: Option[String] = None,
+    somePolicyFile: Option[File] = None
 )

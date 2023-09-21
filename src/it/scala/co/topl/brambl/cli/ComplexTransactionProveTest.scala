@@ -69,7 +69,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_FIRST_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_FIRST_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println("Check alice's address (is contained in the change)")
@@ -162,7 +162,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_SECOND_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_SECOND_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
@@ -187,18 +187,6 @@ class ComplexTransactionProveTest
     import scala.concurrent.duration._
     assertIO(
       for {
-        // TODO: Remove
-        _ <- IO.println("Add bob to alice's wallet")
-        _ <- assertIO(
-          addPartyToWallet("alice_bob_0").run(aliceContext),
-          ExitCode.Success
-        )
-        _ <- IO.println("Add alice to bob's wallet")
-        _ <- assertIO(
-          addPartyToWallet("alice_bob_0").run(bobContext),
-          ExitCode.Success
-        )
-        // TODO: Remove
         _ <- IO.println("Add a contract to alice's wallet")
         _ <- assertIO(
           addContractToWallet(
@@ -261,7 +249,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_THIRD_TX_PROVED, ALICE_WALLET),
+          broadcastSimpleTx(ALICE_THIRD_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.sleep(5.seconds)
@@ -318,7 +306,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(BOB_SECOND_TX_PROVED, BOB_WALLET),
+          broadcastSimpleTx(BOB_SECOND_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println(
@@ -395,7 +383,7 @@ class ComplexTransactionProveTest
         )
         _ <- IO.sleep(5.seconds)
         _ <- assertIO(
-          broadcastSimpleTx(ALICE_FOURTH_TX_PROVED, BOB_WALLET),
+          broadcastSimpleTx(ALICE_FOURTH_TX_PROVED),
           ExitCode.Success
         )
         _ <- IO.println(

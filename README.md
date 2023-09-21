@@ -211,6 +211,31 @@ Prove transaction
   -i, --input <value>      The input file. (mandatory)
 ```
 
+
+### Simple Minting Mode
+
+```
+Command: simple-minting [create]
+Simple minting mode
+Command: simple-minting create [options]
+Create minting transaction
+  --from-party <value>     Party where we are sending the funds from
+  --from-contract <value>  Contract where we are sending the funds from
+  --from-state <value>     State from where we are sending the funds from
+  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
+  -h, --host <value>       The host of the node. (mandatory)
+  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  -k, --keyfile <value>    The key file.
+  -w, --password <value>   Password for the encrypted key. (mandatory)
+  --walletdb <value>       Wallet DB file. (mandatory)
+  -o, --output <value>     The output file. (mandatory)
+  -i, --input <value>      The input file. (mandatory)
+  -a, --amount <value>     Amount to send or mint
+  --fee <value>            Fee paid for the transaction
+  --mint-token <value>     The token type. The valid token types are 'asset', 'group', and 'series'
+```
+
+
 ## Launch Examples
  
 The below examples assume:
@@ -476,4 +501,32 @@ inputs:
 outputs:
   - address: ptetP7jshHUaBVrsqnn3bhtWQ1kugVGJVYsVS4WZ47AthWeL4ZX9B9ZJNTaw 
     value: 2000
+```
+
+
+### Create a simple minting transaction
+
+To create a simple minting transaction we run the following command:
+
+```bash
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $GROUP_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token group
+```
+
+This will create a minting transaction for the party `$PARTY` and contract `$CONTRACT` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The group policy file is `$GROUP_POLICY`. The amount of tokens to mint is `$AMOUN_TOKENS_TO_MINT`. The fee amount is `$FEE_AMOUNT`.
+
+#### Example of group policy file format
+
+A group simple policy looks like this:
+
+```yaml
+label: MyGroupPolicy
+registrationUtxo: tv4zwbVos3RCB2x3r2PNbMU4PJANU7rGpine8dcjvZr#0
+```
+
+A group policy with a fixed series identifier looks like this:
+
+```yaml
+label: MyGroupPolicy
+fixedSeries: 928b20366943e2afd11ebc0eae2e53a93bf177a4fcf35bcc64d503704e65e202
+registrationUtxo: tv4zwbVos3RCB2x3r2PNbMU4PJANU7rGpine8dcjvZr#0
 ```

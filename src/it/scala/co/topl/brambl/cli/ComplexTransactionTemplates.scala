@@ -6,8 +6,16 @@ import java.io.PrintWriter
 
 trait ComplexTransactionTemplates {
 
+  def utxos(genesisBlockAddresses: List[(String, Long)]) =
+    genesisBlockAddresses.map(e => s"""
+        |  - address: ${e._1}
+        |    keyMap: []
+        |    proposition: threshold(1, height(1, 9223372036854775807))
+        |    value: ${e._2}
+        """)
+
   def genesisToAddressTxTemplate(
-      genesisBlockAddress: String,
+      genesisBlockAddresses: List[(String, Long)],
       genesisAmount: Long,
       address: String
   ) =
@@ -16,17 +24,14 @@ trait ComplexTransactionTemplates {
         |keys: []
         |
         |inputs:
-        |  - address: $genesisBlockAddress
-        |    keyMap: []
-        |    proposition: threshold(1, height(1, 9223372036854775807))
-        |    value: $genesisAmount
+        |${utxos(genesisBlockAddresses).mkString("\n")}
         |outputs:
         |  - address: $address
         |    value: $genesisAmount""".stripMargin
 
   def createComplexTxFileFromGenesisToAlice(
       fileName: String,
-      genesisBlockAddress: String,
+      genesisBlockAddresses: List[(String, Long)],
       genesisAmount: Long,
       address: String
   ) = {
@@ -34,7 +39,7 @@ trait ComplexTransactionTemplates {
       IO(
         file.write(
           genesisToAddressTxTemplate(
-            genesisBlockAddress,
+            genesisBlockAddresses,
             genesisAmount,
             address
           )

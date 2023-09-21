@@ -6,8 +6,13 @@ import co.topl.brambl.utils.Encoding
 import scopt.OParser
 
 import java.io.File
+import java.nio.file.Paths
 
 object BramblCliParamsParserModule {
+
+  implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
+    scopt.Read.reads(TokenType.withName)
+
   val builder = OParser.builder[BramblCliParams]
 
   import builder._
@@ -34,17 +39,37 @@ object BramblCliParamsParserModule {
         else success
       )
 
+  val amountArg = opt[Long]('a', "amount")
+    .action((x, c) => c.copy(amount = x))
+    .text("Amount to send or mint")
+    .validate(x =>
+      if (x > 0) success
+      else failure("Amount must be greater than 0")
+    )
+
   val newwalletdbArg = opt[String]("newwalletdb")
     .action((x, c) => c.copy(walletFile = x))
     .text("Wallet DB file. (mandatory)")
+    .validate(x =>
+      if (Paths.get(x).toFile().exists()) {
+        failure("Wallet file " + x + " already exists")
+      } else {
+        success
+      }
+    )
 
   val outputArg = opt[String]('o', "output")
     .action((x, c) => c.copy(someOutputFile = Some(x)))
-    .text("The output file. (optional)")
+    .text("The output file. (mandatory)")
     .validate(x =>
       if (x.trim().isEmpty) failure("Output file may not be empty")
-      else success
+      else if (Paths.get(x).toFile().exists()) {
+        failure("Output file already exists")
+      } else {
+        success
+      }
     )
+    .required()
 
   val walletDbArg = opt[String]("walletdb")
     .action((x, c) => c.copy(walletFile = x))
@@ -111,6 +136,18 @@ object BramblCliParamsParserModule {
       networkArg,
       hostArg,
       portArg
+    )
+
+  val tokenType = opt[TokenType.Value]("token")
+    .action((x, c) => c.copy(tokenType = x))
+    .text(
+      "The token type. The valid token types are 'lvl', 'topl', 'asset', 'group', 'series', and 'all'"
+    )
+
+  val mintTokenType = opt[TokenType.Value]("mint-token")
+    .action((x, c) => c.copy(tokenType = x))
+    .text(
+      "The token type. The valid token types are 'asset', 'group', 'series'."
     )
 
   val coordinates = {
@@ -205,9 +242,6 @@ object BramblCliParamsParserModule {
         )
     )
 
-  implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
-    scopt.Read.reads(TokenType.withName)
-
   implicit val lockAddressRead: scopt.Read[LockAddress] =
     scopt.Read.reads(
       AddressCodecs
@@ -226,12 +260,7 @@ object BramblCliParamsParserModule {
         .children(
           (coordinates ++ hostPort ++ Seq(
             walletDbArg,
-            opt[TokenType.Value]("token")
-              .action((x, c) => c.copy(tokenType = x))
-              .text(
-                "The token type. (optional). The valid token types are 'lvl', 'topl', 'asset' and 'all'"
-              )
-              .optional()
+            tokenType.optional()
           )): _*
         )
     )
@@ -316,6 +345,15 @@ object BramblCliParamsParserModule {
                 .action((x, c) => c.copy(someMnemonicFile = x))
                 .text("Mnemonic output file. (mandatory)")
                 .required()
+                .validate(x =>
+                  x.map(f =>
+                    if (Paths.get(f).toFile().exists()) {
+                      failure("Mnemonic file already exists")
+                    } else {
+                      success
+                    }
+                  ).getOrElse(success)
+                )
             )
           ): _*
         ),
@@ -388,6 +426,45 @@ object BramblCliParamsParserModule {
           ))): _*
         )
     )
+
+  val simpleMintingMode = cmd("simple-minting")
+    .action((_, c) => c.copy(mode = BramblCliMode.simpleminting))
+    .text("Simple minting mode")
+    .children(
+      cmd("create")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
+        .text("Create minting transaction")
+        .children(
+          ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
+            outputArg.required(),
+            inputFileArg.required()
+          )) ++
+            Seq(
+              amountArg,
+              opt[Long]("fee")
+                .action((x, c) => c.copy(fee = x))
+                .text("Fee paid for the transaction")
+                .validate(x =>
+                  if (x > 0) success
+                  else failure("Amount must be greater than 0")
+                )
+                .required(),
+              mintTokenType.required(),
+              checkConfig(c =>
+                if (
+                  c.mode == BramblCliMode.simpleminting &&
+                  c.tokenType != TokenType.group
+                )
+                  failure(
+                    "Only group minting is supported at the moment"
+                  )
+                else
+                  success
+              )
+            )): _*
+        )
+    )
+
   val simpleTransactionMode = cmd("simpletransaction")
     .action((_, c) => c.copy(mode = BramblCliMode.simpletransaction))
     .text("Simple transaction mode")
@@ -415,13 +492,7 @@ object BramblCliParamsParserModule {
                 .text(
                   "Contract to send LVLs to. (mandatory if to is not provided)"
                 ),
-              opt[Long]('a', "amount")
-                .action((x, c) => c.copy(amount = x))
-                .text("Amount to send simple transaction")
-                .validate(x =>
-                  if (x > 0) success
-                  else failure("Amount must be greater than 0")
-                ),
+              amountArg,
               checkConfig(c =>
                 if (
                   c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
@@ -468,7 +539,8 @@ object BramblCliParamsParserModule {
       bifrostQueryMode,
       walletMode,
       transactionMode,
-      simpleTransactionMode
+      simpleTransactionMode,
+      simpleMintingMode
     )
   }
 }
