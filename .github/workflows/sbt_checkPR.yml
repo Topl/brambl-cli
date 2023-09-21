@@ -13,7 +13,7 @@ jobs:
       # Label used to access the service container
       bifrost:
         # Docker Hub image
-        image: docker.io/toplprotocol/bifrost-node:2.0.0-alpha7
+        image: docker.io/toplprotocol/bifrost-node:2.0.0-alpha8
         #
         ports:
           - 9084:9084 
