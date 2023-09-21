@@ -25,6 +25,9 @@ import quivr.models.KeyPair
 import java.io.FileOutputStream
 
 import TransactionBuilderApi.implicits._
+import co.topl.brambl.models.Event
+import co.topl.brambl.models.Datum
+import co.topl.brambl.models.TransactionOutputAddress
 
 trait SimpleMintingAlgebra[F[_]] {
   def createSimpleGroupMintingTransactionFromParams(
@@ -37,6 +40,8 @@ trait SimpleMintingAlgebra[F[_]] {
       fee: Long,
       outputFile: String,
       groupId: GroupId,
+      label: String,
+      registrationUtxo: TransactionOutputAddress,
       fixedSeries: Option[SeriesId]
   ): F[Unit]
 }
@@ -91,6 +96,8 @@ object SimpleMintingAlgebra {
         amount: Long,
         fee: Long,
         groupId: GroupId,
+        label: String,
+        registrationUtxo: TransactionOutputAddress,
         fixedSeries: Option[SeriesId]
     ): F[IoTransaction] =
       for {
@@ -113,6 +120,7 @@ object SimpleMintingAlgebra {
           groupId,
           fixedSeries
         )
+        _ = Sync[F].delay(println("gOutput: " + gOutput))
         ioTransaction = IoTransaction.defaultInstance
           .withInputs(
             lvlTxos.map(x =>
@@ -131,6 +139,17 @@ object SimpleMintingAlgebra {
               Seq(gOutput)
           )
           .withDatum(datum)
+          .withGroupPolicies(
+            Seq(
+              Datum.GroupPolicy(
+                Event.GroupPolicy(
+                  label,
+                  registrationUtxo,
+                  fixedSeries
+                )
+              )
+            )
+          )
       } yield ioTransaction
 
     private def buildTransaction(
@@ -144,6 +163,8 @@ object SimpleMintingAlgebra {
         keyPair: KeyPair,
         outputFile: String,
         groupId: GroupId,
+        label: String,
+        registrationUtxo: TransactionOutputAddress,
         fixedSeries: Option[SeriesId]
     ): F[Unit] =
       for {
@@ -155,6 +176,8 @@ object SimpleMintingAlgebra {
             amount,
             fee,
             groupId,
+            label,
+            registrationUtxo,
             fixedSeries
           )
         // Only save to wallet state if there is a change output in the transaction
@@ -213,6 +236,8 @@ object SimpleMintingAlgebra {
         keyPair: KeyPair,
         outputFile: String,
         groupId: GroupId,
+        label: String,
+        registrationUtxo: TransactionOutputAddress,
         fixedSeries: Option[SeriesId],
         changeLock: Option[Lock]
     ) = (if (lvlTxos.isEmpty) {
@@ -234,6 +259,8 @@ object SimpleMintingAlgebra {
                      keyPair,
                      outputFile,
                      groupId,
+                     label,
+                     registrationUtxo,
                      fixedSeries
                    )
                  }
@@ -254,6 +281,8 @@ object SimpleMintingAlgebra {
         fee: Long,
         outputFile: String,
         groupId: GroupId,
+        label: String,
+        registrationUtxo: TransactionOutputAddress,
         fixedSeries: Option[SeriesId]
     ): F[Unit] = for {
       keyPair <-
@@ -290,6 +319,8 @@ object SimpleMintingAlgebra {
         keyPair,
         outputFile,
         groupId,
+        label,
+        registrationUtxo,
         fixedSeries,
         changeLock
       )

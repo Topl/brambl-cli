@@ -144,6 +144,12 @@ object BramblCliParamsParserModule {
       "The token type. The valid token types are 'lvl', 'topl', 'asset', 'group', 'series', and 'all'"
     )
 
+  val mintTokenType = opt[TokenType.Value]("mint-token")
+    .action((x, c) => c.copy(tokenType = x))
+    .text(
+      "The token type. The valid token types are 'asset', 'group', 'series'."
+    )
+
   val coordinates = {
     import builder._
     Seq(
@@ -443,7 +449,7 @@ object BramblCliParamsParserModule {
                   else failure("Amount must be greater than 0")
                 )
                 .required(),
-              tokenType.required(),
+              mintTokenType.required(),
               checkConfig(c =>
                 if (
                   c.mode == BramblCliMode.simpleminting &&

@@ -33,7 +33,11 @@ class SimpleMintingController[F[_]: Sync](
             Sync[F].delay(scala.io.Source.fromFile(inputFile))
           )(source => Sync[F].delay(source.close()))
         )
-        .map(_.leftMap(e => CreateTxError("Error parsing group policy: " + e.description)))
+        .map(
+          _.leftMap(e =>
+            CreateTxError("Error parsing group policy: " + e.description)
+          )
+        )
       policy <- Sync[F].fromEither(gp)
       groupPolicy <- simpleMintingOps
         .createSimpleGroupMintingTransactionFromParams(
@@ -46,6 +50,8 @@ class SimpleMintingController[F[_]: Sync](
           fee,
           outputFile,
           policy.computeId,
+          policy.label,
+          policy.registrationUtxo,
           policy.fixedSeries
         )
     } yield groupPolicy).attempt

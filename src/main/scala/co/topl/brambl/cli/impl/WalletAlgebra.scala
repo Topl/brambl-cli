@@ -5,6 +5,7 @@ import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.wallet.WalletApi
 import co.topl.crypto.encryption.VaultStore
 import quivr.models.KeyPair
+import cats.effect.std
 
 trait WalletAlgebra[F[_]] {
 
@@ -29,7 +30,7 @@ trait WalletAlgebra[F[_]] {
 }
 
 object WalletAlgebra {
-  def make[F[_]: Sync](
+  def make[F[_]: Sync: std.Console](
       walletApi: WalletApi[F],
       walletStateApi: WalletStateAlgebra[F]
   ) = new WalletAlgebra[F] {
@@ -122,9 +123,7 @@ object WalletAlgebra {
             )
           }
           .getOrElse {
-            Sync[F].delay(
-              println(new String(wallet.mainKeyVaultStore.asJson.noSpaces))
-            )
+            std.Console[F].println(new String(wallet.mainKeyVaultStore.asJson.noSpaces))
           }
         _ <- someMnemonicFile
           .map { mnemonicFile =>
@@ -134,9 +133,7 @@ object WalletAlgebra {
             )
           }
           .getOrElse {
-            Sync[F].delay(
-              println(wallet.mnemonic.mkString(","))
-            )
+            std.Console[F].println(wallet.mnemonic.mkString(","))
           }
         derivedKey <- walletApi.deriveChildKeysPartial(keyPair, 1, 1)
         _ <- walletStateApi.initWalletState(networkId, ledgerId, derivedKey.vk)
@@ -167,9 +164,7 @@ object WalletAlgebra {
             )
           }
           .getOrElse {
-            Sync[F].delay(
-              println(new String(wallet.asJson.noSpaces))
-            )
+            std.Console[F].println(new String(wallet.asJson.noSpaces))
           }
       } yield ()
     }

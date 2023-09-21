@@ -214,7 +214,7 @@ trait CommonTxOperations
           fee.toString(),
           "--walletdb",
           c.walletFile,
-          "--token",
+          "--mint-token",
           "group"
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))

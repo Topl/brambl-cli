@@ -232,7 +232,7 @@ Create minting transaction
   -i, --input <value>      The input file. (mandatory)
   -a, --amount <value>     Amount to send or mint
   --fee <value>            Fee paid for the transaction
-  --token <value>          The token type. The valid token types are 'lvl', 'topl', 'asset', 'group', 'series', and 'all'
+  --mint-token <value>     The token type. The valid token types are 'asset', 'group', and 'series'
 ```
 
 
@@ -509,7 +509,7 @@ outputs:
 To create a simple minting transaction we run the following command:
 
 ```bash
-brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $GROUP_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --token group
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $GROUP_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token group
 ```
 
 This will create a minting transaction for the party `$PARTY` and contract `$CONTRACT` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The group policy file is `$GROUP_POLICY`. The amount of tokens to mint is `$AMOUN_TOKENS_TO_MINT`. The fee amount is `$FEE_AMOUNT`.
