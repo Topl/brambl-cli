@@ -14,6 +14,34 @@ trait PolicyTemplates {
         |registrationUtxo: $registrationUtxo
     """.stripMargin
 
+  def basicSeriesPolicyTemplate(
+      label: String,
+      registrationUtxo: String,
+      fungibility: String,
+      quantityDescriptor: String
+  ) =
+    s"""|label: $label
+        |registrationUtxo: $registrationUtxo
+        |fungibility: $fungibility
+        |quantityDescriptor: $quantityDescriptor
+        |permanentMetadata:
+        |  type: object
+        |  properties:
+        |    name:
+        |      type: string
+        |    tickerName:
+        |      type: string
+        |    description:
+        |      type: string
+        |ephemeralMetadata:
+        |  type: object
+        |  properties:
+        |    url:
+        |      type: string
+        |    image:
+        |      type: string
+    """.stripMargin
+
   def createAliceGroupPolicy(
       fileName: String,
       label: String,
@@ -25,6 +53,26 @@ trait PolicyTemplates {
           basicGroupPolicyTemplate(
             label,
             utxo
+          )
+        )
+      )
+    }
+  }
+  def createAliceSeriesPolicy(
+      fileName: String,
+      label: String,
+      fungibility: String,
+      quantityDescriptor: String,
+      utxo: String
+  ) = {
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+      IO(
+        file.write(
+          basicSeriesPolicyTemplate(
+            label,
+            utxo,
+            fungibility,
+            quantityDescriptor
           )
         )
       )

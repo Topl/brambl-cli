@@ -14,9 +14,15 @@ trait AliceConstants extends BaseConstants {
 
   val ALICE_FIRST_GROUP_POLICY = s"$TMP_DIR/alice_first_group_policy.yaml"
 
-  val ALICE_FIRST_GROUP_MINTING_TX = s"$TMP_DIR/alice_first_group_minting_tx.yaml"
+  val ALICE_FIRST_SERIES_POLICY = s"$TMP_DIR/alice_first_series_policy.yaml"
+
+  val ALICE_FIRST_GROUP_MINTING_TX = s"$TMP_DIR/alice_first_group_minting_tx.pbuf"
+
+  val ALICE_FIRST_SERIES_MINTING_TX = s"$TMP_DIR/alice_first_series_minting_tx.yaml"
 
   val ALICE_FIRST_GROUP_MINTING_TX_PROVED = s"$TMP_DIR/alice_first_group_minting_tx_proved.yaml"
+
+  val ALICE_FIRST_SERIES_MINTING_TX_PROVED = s"$TMP_DIR/alice_first_series_minting_tx_proved.yaml"
 
   val ALICE_SECOND_COMPLEX_TX = s"$TMP_DIR/alice_second_complex_tx.yaml"
 
