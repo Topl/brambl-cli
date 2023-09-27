@@ -1,0 +1,21 @@
+label: My Series Policy
+registrationUtxo: tv4zwbVos3RCB2x3r2PNbMU4PJANU7rGpine8dcjvZr#0
+tokenSupply: 100
+fungibility: group-and-series
+quantityDescriptor: liquid
+permanentMetadata:
+  type: object
+  properties:
+    name:
+      type: string
+    tickerName:
+      type: string
+    description:
+      type: string
+ephemeralMetadata:
+  type: object
+  properties:
+    url:
+      type: string
+    image:
+      type: string

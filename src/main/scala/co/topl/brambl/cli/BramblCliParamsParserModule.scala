@@ -453,10 +453,11 @@ object BramblCliParamsParserModule {
               checkConfig(c =>
                 if (
                   c.mode == BramblCliMode.simpleminting &&
-                  c.tokenType != TokenType.group
+                  c.tokenType != TokenType.group &&
+                  c.tokenType != TokenType.series
                 )
                   failure(
-                    "Only group minting is supported at the moment"
+                    "Only group and series minting is supported at the moment"
                   )
                 else
                   success
