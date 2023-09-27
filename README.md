@@ -244,7 +244,7 @@ The below examples assume:
 - That the command to lauch has been aliased to `brambl-cli`.
 
 ```
-alias brambl-cli="cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 --"
+alias brambl-cli="cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha8 --"
 ```
 
 ### Initialize a wallet
@@ -504,9 +504,10 @@ outputs:
 ```
 
 
-### Create a simple minting transaction
+### Create a simple minting transaction of group constructor tokens
 
-To create a simple minting transaction we run the following command:
+To create a simple minting transaction of group constructor tokens we run the 
+following command:
 
 ```bash
 brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $GROUP_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token group
@@ -529,4 +530,51 @@ A group policy with a fixed series identifier looks like this:
 label: MyGroupPolicy
 fixedSeries: 928b20366943e2afd11ebc0eae2e53a93bf177a4fcf35bcc64d503704e65e202
 registrationUtxo: tv4zwbVos3RCB2x3r2PNbMU4PJANU7rGpine8dcjvZr#0
+```
+
+### Create a simple minting transaction of series constructor tokens
+
+To create a simple minting transaction of series constructor tokens we run the 
+following command:
+
+```bash
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $SERIES_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token series
+```
+
+This will create a minting transaction for the party `$PARTY` and contract `$CONTRACT` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The series policy file is `$SERIES_POLICY`. The amount of tokens to mint is `$AMOUN_TOKENS_TO_MINT`. The fee amount is `$FEE_AMOUNT`.
+
+#### Example of series policy file format
+
+A simple series policy looks like this:
+
+```yaml
+label: Alice Series
+registrationUtxo: 33HxStncsrptPB3ffkGpJNmoYwkkURvhiw92afWzjV3B#0
+fungibility: group-and-series
+quantityDescriptor: liquid
+```
+
+A series policy with metadata looks like this:
+
+```yaml
+label: Alice Series
+registrationUtxo: 33HxStncsrptPB3ffkGpJNmoYwkkURvhiw92afWzjV3B#0
+fungibility: group-and-series
+quantityDescriptor: liquid
+permanentMetadata:
+  type: object
+  properties:
+    name:
+      type: string
+    tickerName:
+      type: string
+    description:
+      type: string
+ephemeralMetadata:
+  type: object
+  properties:
+    url:
+      type: string
+    image:
+      type: string
 ```
