@@ -7,6 +7,7 @@ import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.Event
 import co.topl.brambl.wallet.WalletApi
+import co.topl.brambl.models.box.AssetMintingStatement
 
 trait SimpleMintingAlgebra[F[_]] {
   def createSimpleGroupMintingTransactionFromParams(
@@ -31,6 +32,18 @@ trait SimpleMintingAlgebra[F[_]] {
       fee: Long,
       outputFile: String,
       seriesPolicy: Event.SeriesPolicy
+  ): F[Unit]
+
+  def createSimpleAssetMintingTransactionFromParams(
+      keyFile: String,
+      password: String,
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      amount: Long,
+      fee: Long,
+      outputFile: String,
+      assetMintingStatement: AssetMintingStatement
   ): F[Unit]
 }
 
@@ -169,6 +182,18 @@ object SimpleMintingAlgebra {
         changeLock
       )
     } yield ()
+
+    def createSimpleAssetMintingTransactionFromParams(
+        keyFile: String,
+        password: String,
+        fromParty: String,
+        fromContract: String,
+        someFromState: Option[Int],
+        amount: Long,
+        fee: Long,
+        outputFile: String,
+        assetMintingStatement: AssetMintingStatement
+    ): F[Unit] = ???
 
   }
 

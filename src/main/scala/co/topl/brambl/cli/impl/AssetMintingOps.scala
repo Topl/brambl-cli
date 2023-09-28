@@ -29,7 +29,7 @@ import java.io.FileOutputStream
 import TransactionBuilderApi.implicits._
 import com.google.protobuf.struct.Struct
 
-trait SeriesMintingOps[G[_]] extends CommonTxOps {
+trait AssetMintingOps[G[_]] extends CommonTxOps {
 
   import cats.implicits._
 
@@ -40,6 +40,100 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
   val wsa: WalletStateAlgebra[G]
 
   val wa: WalletApi[G]
+
+  def seriesOutput(
+      lockAddress: LockAddress,
+      quantity: Int128,
+      seriesId: SeriesId,
+      tokenSupply: Option[Int],
+      quantityDescriptor: QuantityDescriptorType,
+      fungibility: FungibilityType
+  ): G[UnspentTransactionOutput] =
+    UnspentTransactionOutput(
+      lockAddress,
+      Value.defaultInstance.withSeries(
+        Value.Series(
+          seriesId = seriesId,
+          quantity = quantity,
+          tokenSupply = tokenSupply,
+          quantityDescriptor = quantityDescriptor,
+          fungibility = fungibility
+        )
+      )
+    ).pure[G]
+
+  private def buildSimpleSeriesMintingTransaction(
+      lvlTxos: Seq[Txo],
+      lockPredicateFrom: Lock.Predicate,
+      recipientLockAddress: LockAddress,
+      amount: Long,
+      fee: Long,
+      seriesId: SeriesId,
+      label: String,
+      tokenSupply: Option[Int],
+      quantityDescriptor: QuantityDescriptorType,
+      fungibility: FungibilityType,
+      registrationUtxo: TransactionOutputAddress,
+      ephemeralMetadataScheme: Option[Struct],
+      permanentMetadataScheme: Option[Struct]
+  ): G[IoTransaction] =
+    for {
+      unprovenAttestationToProve <- tba.unprovenAttestation(
+        lockPredicateFrom
+      )
+      totalValues = computeLvlQuantity(lvlTxos)
+      datum <- tba.datum()
+      lvlOutputForChange <- tba.lvlOutput(
+        recipientLockAddress,
+        Int128(
+          ByteString.copyFrom(
+            BigInt(totalValues.toLong - fee).toByteArray
+          )
+        )
+      )
+      gOutput <- seriesOutput(
+        recipientLockAddress,
+        Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
+        seriesId,
+        tokenSupply,
+        quantityDescriptor,
+        fungibility
+      )
+      _ = Sync[G].delay(println("gOutput: " + gOutput))
+      ioTransaction = IoTransaction.defaultInstance
+        .withInputs(
+          lvlTxos.map(x =>
+            SpentTransactionOutput(
+              x.outputAddress,
+              unprovenAttestationToProve,
+              x.transactionOutput.value
+            )
+          )
+        )
+        .withOutputs(
+          // If there is no change, we don't need to add it to the outputs
+          if (totalValues.toLong - fee > 0)
+            Seq(lvlOutputForChange, gOutput)
+          else
+            Seq(gOutput)
+        )
+        .withDatum(datum)
+        .withSeriesPolicies(
+          Seq(
+            Datum.SeriesPolicy(
+              Event.SeriesPolicy(
+                label,
+                tokenSupply,
+                registrationUtxo,
+                quantityDescriptor,
+                fungibility,
+                ephemeralMetadataScheme,
+                permanentMetadataScheme
+              )
+            )
+          )
+        )
+    } yield ioTransaction
 
   private def buildSeriesTransaction(
       lvlTxos: Seq[Txo],
@@ -175,99 +269,4 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
              )
          }
        })
-
-  def seriesOutput(
-      lockAddress: LockAddress,
-      quantity: Int128,
-      seriesId: SeriesId,
-      tokenSupply: Option[Int],
-      quantityDescriptor: QuantityDescriptorType,
-      fungibility: FungibilityType
-  ): G[UnspentTransactionOutput] =
-    UnspentTransactionOutput(
-      lockAddress,
-      Value.defaultInstance.withSeries(
-        Value.Series(
-          seriesId = seriesId,
-          quantity = quantity,
-          tokenSupply = tokenSupply,
-          quantityDescriptor = quantityDescriptor,
-          fungibility = fungibility
-        )
-      )
-    ).pure[G]
-
-  private def buildSimpleSeriesMintingTransaction(
-      lvlTxos: Seq[Txo],
-      lockPredicateFrom: Lock.Predicate,
-      recipientLockAddress: LockAddress,
-      amount: Long,
-      fee: Long,
-      seriesId: SeriesId,
-      label: String,
-      tokenSupply: Option[Int],
-      quantityDescriptor: QuantityDescriptorType,
-      fungibility: FungibilityType,
-      registrationUtxo: TransactionOutputAddress,
-      ephemeralMetadataScheme: Option[Struct],
-      permanentMetadataScheme: Option[Struct]
-  ): G[IoTransaction] =
-    for {
-      unprovenAttestationToProve <- tba.unprovenAttestation(
-        lockPredicateFrom
-      )
-      totalValues = computeLvlQuantity(lvlTxos)
-      datum <- tba.datum()
-      lvlOutputForChange <- tba.lvlOutput(
-        recipientLockAddress,
-        Int128(
-          ByteString.copyFrom(
-            BigInt(totalValues.toLong - fee).toByteArray
-          )
-        )
-      )
-      gOutput <- seriesOutput(
-        recipientLockAddress,
-        Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
-        seriesId,
-        tokenSupply,
-        quantityDescriptor,
-        fungibility
-      )
-      _ = Sync[G].delay(println("gOutput: " + gOutput))
-      ioTransaction = IoTransaction.defaultInstance
-        .withInputs(
-          lvlTxos.map(x =>
-            SpentTransactionOutput(
-              x.outputAddress,
-              unprovenAttestationToProve,
-              x.transactionOutput.value
-            )
-          )
-        )
-        .withOutputs(
-          // If there is no change, we don't need to add it to the outputs
-          if (totalValues.toLong - fee > 0)
-            Seq(lvlOutputForChange, gOutput)
-          else
-            Seq(gOutput)
-        )
-        .withDatum(datum)
-        .withSeriesPolicies(
-          Seq(
-            Datum.SeriesPolicy(
-              Event.SeriesPolicy(
-                label,
-                tokenSupply,
-                registrationUtxo,
-                quantityDescriptor,
-                fungibility,
-                ephemeralMetadataScheme,
-                permanentMetadataScheme
-              )
-            )
-          )
-        )
-    } yield ioTransaction
-
 }

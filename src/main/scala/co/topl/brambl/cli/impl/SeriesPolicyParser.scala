@@ -5,9 +5,6 @@ import cats.effect.kernel.Sync
 import co.topl.brambl.models.Event
 import co.topl.brambl.models.box.FungibilityType
 import co.topl.brambl.models.box.QuantityDescriptorType
-import com.google.protobuf.struct.ListValue
-import com.google.protobuf.struct.NullValue
-import com.google.protobuf.struct.Struct
 import com.google.protobuf.struct.Value
 import io.circe.Json
 
@@ -33,27 +30,13 @@ object SeriesPolicyParser {
 
   def make[F[_]: Sync](
       networkId: Int
-  ) = new SeriesPolicyParser[F] {
+  ) = new SeriesPolicyParser[F] with CommonTxOps {
 
     import cats.implicits._
     import io.circe.generic.auto._
     import io.circe.yaml
 
-    private def toStruct(json: Json): Value =
-      json.fold[Value](
-        jsonNull = Value(Value.Kind.NullValue(NullValue.NULL_VALUE)),
-        jsonBoolean = b => Value(Value.Kind.BoolValue(b)),
-        jsonNumber = n => Value(Value.Kind.NumberValue(n.toDouble)),
-        jsonString = s => Value(Value.Kind.StringValue(s)),
-        jsonArray =
-          l => Value(Value.Kind.ListValue(ListValue(l.map(toStruct(_))))),
-        jsonObject = jo =>
-          Value(Value.Kind.StructValue(Struct(jo.toMap.map({ case (k, v) =>
-            k -> toStruct(v)
-          }))))
-      )
-
-    private def seriesPolicyToPBGroupPolicy(
+    private def seriesPolicyToPBSeriesPolicy(
         seriesPolicy: SeriesPolicy
     ): F[Event.SeriesPolicy] =
       for {
@@ -136,7 +119,7 @@ object SeriesPolicyParser {
               InvalidYaml(e)
             }
         )
-      sp <- seriesPolicyToPBGroupPolicy(seriesPolicy)
+      sp <- seriesPolicyToPBSeriesPolicy(seriesPolicy)
     } yield sp).attempt.map(_ match {
       case Right(value)               => Right(value)
       case Left(e: CommonParserError) => Left(e)
