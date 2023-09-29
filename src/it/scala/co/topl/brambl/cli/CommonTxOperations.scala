@@ -227,7 +227,7 @@ trait CommonTxOperations
       someFromState: Option[Int],
       amount: Long,
       fee: Long,
-      groupPolicy: String,
+      seriesPolicy: String,
       outputFile: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -252,7 +252,7 @@ trait CommonTxOperations
           "-o",
           outputFile, 
           "-i",
-          groupPolicy,
+          seriesPolicy,
           "-a",
           amount.toString(),
           "--fee",

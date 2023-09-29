@@ -53,7 +53,7 @@ object SeriesPolicyParser {
           }))))
       )
 
-    private def seriesPolicyToPBGroupPolicy(
+    private def seriesPolicyToPBSeriesPolicy(
         seriesPolicy: SeriesPolicy
     ): F[Event.SeriesPolicy] =
       for {
@@ -136,7 +136,7 @@ object SeriesPolicyParser {
               InvalidYaml(e)
             }
         )
-      sp <- seriesPolicyToPBGroupPolicy(seriesPolicy)
+      sp <- seriesPolicyToPBSeriesPolicy(seriesPolicy)
     } yield sp).attempt.map(_ match {
       case Right(value)               => Right(value)
       case Left(e: CommonParserError) => Left(e)
