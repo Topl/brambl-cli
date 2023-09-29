@@ -21,4 +21,11 @@ case class PropositionInstantationError(description: String)
 case class InvalidAddress(description: String) extends CommonParserError
 
 case class InvalidHex(description: String) extends CommonParserError
+
+case class InvalidFungibility(description: String) extends CommonParserError
+
+case class InvalidMetadataScheme(description: String) extends CommonParserError
+
+case class InvalidQuantityDescriptor(description: String)
+    extends CommonParserError
 case class InvalidVerificationKey(description: String) extends CommonParserError

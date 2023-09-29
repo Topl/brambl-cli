@@ -156,6 +156,75 @@ class MintingTests
     )
   }
 
+  test("Use alice's funds to mint a series") {
+    import scala.concurrent.duration._
+    assertIO(
+      for {
+        _ <- IO.println("Crate a series minting policy")
+        ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
+          .currentaddress("self", "default", None)
+        utxos <- genusQueryAlgebra
+          .queryUtxo(
+            decodeAddress(ALICE_CURRENT_ADDRESS.get).toOption.get
+          )
+          .map(_.filter(_.transactionOutput.value.value.isLvl))
+        lvlUtxos = utxos.filter(_.transactionOutput.value.value.isLvl)
+        _ <- IO.println(s"Alice's address is $ALICE_CURRENT_ADDRESS")
+        aliceUtxoAddress = Encoding.encodeToBase58(
+          lvlUtxos.head.outputAddress.id.value.toByteArray
+        ) + "#" + lvlUtxos.head.outputAddress.index.toString
+        _ <- createAliceSeriesPolicy(
+          ALICE_FIRST_SERIES_POLICY,
+          "Alice Series",
+          "group-and-series",
+          "liquid",
+          aliceUtxoAddress,
+        )
+        _ <- assertIO(
+          createSimpleSeriesMintingTransaction(
+            "self",
+            "default",
+            None,
+            1,
+            100,
+            ALICE_FIRST_SERIES_POLICY,
+            ALICE_FIRST_SERIES_MINTING_TX
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          proveSimpleTransaction(
+            ALICE_FIRST_SERIES_MINTING_TX,
+            ALICE_FIRST_SERIES_MINTING_TX_PROVED
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          broadcastSimpleTx(ALICE_FIRST_SERIES_MINTING_TX_PROVED),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- IO.println(
+          "Check change  account for from alice's wallet, expected 500 LVLs"
+        )
+        res <- IO.asyncForIO.timeout(
+          (for {
+            _ <- IO.println("Querying alice's change account")
+            queryRes <- queryAccountAllTokens("self", "default").run(
+              aliceContext
+            )
+            _ <- IO.sleep(5.seconds)
+          } yield queryRes)
+            .iterateUntil(_ == ExitCode.Success),
+          60.seconds
+        )
+      } yield res,
+      ExitCode.Success
+    )
+  }
+
   test("Send Wallet Change back to HeightLock") {
     assertIO(
       tearDown(aliceContext),

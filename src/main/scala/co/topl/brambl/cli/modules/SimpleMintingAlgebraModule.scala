@@ -2,6 +2,7 @@ package co.topl.brambl.cli.modules
 
 import cats.effect.IO
 import co.topl.brambl.cli.impl.SimpleMintingAlgebra
+import cats.effect.kernel.Sync
 
 trait SimpleMintingAlgebraModule
     extends WalletStateAlgebraModule
@@ -16,6 +17,7 @@ trait SimpleMintingAlgebraModule
       host: String,
       bifrostPort: Int
   ) = SimpleMintingAlgebra.make[IO](
+    Sync[IO],
     walletApi,
     walletStateAlgebra(walletFile),
     walletManagementUtils,

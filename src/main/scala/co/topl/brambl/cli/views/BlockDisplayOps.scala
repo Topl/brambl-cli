@@ -12,6 +12,8 @@ import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import co.topl.consensus.models.BlockId
 import co.topl.genus.services.Txo
+import co.topl.brambl.models.box.FungibilityType
+import co.topl.brambl.models.box.QuantityDescriptorType
 
 object BlockDisplayOps {
 
@@ -111,10 +113,24 @@ Value      : ${display(txo.transactionOutput.value.value)}
 
   def display(lockAddress: LockAddress): String =
     AddressCodecs.encodeAddress(lockAddress)
+  
+  def fungibilityToString(ft: FungibilityType) = ft match {
+    case FungibilityType.GROUP_AND_SERIES => "group-and-series"
+    case FungibilityType.GROUP => "group"
+    case FungibilityType.SERIES => "series"
+  }
+
+  def quantityDescriptorToString(qt: QuantityDescriptorType) = qt match {
+    case QuantityDescriptorType.LIQUID => "liquid"
+    case QuantityDescriptorType.ACCUMULATOR => "accumulator"
+    case QuantityDescriptorType.FRACTIONABLE => "fractionable"
+    case QuantityDescriptorType.IMMUTABLE => "immutable"
+  }
 
   def displayType(txoValue: Value.Value) =
     if (txoValue.isLvl) "LVL"
-    else if (txoValue.isGroup) "Group Constructor"
+    else if (txoValue.isGroup) s"Group Constructor: ${Encoding.encodeToHex(txoValue.group.get.groupId.value.toByteArray())}:${txoValue.group.get.fixedSeries.map(x => Encoding.encodeToHex(x.value.toByteArray())).getOrElse("NO FIXED SERIES")}"
+    else if (txoValue.isSeries) s"Series Constructor: ${Encoding.encodeToHex(txoValue.series.get.seriesId.value.toByteArray())}:${fungibilityToString(txoValue.series.get.fungibility)}:${txoValue.series.get.tokenSupply.getOrElse("UNLIMITED")}:${quantityDescriptorToString(txoValue.series.get.quantityDescriptor)}"
     else if (txoValue.isAsset) "Asset"
     else if (txoValue.isTopl) "TOPL"
     else "Unknown txo type"
@@ -129,6 +145,8 @@ Value      : ${display(txo.transactionOutput.value.value)}
       BigInt(txoValue.topl.get.quantity.value.toByteArray()).toString()
     else if (txoValue.isGroup)
       BigInt(txoValue.group.get.quantity.value.toByteArray()).toString()
+    else if (txoValue.isSeries)
+      BigInt(txoValue.series.get.quantity.value.toByteArray()).toString()
     else "Undefine type"
 
 }
