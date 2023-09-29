@@ -7,7 +7,6 @@ import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.Event
 import co.topl.brambl.wallet.WalletApi
-import co.topl.brambl.models.box.AssetMintingStatement
 
 trait SimpleMintingAlgebra[F[_]] {
   def createSimpleGroupMintingTransactionFromParams(
