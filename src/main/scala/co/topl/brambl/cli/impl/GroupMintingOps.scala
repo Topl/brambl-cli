@@ -39,6 +39,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   def buildGroupTxAux(
       lvlTxos: Seq[Txo],
+      notlvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       amount: Long,
       fee: Long,
@@ -60,6 +61,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
                .flatMap { changeAddress =>
                  buildGroupTransaction(
                    lvlTxos,
+                   notlvlTxos,
                    predicateFundsToUnlock,
                    lockPredicateForChange,
                    changeAddress,
@@ -83,6 +85,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   private def buildSimpleGroupMintingTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
       recipientLockAddress: LockAddress,
       amount: Long,
@@ -120,14 +123,22 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
               unprovenAttestationToProve,
               x.transactionOutput.value
             )
+          ) ++ nonLvlTxos.map(x =>
+            SpentTransactionOutput(
+              x.outputAddress,
+              unprovenAttestationToProve,
+              x.transactionOutput.value
+            )
           )
         )
         .withOutputs(
           // If there is no change, we don't need to add it to the outputs
-          if (totalValues.toLong - fee > 0)
-            Seq(lvlOutputForChange, gOutput)
-          else
-            Seq(gOutput)
+          (if (totalValues.toLong - fee > 0)
+             Seq(lvlOutputForChange, gOutput)
+           else
+             Seq(gOutput)) ++ nonLvlTxos.map(
+            _.transactionOutput.copy(address = recipientLockAddress)
+          )
         )
         .withDatum(datum)
         .withGroupPolicies(
@@ -145,6 +156,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   private def buildGroupTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       lockForChange: Lock,
       recipientLockAddress: LockAddress,
@@ -162,6 +174,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
       ioTransaction <-
         buildSimpleGroupMintingTransaction(
           lvlTxos,
+          nonLvlTxos,
           predicateFundsToUnlock,
           recipientLockAddress,
           amount,

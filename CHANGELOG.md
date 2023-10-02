@@ -25,6 +25,8 @@ instead of `--walletdb`.
 This is because of a problem with the scopt library that forced that change.
 - Modified the display of tokens (genus-query) to show the group and series 
 tokens and include all the information in the token.
+- Change the default behavior of minting so that it moves all the assets as
+the group, series and asset tokens are minted.
 
 ### Removed
 

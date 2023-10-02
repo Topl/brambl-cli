@@ -42,6 +42,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       keyPair: KeyPair,
       outputFile: String,
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
       amount: Long,
       fee: Long,
@@ -50,6 +51,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       someNextIndices: Option[Indices],
       series: Value.Series,
       seriesUtxoAddress: TransactionOutputAddress,
+      permanentMetadata: Option[Struct],
       ephemeralMetadata: Option[Json],
       commitment: Option[ByteString],
       changeLock: Option[Lock]
@@ -65,6 +67,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
                    keyPair,
                    outputFile,
                    lvlTxos,
+                   nonLvlTxos,
                    lockPredicateFrom,
                    changeLock.get,
                    changeAddress,
@@ -75,6 +78,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
                    someNextIndices,
                    series,
                    seriesUtxoAddress,
+                   permanentMetadata,
                    ephemeralMetadata.map(toStruct(_).getStructValue),
                    commitment
                  )
@@ -90,6 +94,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       keyPair: KeyPair,
       outputFile: String,
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
       lockForChange: Lock,
       recipientLockAddress: LockAddress,
@@ -100,6 +105,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       someNextIndices: Option[Indices],
       series: Value.Series,
       seriesUtxoAddress: TransactionOutputAddress,
+      permanentMetadata: Option[Struct],
       ephemeralMetadata: Option[Struct],
       commitment: Option[ByteString]
   ): G[Unit] =
@@ -107,6 +113,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       ioTransaction <-
         buildSimpleAssetMintingTransaction(
           lvlTxos,
+          nonLvlTxos,
           lockPredicateFrom,
           recipientLockAddress,
           amount,
@@ -115,6 +122,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
           groupUtxoAddress,
           series,
           seriesUtxoAddress,
+          permanentMetadata,
           ephemeralMetadata,
           commitment
         )
@@ -167,6 +175,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
 
   private def buildSimpleAssetMintingTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
       recipientLockAddress: LockAddress,
       amount: Long,
@@ -175,6 +184,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       groupUtxoAddress: TransactionOutputAddress,
       series: Value.Series,
       seriesUtxoAddress: TransactionOutputAddress,
+      permanentMetadata: Option[Struct],
       ephemeralMetadata: Option[Struct],
       commitment: Option[ByteString]
   ): G[IoTransaction] =
@@ -227,30 +237,58 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
               Value(
                 group
               )
-            ),
-            SpentTransactionOutput(
-              seriesUtxoAddress,
-              unprovenAttestationToProve,
-              Value(
-                Value.Value.Series(
-                  box.Value.Series(
-                    seriesId = series.seriesId,
-                    quantity = series.quantity,
-                    tokenSupply = series.tokenSupply,
-                    quantityDescriptor = series.quantityDescriptor,
-                    fungibility = series.fungibility
+            )
+          ) ++
+            series.tokenSupply
+              .map(supply =>
+                Seq(
+                  SpentTransactionOutput(
+                    seriesUtxoAddress,
+                    unprovenAttestationToProve,
+                    Value(
+                      Value.Value.Series(
+                        box.Value.Series(
+                          seriesId = series.seriesId,
+                          quantity =
+                            series.quantity - (amount / supply), // burn
+                          tokenSupply = series.tokenSupply,
+                          quantityDescriptor = series.quantityDescriptor,
+                          fungibility = series.fungibility
+                        )
+                      )
+                    )
                   )
                 )
               )
-            )
-          )
+              .getOrElse(
+                Seq(
+                  SpentTransactionOutput(
+                    seriesUtxoAddress,
+                    unprovenAttestationToProve,
+                    Value(
+                      Value.Value.Series(
+                        box.Value.Series(
+                          seriesId = series.seriesId,
+                          quantity = series.quantity, // no burn
+                          tokenSupply = series.tokenSupply,
+                          quantityDescriptor = series.quantityDescriptor,
+                          fungibility = series.fungibility
+                        )
+                      )
+                    )
+                  )
+                )
+              )
         )
         .withOutputs(
           // If there is no change, we don't need to add it to the outputs
-          if (totalValues.toLong - fee > 0)
-            Seq(lvlOutputForChange, gOutput, sOutput, aOutput)
-          else
-            Seq(gOutput, sOutput, aOutput)
+          (if (totalValues.toLong - fee > 0)
+             Seq(lvlOutputForChange, gOutput, sOutput, aOutput)
+           else
+             Seq(gOutput, sOutput, aOutput)) ++ nonLvlTxos
+            .map(
+              _.transactionOutput.copy(address = recipientLockAddress)
+            )
         )
         .withDatum(datum)
         .withMintingStatements(
@@ -259,7 +297,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
               groupUtxoAddress,
               seriesUtxoAddress,
               amount,
-              None
+              permanentMetadata
             )
           )
         )

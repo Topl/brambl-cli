@@ -144,8 +144,10 @@ object SimpleMintingAlgebra {
       lvlTxos = response.filter(
         _.transactionOutput.value.value.isLvl
       )
+      nonlvlTxos = response.filter(x => !x.transactionOutput.value.value.isLvl)
       _ <- buildGroupTxAux(
         lvlTxos,
+        nonlvlTxos,
         predicateFundsToUnlock.getPredicate,
         amount,
         fee,
@@ -192,8 +194,10 @@ object SimpleMintingAlgebra {
       lvlTxos = response.filter(
         _.transactionOutput.value.value.isLvl
       )
+      nonLvlTxos = response.filter(x => !x.transactionOutput.value.value.isLvl)
       _ <- buildSeriesTxAux(
         lvlTxos,
+        nonLvlTxos,
         predicateFundsToUnlock.getPredicate,
         amount,
         fee,
@@ -246,6 +250,13 @@ object SimpleMintingAlgebra {
       lvlTxos = response.filter(
         _.transactionOutput.value.value.isLvl
       )
+      nonLvlTxos = response.filter(
+        x => (
+          !x.transactionOutput.value.value.isLvl &&
+          x.outputAddress != assetMintingStatement.groupTokenUtxo &&
+          x.outputAddress != assetMintingStatement.seriesTokenUtxo
+        )
+      )
       groupTxo <- response
         .filter(
           _.transactionOutput.value.value.isGroup
@@ -276,6 +287,7 @@ object SimpleMintingAlgebra {
         keyPair,
         outputFile,
         lvlTxos,
+        nonLvlTxos,
         predicateFundsToUnlock.getPredicate,
         amount,
         fee,
@@ -284,6 +296,7 @@ object SimpleMintingAlgebra {
         someNextIndices,
         seriesTxo.transactionOutput.value.value.series.get,
         seriesTxo.outputAddress,
+        assetMintingStatement.permanentMetadata,
         ephemeralMetadata,
         commitment,
         changeLock

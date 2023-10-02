@@ -41,6 +41,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
 
   private def buildSeriesTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       lockForChange: Lock,
       recipientLockAddress: LockAddress,
@@ -62,6 +63,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
       ioTransaction <-
         buildSimpleSeriesMintingTransaction(
           lvlTxos,
+          nonLvlTxos,
           predicateFundsToUnlock,
           recipientLockAddress,
           amount,
@@ -124,6 +126,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
 
   def buildSeriesTxAux(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       amount: Long,
       fee: Long,
@@ -149,6 +152,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
                .flatMap { changeAddress =>
                  buildSeriesTransaction(
                    lvlTxos,
+                   nonLvlTxos,
                    predicateFundsToUnlock,
                    lockPredicateForChange,
                    changeAddress,
@@ -174,9 +178,9 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
          }
        })
 
-
   private def buildSimpleSeriesMintingTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
       recipientLockAddress: LockAddress,
       amount: Long,
@@ -220,14 +224,22 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
               unprovenAttestationToProve,
               x.transactionOutput.value
             )
+          ) ++ nonLvlTxos.map(x =>
+            SpentTransactionOutput(
+              x.outputAddress,
+              unprovenAttestationToProve,
+              x.transactionOutput.value
+            )
           )
         )
         .withOutputs(
           // If there is no change, we don't need to add it to the outputs
-          if (totalValues.toLong - fee > 0)
-            Seq(lvlOutputForChange, sOutput)
-          else
-            Seq(sOutput)
+          (if (totalValues.toLong - fee > 0)
+             Seq(lvlOutputForChange, sOutput)
+           else
+             Seq(sOutput)) ++ nonLvlTxos.map(
+            _.transactionOutput.copy(address = recipientLockAddress)
+          )
         )
         .withDatum(datum)
         .withSeriesPolicies(
