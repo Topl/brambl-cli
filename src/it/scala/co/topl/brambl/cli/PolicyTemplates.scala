@@ -14,6 +14,16 @@ trait PolicyTemplates {
         |registrationUtxo: $registrationUtxo
     """.stripMargin
 
+  def basicAssetMintingStatementTemplate(
+      groupTokenUtxo: String,
+      seriesTokenUtxo: String,
+      quantity: Long
+  ) = s"""
+    |groupTokenUtxo: $groupTokenUtxo
+    |seriesTokenUtxo: $seriesTokenUtxo
+    |quantity: $quantity
+    |""".stripMargin
+
   def basicSeriesPolicyTemplate(
       label: String,
       registrationUtxo: String,
@@ -73,6 +83,25 @@ trait PolicyTemplates {
             utxo,
             fungibility,
             quantityDescriptor
+          )
+        )
+      )
+    }
+  }
+
+  def createAliceAssetMintingStatement(
+      fileName: String,
+      groupTokenUtxo: String,
+      seriesTokenUtxo: String,
+      quantity: Long
+  ) = {
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+      IO(
+        file.write(
+          basicAssetMintingStatementTemplate(
+            groupTokenUtxo,
+            seriesTokenUtxo,
+            quantity
           )
         )
       )

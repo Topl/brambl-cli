@@ -266,6 +266,51 @@ trait CommonTxOperations
           .getOrElse(List.empty)
       )
     )
+  def createSimpleAssetMintingTransaction(
+      fromParty: String,
+      fromContract: String,
+      someFromState: Option[Int],
+      amount: Long,
+      fee: Long,
+      assetMintingStatement: String,
+      outputFile: String
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "simple-minting",
+          "create",
+          "--from-party",
+          fromParty, 
+          "--from-contract",
+          fromContract, 
+          "-h",
+          HOST,
+          "--bifrost-port",
+          s"$BIFROST_PORT",
+          "-n",
+          "private",
+          "--keyfile",
+          c.keyFile,
+          "-w",
+          c.password,
+          "-o",
+          outputFile, 
+          "-i",
+          assetMintingStatement,
+          "-a",
+          amount.toString(),
+          "--fee",
+          fee.toString(),
+          "--walletdb",
+          c.walletFile,
+          "--mint-token",
+          "asset"
+        ) ++ someFromState
+          .map(s => List("--from-state", s.toString()))
+          .getOrElse(List.empty)
+      )
+    )
 
   def queryAccount(
       partyName: String,
@@ -316,6 +361,87 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "all"
+        ) ++ someFromState
+          .map(s => List("--from-state", s.toString()))
+          .getOrElse(List.empty)
+      )
+    )
+  def queryAccountGroupTokens(
+      partyName: String,
+      contractName: String,
+      someFromState: Option[Int] = None
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "genus-query",
+          "utxo-by-address",
+          "--from-party",
+          partyName,
+          "--from-contract",
+          contractName,
+          "-h",
+          HOST,
+          "--bifrost-port",
+          s"$BIFROST_PORT",
+          "--walletdb",
+          c.walletFile,
+          "--token",
+          "group"
+        ) ++ someFromState
+          .map(s => List("--from-state", s.toString()))
+          .getOrElse(List.empty)
+      )
+    )
+  def queryAccountSeriesTokens(
+      partyName: String,
+      contractName: String,
+      someFromState: Option[Int] = None
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "genus-query",
+          "utxo-by-address",
+          "--from-party",
+          partyName,
+          "--from-contract",
+          contractName,
+          "-h",
+          HOST,
+          "--bifrost-port",
+          s"$BIFROST_PORT",
+          "--walletdb",
+          c.walletFile,
+          "--token",
+          "series"
+        ) ++ someFromState
+          .map(s => List("--from-state", s.toString()))
+          .getOrElse(List.empty)
+      )
+    )
+  def queryAccountAssetTokens(
+      partyName: String,
+      contractName: String,
+      someFromState: Option[Int] = None
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "genus-query",
+          "utxo-by-address",
+          "--from-party",
+          partyName,
+          "--from-contract",
+          contractName,
+          "-h",
+          HOST,
+          "--bifrost-port",
+          s"$BIFROST_PORT",
+          "--walletdb",
+          c.walletFile,
+          "--token",
+          "asset"
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)

@@ -279,7 +279,7 @@ object SimpleMintingAlgebra {
         .getOrElse(
           Sync[F].raiseError(
             new Exception(
-              "Group token utxo not found"
+              "Series token utxo not found"
             )
           )
         )
