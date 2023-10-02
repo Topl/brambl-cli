@@ -12,10 +12,8 @@ import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.SeriesId
 import co.topl.brambl.models.TransactionOutputAddress
 import co.topl.brambl.models.box.Lock
-import co.topl.brambl.models.box.Value
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.SpentTransactionOutput
-import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
@@ -31,31 +29,13 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   import cats.implicits._
 
-  implicit val sync: Sync[G] 
+  implicit val sync: Sync[G]
 
   val tba: TransactionBuilderApi[G]
 
   val wsa: WalletStateAlgebra[G]
 
   val wa: WalletApi[G]
-
-
-  def groupOutput(
-      lockAddress: LockAddress,
-      quantity: Int128,
-      groupId: GroupId,
-      fixedSeries: Option[SeriesId]
-  ): G[UnspentTransactionOutput] =
-    UnspentTransactionOutput(
-      lockAddress,
-      Value.defaultInstance.withGroup(
-        Value.Group(
-          groupId = groupId,
-          quantity = quantity,
-          fixedSeries = fixedSeries
-        )
-      )
-    ).pure[G]
 
   def buildGroupTxAux(
       lvlTxos: Seq[Txo],
@@ -126,13 +106,12 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
           )
         )
       )
-      gOutput <- groupOutput(
+      gOutput <- groupOutput[G](
         recipientLockAddress,
         Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
         groupId,
         fixedSeries
       )
-      _ = Sync[G].delay(println("gOutput: " + gOutput))
       ioTransaction = IoTransaction.defaultInstance
         .withInputs(
           lvlTxos.map(x =>

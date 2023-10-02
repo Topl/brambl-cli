@@ -8,10 +8,12 @@ import co.topl.brambl.cli.controllers.SimpleMintingController
 import co.topl.brambl.cli.impl.GroupPolicyParserModule
 import co.topl.brambl.cli.impl.SeriesPolicyParserModule
 import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.cli.impl.AssetStatementParserModule
 
 trait SimpleMintingModeModule
     extends GroupPolicyParserModule
     with SeriesPolicyParserModule
+    with AssetStatementParserModule
     with SimpleMintingAlgebraModule {
 
   def simpleMingingSubcmds(
@@ -20,6 +22,7 @@ trait SimpleMintingModeModule
     val simpleMintingController = new SimpleMintingController(
       groupPolicyParserAlgebra(validateParams.network.networkId),
       seriesPolicyParserAlgebra(validateParams.network.networkId),
+      assetMintingStatementParserAlgebra(validateParams.network.networkId),
       simpleMintingAlgebra(
         validateParams.walletFile,
         validateParams.network.networkId,
@@ -55,6 +58,21 @@ trait SimpleMintingModeModule
                 validateParams.someFromState,
                 validateParams.amount,
                 validateParams.fee,
+                validateParams.someOutputFile.get
+              )
+          case TokenType.asset =>
+            simpleMintingController
+              .createSimpleAssetMintingTransactionFromParams(
+                validateParams.someInputFile.get,
+                validateParams.someKeyFile.get,
+                validateParams.password,
+                validateParams.fromParty,
+                validateParams.fromContract,
+                validateParams.someFromState,
+                validateParams.amount,
+                validateParams.fee,
+                validateParams.ephemeralMetadata,
+                validateParams.someCommitment,
                 validateParams.someOutputFile.get
               )
         }

@@ -94,6 +94,8 @@ final case class BramblCliParams(
     somePassphrase: Option[String] = None,
     someKeyFile: Option[String] = None,
     someInputFile: Option[String] = None,
+    someCommitment: Option[String] = None,
+    ephemeralMetadata: Option[File] = None,
     someOutputFile: Option[String] = None,
     mnemonic: Seq[String] = IndexedSeq(),
     someMnemonicFile: Option[String] = None,

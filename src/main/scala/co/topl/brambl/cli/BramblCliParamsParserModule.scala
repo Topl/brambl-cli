@@ -437,7 +437,31 @@ object BramblCliParamsParserModule {
         .children(
           ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
             outputArg.required(),
-            inputFileArg.required()
+            inputFileArg.required(),
+            opt[String]("commitment")
+              .action((x, c) => c.copy(someCommitment = Some(x)))
+              .text(
+                "The commitment to use, 32 bytes in hexadecimal formal. (optional)"
+              )
+              .validate(x =>
+                Encoding
+                  .decodeFromHex(x)
+                  .fold(
+                    _ => failure("Invalid commitment"),
+                    a =>
+                      if (a.length == 32) success
+                      else failure("Invalid commitment: Length must be 32")
+                  )
+              ),
+            opt[File]("ephemeralMetadata")
+              .action((x, c) => c.copy(ephemeralMetadata = Some(x)))
+              .text(
+                "A file containing the JSON metadata for the ephemeral metadata of the asset. (optional)"
+              )
+              .validate(x =>
+                if (x.exists()) success
+                else failure("Ephemeral metadata file does not exist")
+              )
           )) ++
             Seq(
               amountArg,

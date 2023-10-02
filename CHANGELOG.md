@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependency to monocle optics library.
 - Support for minting group tokens.
 - Support for minting series tokens.
+- Support for minting asset tokens.
 
 ### Changed
 

@@ -13,21 +13,19 @@ import co.topl.brambl.models.TransactionOutputAddress
 import co.topl.brambl.models.box.FungibilityType
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.models.box.QuantityDescriptorType
-import co.topl.brambl.models.box.Value
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.SpentTransactionOutput
-import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
 import com.google.protobuf.ByteString
+import com.google.protobuf.struct.Struct
 import quivr.models.Int128
 import quivr.models.KeyPair
 
 import java.io.FileOutputStream
 
 import TransactionBuilderApi.implicits._
-import com.google.protobuf.struct.Struct
 
 trait SeriesMintingOps[G[_]] extends CommonTxOps {
 
@@ -176,26 +174,6 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
          }
        })
 
-  def seriesOutput(
-      lockAddress: LockAddress,
-      quantity: Int128,
-      seriesId: SeriesId,
-      tokenSupply: Option[Int],
-      quantityDescriptor: QuantityDescriptorType,
-      fungibility: FungibilityType
-  ): G[UnspentTransactionOutput] =
-    UnspentTransactionOutput(
-      lockAddress,
-      Value.defaultInstance.withSeries(
-        Value.Series(
-          seriesId = seriesId,
-          quantity = quantity,
-          tokenSupply = tokenSupply,
-          quantityDescriptor = quantityDescriptor,
-          fungibility = fungibility
-        )
-      )
-    ).pure[G]
 
   private def buildSimpleSeriesMintingTransaction(
       lvlTxos: Seq[Txo],
@@ -226,7 +204,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
           )
         )
       )
-      gOutput <- seriesOutput(
+      sOutput <- seriesOutput[G](
         recipientLockAddress,
         Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
         seriesId,
@@ -234,7 +212,6 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
         quantityDescriptor,
         fungibility
       )
-      _ = Sync[G].delay(println("gOutput: " + gOutput))
       ioTransaction = IoTransaction.defaultInstance
         .withInputs(
           lvlTxos.map(x =>
@@ -248,9 +225,9 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
         .withOutputs(
           // If there is no change, we don't need to add it to the outputs
           if (totalValues.toLong - fee > 0)
-            Seq(lvlOutputForChange, gOutput)
+            Seq(lvlOutputForChange, sOutput)
           else
-            Seq(gOutput)
+            Seq(sOutput)
         )
         .withDatum(datum)
         .withSeriesPolicies(

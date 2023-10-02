@@ -1,25 +1,28 @@
 package co.topl.brambl.cli.controllers
 
-import munit.CatsEffectSuite
+import cats.effect.IO
+import cats.effect.kernel.Sync
+import co.topl.brambl.cli.impl.AssetStatementParserModule
 import co.topl.brambl.cli.impl.GroupPolicyParserModule
 import co.topl.brambl.cli.impl.SeriesPolicyParserModule
-import co.topl.brambl.cli.modules.SimpleMintingAlgebraModule
-import co.topl.brambl.cli.modules.DummyObjects
 import co.topl.brambl.cli.impl.SimpleMintingAlgebra
-import cats.effect.IO
+import co.topl.brambl.cli.modules.DummyObjects
+import co.topl.brambl.cli.modules.SimpleMintingAlgebraModule
 import co.topl.brambl.constants.NetworkConstants
-import cats.effect.kernel.Sync
+import munit.CatsEffectSuite
 
 class SimpleMintingControllerSpec
     extends CatsEffectSuite
     with GroupPolicyParserModule
     with SeriesPolicyParserModule
+    with AssetStatementParserModule
     with SimpleMintingAlgebraModule
     with DummyObjects {
 
   val controllerUnderTest = new SimpleMintingController(
     groupPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
     seriesPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
+    assetMintingStatementParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
     simpleMintingAlgebra()
   )
 
