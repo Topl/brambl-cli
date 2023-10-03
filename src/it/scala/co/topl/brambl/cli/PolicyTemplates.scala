@@ -108,4 +108,23 @@ trait PolicyTemplates {
     }
   }
 
+  def createAliceEphemeralMetadata(
+    fileName: String,
+    url: String,
+    image: String,
+    number: Int
+  ) = {
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+      IO(
+        file.write(
+          s"""{
+          |"url": "$url",
+          |"image": "$image",
+          |"number": $number
+          |}""".stripMargin
+        )
+      )
+    }
+  }
+
 }

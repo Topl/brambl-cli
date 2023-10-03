@@ -191,9 +191,9 @@ trait CommonTxOperations
           "simple-minting",
           "create",
           "--from-party",
-          fromParty, 
+          fromParty,
           "--from-contract",
-          fromContract, 
+          fromContract,
           "-h",
           HOST,
           "--bifrost-port",
@@ -205,7 +205,7 @@ trait CommonTxOperations
           "-w",
           c.password,
           "-o",
-          outputFile, 
+          outputFile,
           "-i",
           groupPolicy,
           "--mint-amount",
@@ -236,9 +236,9 @@ trait CommonTxOperations
           "simple-minting",
           "create",
           "--from-party",
-          fromParty, 
+          fromParty,
           "--from-contract",
-          fromContract, 
+          fromContract,
           "-h",
           HOST,
           "--bifrost-port",
@@ -250,7 +250,7 @@ trait CommonTxOperations
           "-w",
           c.password,
           "-o",
-          outputFile, 
+          outputFile,
           "-i",
           seriesPolicy,
           "--mint-amount",
@@ -270,10 +270,10 @@ trait CommonTxOperations
       fromParty: String,
       fromContract: String,
       someFromState: Option[Int],
-      amount: Long,
       fee: Long,
       assetMintingStatement: String,
-      outputFile: String
+      outputFile: String,
+      ephemeralMetadata: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -281,9 +281,9 @@ trait CommonTxOperations
           "simple-minting",
           "create",
           "--from-party",
-          fromParty, 
+          fromParty,
           "--from-contract",
-          fromContract, 
+          fromContract,
           "-h",
           HOST,
           "--bifrost-port",
@@ -295,7 +295,7 @@ trait CommonTxOperations
           "-w",
           c.password,
           "-o",
-          outputFile, 
+          outputFile,
           "-i",
           assetMintingStatement,
           "--fee",
@@ -303,7 +303,11 @@ trait CommonTxOperations
           "--walletdb",
           c.walletFile,
           "--mint-token",
-          "asset"
+          "asset",
+          "--commitment",
+          "3e8fd1ed52e0c8107f3265da13a42b323a492d334b6da23b0f1ef279b988a225",
+          "--ephemeralMetadata",
+          ephemeralMetadata
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)
@@ -514,7 +518,7 @@ trait CommonTxOperations
           "--keyfile",
           c.keyFile,
           "-w",
-          c.password,
+          c.password
         )
       )
     )

@@ -421,6 +421,12 @@ object BramblCliParamsParserModule {
     .action((_, c) => c.copy(mode = BramblCliMode.tx))
     .text("Transaction mode")
     .children(
+      cmd("inspect")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.inspect))
+        .text("Inspect transaction")
+        .children(
+          inputFileArg
+        ),
       cmd("create")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")

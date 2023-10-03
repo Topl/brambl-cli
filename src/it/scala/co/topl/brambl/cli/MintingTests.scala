@@ -252,15 +252,21 @@ class MintingTests
           seriesTokenUtxoAddress,
           1000
         )
+        _ <- createAliceEphemeralMetadata(
+          ALICE_FIRST_ASSET_MINTING_METADATA,
+          "http://topl.co",
+          "http://topl.co/image.png",
+          42
+        )
         _ <- assertIO(
           createSimpleAssetMintingTransaction(
             "self",
             "default",
             None,
-            1,
             100,
             ALICE_FIRST_ASSET_MINTING_STATEMENT,
-            ALICE_FIRST_ASSET_MINTING_TX
+            ALICE_FIRST_ASSET_MINTING_TX,
+            ALICE_FIRST_ASSET_MINTING_METADATA
           ).run(aliceContext),
           ExitCode.Success
         )

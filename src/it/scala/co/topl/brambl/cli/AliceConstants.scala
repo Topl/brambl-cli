@@ -24,6 +24,8 @@ trait AliceConstants extends BaseConstants {
 
   val ALICE_FIRST_ASSET_MINTING_TX = s"$TMP_DIR/alice_first_asset_minting_tx.pbuf"
 
+  val ALICE_FIRST_ASSET_MINTING_METADATA = s"$TMP_DIR/alice_first_asset_minting_metadata.json"
+
   val ALICE_FIRST_GROUP_MINTING_TX_PROVED = s"$TMP_DIR/alice_first_group_minting_tx_proved.pbuf"
 
   val ALICE_FIRST_SERIES_MINTING_TX_PROVED = s"$TMP_DIR/alice_first_series_minting_tx_proved.pbuf"

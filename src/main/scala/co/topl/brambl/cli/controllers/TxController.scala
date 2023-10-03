@@ -4,12 +4,33 @@ import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.impl.CommonParserError
 import co.topl.brambl.cli.impl.TxParserAlgebra
+import co.topl.brambl.models.transaction.IoTransaction
 
+import java.io.FileInputStream
 import java.io.FileOutputStream
 
 class TxController[F[_]: Sync](
     txParserAlgebra: TxParserAlgebra[F]
 ) {
+
+  def inspectTransaction(
+      inputFile: String
+  ) = {
+    import cats.implicits._
+    import co.topl.brambl.cli.views.BlockDisplayOps._
+    val inputRes = Resource
+      .make(
+        Sync[F]
+          .delay(new FileInputStream(inputFile))
+      )(fos => Sync[F].delay(fos.close()))
+    (for {
+      tx <- inputRes.use(in => Sync[F].delay(IoTransaction.parseFrom(in)))
+      output <- Sync[F].delay(display(tx))
+    } yield output).attempt.map(_ match {
+      case Right(output) => Right(output)
+      case Left(e)       => Left(e.getMessage())
+    })
+  }
 
   def createComplexTransaction(
       inputFile: String,
