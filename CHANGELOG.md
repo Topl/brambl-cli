@@ -27,6 +27,8 @@ This is because of a problem with the scopt library that forced that change.
 tokens and include all the information in the token.
 - Change the default behavior of minting so that it moves all the assets as
 the group, series and asset tokens are minted.
+- The `simple-mint` command now uses the parameter `--mint-amount` instead of
+`--amount` to avoid confusion with the amount of the asset to mint.
 
 ### Removed
 

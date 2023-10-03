@@ -16,11 +16,21 @@ import co.topl.brambl.dataApi.GenusQueryAlgebra
 import co.topl.brambl.models.LockAddress
 import co.topl.genus.services.TxoState
 import cats.Monad
+import co.topl.brambl.models.GroupId
+import co.topl.brambl.utils.Encoding
+import co.topl.brambl.models.SeriesId
+import co.topl.brambl.models.box.FungibilityType
+import co.topl.brambl.models.box.QuantityDescriptorType
 trait DummyObjects {
+
+  import co.topl.brambl.syntax._
 
   lazy val transactionId01 = TransactionId(
     ByteString.copyFrom(
-      Array.fill[Byte](32)(0)
+      Encoding
+        .decodeFromBase58("DAas2fmY1dfpVkTYSJXp3U1CD7yTMEonum2xG9BJmNtQ")
+        .toOption
+        .get
     )
   )
 
@@ -38,11 +48,64 @@ trait DummyObjects {
       )
     )
   )
+  lazy val groupValue01 = Value(
+    Value.Value.Group(
+      Value.Group(
+        GroupId(
+          ByteString.copyFrom(
+            Encoding
+              .decodeFromHex(
+                "fdae7b6ea08b7d5489c3573abba8b1765d39365b4e803c4c1af6b97cf02c54bf"
+              )
+              .toOption
+              .get
+          )
+        ),
+        1L,
+        None
+      )
+    )
+  )
+
+  lazy val seriesValue01 = Value(
+    Value.Value.Series(
+      Value.Series(
+        SeriesId(
+          ByteString.copyFrom(
+            Encoding
+              .decodeFromHex(
+                "1ed1caaefda61528936051929c525a17a0d43ea6ae09592da06c9735d9416c03"
+              )
+              .toOption
+              .get
+          )
+        ),
+        1L,
+        None,
+        QuantityDescriptorType.LIQUID,
+        FungibilityType.GROUP_AND_SERIES
+      )
+    )
+  )
 
   lazy val transactionOutputAddress01 = TransactionOutputAddress(
     lockAddress01.network,
     lockAddress01.ledger,
     1,
+    transactionId01
+  )
+
+  lazy val transactionOutputAddress02 = TransactionOutputAddress(
+    lockAddress01.network,
+    lockAddress01.ledger,
+    2,
+    transactionId01
+  )
+
+  lazy val transactionOutputAddress03 = TransactionOutputAddress(
+    lockAddress01.network,
+    lockAddress01.ledger,
+    3,
     transactionId01
   )
 
@@ -53,6 +116,24 @@ trait DummyObjects {
     ),
     co.topl.genus.services.TxoState.UNSPENT,
     transactionOutputAddress01
+  )
+
+  lazy val txo02 = Txo(
+    UnspentTransactionOutput(
+      lockAddress01,
+      groupValue01
+    ),
+    co.topl.genus.services.TxoState.UNSPENT,
+    transactionOutputAddress02
+  )
+
+  lazy val txo03 = Txo(
+    UnspentTransactionOutput(
+      lockAddress01,
+      seriesValue01
+    ),
+    co.topl.genus.services.TxoState.UNSPENT,
+    transactionOutputAddress03
   )
 
   lazy val blockId01 = BlockId(
@@ -92,7 +173,7 @@ trait DummyObjects {
           txoState: TxoState
       ): F[Seq[Txo]] = {
         Monad[F].pure(
-          Seq(txo01)
+          Seq(txo01, txo02, txo03)
         )
       }
     }

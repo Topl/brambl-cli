@@ -69,7 +69,6 @@ trait SimpleMintingModeModule
                 validateParams.fromParty,
                 validateParams.fromContract,
                 validateParams.someFromState,
-                validateParams.amount,
                 validateParams.fee,
                 validateParams.ephemeralMetadata,
                 validateParams.someCommitment,

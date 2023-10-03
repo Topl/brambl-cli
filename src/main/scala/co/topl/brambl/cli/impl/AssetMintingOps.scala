@@ -25,6 +25,7 @@ import java.io.FileOutputStream
 
 import TransactionBuilderApi.implicits._
 import io.circe.Json
+import quivr.models.Int128
 
 trait AssetMintingOps[G[_]] extends CommonTxOps {
 
@@ -44,7 +45,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       lvlTxos: Seq[Txo],
       nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
-      amount: Long,
+      amount: Int128,
       fee: Long,
       group: Value.Group,
       groupUtxoAddress: TransactionOutputAddress,
@@ -98,7 +99,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       lockPredicateFrom: Lock.Predicate,
       lockForChange: Lock,
       recipientLockAddress: LockAddress,
-      amount: Long,
+      amount: Int128,
       fee: Long,
       group: Value.Group,
       groupUtxoAddress: TransactionOutputAddress,
@@ -178,7 +179,7 @@ trait AssetMintingOps[G[_]] extends CommonTxOps {
       nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
       recipientLockAddress: LockAddress,
-      amount: Long,
+      amount: Int128,
       fee: Long,
       group: Value.Group,
       groupUtxoAddress: TransactionOutputAddress,

@@ -76,6 +76,45 @@ class SimpleMintingControllerSpec
       Right("Transaction successfully created")
     )
   }
+  test(
+    "createSimpleAssetMintingTransactionFromParams should create a minting transaction"
+  ) {
+    assertIO(
+      controllerUnderTest.createSimpleAssetMintingTransactionFromParams(
+        "src/test/resources/valid_asset_minting_statement.yaml",
+        "src/test/resources/keyfile.json",
+        "test",
+        "self",
+        "default",
+        None,
+        100,
+        None,
+        None,
+        "target/transaction_asset_mint.pbuf"
+      ),
+      Right("Transaction successfully created")
+    )
+  }
+
+  test(
+    "createSimpleAssetMintingTransactionFromParams should create a minting transaction with metadata"
+  ) {
+    assertIO(
+      controllerUnderTest.createSimpleAssetMintingTransactionFromParams(
+        "src/test/resources/valid_asset_minting_statement_metadata.yaml",
+        "src/test/resources/keyfile.json",
+        "test",
+        "self",
+        "default",
+        None,
+        100,
+        None,
+        None,
+        "target/transaction_asset_metadata_mint.pbuf"
+      ),
+      Right("Transaction successfully created")
+    )
+  }
 
   test(
     "createSimpleSeriesMintingTransactionFromParams should elegantly fail if the policy file is invalid: quantity descriptor"

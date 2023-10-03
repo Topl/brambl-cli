@@ -5,6 +5,8 @@ import co.topl.brambl.models.Datum
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.TransactionId
 import co.topl.brambl.models.TransactionOutputAddress
+import co.topl.brambl.models.box.FungibilityType
+import co.topl.brambl.models.box.QuantityDescriptorType
 import co.topl.brambl.models.box.Value
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.SpentTransactionOutput
@@ -12,8 +14,6 @@ import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import co.topl.consensus.models.BlockId
 import co.topl.genus.services.Txo
-import co.topl.brambl.models.box.FungibilityType
-import co.topl.brambl.models.box.QuantityDescriptorType
 
 object BlockDisplayOps {
 
@@ -129,16 +129,10 @@ Value      : ${display(txo.transactionOutput.value.value)}
 
   def displayType(txoValue: Value.Value) =
     if (txoValue.isLvl) "LVL"
-    else if (txoValue.isGroup) s"Group Constructor:${Encoding.encodeToHex(
-        txoValue.group.get.groupId.value.toByteArray()
-      )}:${txoValue.group.get.fixedSeries.map(x => Encoding.encodeToHex(x.value.toByteArray())).getOrElse("NO FIXED SERIES")}"
-    else if (txoValue.isSeries) s"Series Constructor:${Encoding.encodeToHex(
-        txoValue.series.get.seriesId.value.toByteArray()
-      )}:${fungibilityToString(txoValue.series.get.fungibility)}:${txoValue.series.get.tokenSupply
-        .getOrElse("UNLIMITED")}:${quantityDescriptorToString(txoValue.series.get.quantityDescriptor)}"
+    else if (txoValue.isGroup) s"Group Constructor:${Encoding.encodeToHex(txoValue.group.get.groupId.value.toByteArray())}:${txoValue.group.get.fixedSeries.map(x => Encoding.encodeToHex(x.value.toByteArray())).getOrElse("NO FIXED SERIES")}"
+    else if (txoValue.isSeries) s"Series Constructor:${Encoding.encodeToHex(txoValue.series.get.seriesId.value.toByteArray())}:${fungibilityToString(txoValue.series.get.fungibility)}:${txoValue.series.get.tokenSupply.getOrElse("UNLIMITED")}:${quantityDescriptorToString(txoValue.series.get.quantityDescriptor)}"
     else if (txoValue.isAsset)
-      s"Asset:${Encoding.encodeToHex(txoValue.asset.get.groupId.get.value.toByteArray())}:${Encoding
-          .encodeToHex(txoValue.asset.get.seriesId.get.value.toByteArray())}"
+      s"Asset:${Encoding.encodeToHex(txoValue.asset.get.groupId.get.value.toByteArray())}:${Encoding.encodeToHex(txoValue.asset.get.seriesId.get.value.toByteArray())}"
     else if (txoValue.isTopl) "TOPL"
     else "Unknown txo type"
 
