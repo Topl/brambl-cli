@@ -177,5 +177,17 @@ trait DummyObjects {
         )
       }
     }
+  def makeGenusQueryAlgebraMockWithOneAddress[F[_]: Monad] =
+    new GenusQueryAlgebra[F] {
+
+      override def queryUtxo(
+          fromAddress: LockAddress,
+          txoState: TxoState
+      ): F[Seq[Txo]] = {
+        Monad[F].pure(
+          Seq(txo01)
+        )
+      }
+    }
 
 }
