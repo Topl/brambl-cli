@@ -10,6 +10,7 @@ import co.topl.brambl.cli.modules.DummyObjects
 import co.topl.brambl.cli.modules.SimpleMintingAlgebraModule
 import co.topl.brambl.constants.NetworkConstants
 import munit.CatsEffectSuite
+import java.io.File
 
 class SimpleMintingControllerSpec
     extends CatsEffectSuite
@@ -97,7 +98,7 @@ class SimpleMintingControllerSpec
   }
 
   test(
-    "createSimpleAssetMintingTransactionFromParams should create a minting transaction with metadata"
+    "createSimpleAssetMintingTransactionFromParams should create a minting transaction with ephemeral and permanent metadata"
   ) {
     assertIO(
       controllerUnderTest.createSimpleAssetMintingTransactionFromParams(
@@ -108,7 +109,7 @@ class SimpleMintingControllerSpec
         "default",
         None,
         100,
-        None,
+        Some(new File("src/test/resources/simple_metadata.json")),
         None,
         "target/transaction_asset_metadata_mint.pbuf"
       ),
