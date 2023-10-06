@@ -5,9 +5,9 @@ sidebar_position: 7
 # Simple Transaction Mode
 
 ```  
-Command: simpletransaction [create|broadcast|prove] [options]
+Command: simple-transaction [create|broadcast|prove] [options]
 Simple transaction mode
-Command: simpletransaction create
+Command: simple-transaction create
 Create transaction
   --from-party <value>     Party where we are sending the funds from
   --from-contract <value>  Contract where we are sending the funds from
@@ -23,13 +23,13 @@ Create transaction
   --to-party <value>       Party to send LVLs to. (mandatory if to is not provided)
   --to-contract <value>    Contract to send LVLs to. (mandatory if to is not provided)
   -a, --amount <value>     Amount to send simple transaction
-Command: simpletransaction broadcast
+Command: simple-transaction broadcast
 Broadcast transaction
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   -i, --input <value>      The input file. (mandatory)
-Command: simpletransaction prove
+Command: simple-transaction prove
 Prove transaction
   -k, --keyfile <value>    The key file.
   -w, --password <value>   Password for the encrypted key. (mandatory)

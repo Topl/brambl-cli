@@ -11,10 +11,10 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://topl.github.io/',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: '/brambl-cli',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -64,7 +64,7 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'Documentation',
+        title: 'brambl-cli',
         logo: {
           alt: 'Brambll CLI Logo',
           src: 'img/bramblclilogo.svg',
@@ -74,9 +74,11 @@ const config = {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Documentation',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          {to: '/docs/intro', label: 'Getting Started', position: 'left'},
+          {to: '/docs/category/how-tos', label: 'How Tos', position: 'left'},
+          {to: '/docs/category/cli-reference', label: 'CLI Reference', position: 'left'},
           {
             href: 'https://github.com/Topl/brambl-cli',
             label: 'GitHub',
@@ -91,8 +93,16 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
+                label: 'Getting Started',
                 to: '/docs/intro',
+              },
+              {
+                label: 'How Tos',
+                to: '/docs/category/how-tos',
+              },
+              {
+                label: 'CLI Reference',
+                to: '/docs/category/cli-reference',
               },
             ],
           },

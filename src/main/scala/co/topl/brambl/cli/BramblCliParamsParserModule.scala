@@ -466,7 +466,7 @@ object BramblCliParamsParserModule {
         )
     )
 
-  val simpleTransactionMode = cmd("simpletransaction")
+  val simpleTransactionMode = cmd("simple-transaction")
     .action((_, c) => c.copy(mode = BramblCliMode.simpletransaction))
     .text("Simple transaction mode")
     .children(
