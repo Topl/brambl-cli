@@ -41,11 +41,16 @@ object BramblCliParamsParserModule {
 
   val amountArg = opt[Long]('a', "amount")
     .action((x, c) => c.copy(amount = x))
-    .text("Amount to send or mint")
+    .text("Amount to send")
     .validate(x =>
       if (x > 0) success
       else failure("Amount must be greater than 0")
     )
+
+  val mintAmountArg = opt[Long]("mint-amount")
+    .action((x, c) => c.copy(amount = x))
+    .text("Amount to mint")
+    .optional()
 
   val newwalletdbArg = opt[String]("newwalletdb")
     .action((x, c) => c.copy(walletFile = x))
@@ -416,6 +421,12 @@ object BramblCliParamsParserModule {
     .action((_, c) => c.copy(mode = BramblCliMode.tx))
     .text("Transaction mode")
     .children(
+      cmd("inspect")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.inspect))
+        .text("Inspect transaction")
+        .children(
+          inputFileArg
+        ),
       cmd("create")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")
@@ -437,10 +448,34 @@ object BramblCliParamsParserModule {
         .children(
           ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
             outputArg.required(),
-            inputFileArg.required()
+            inputFileArg.required(),
+            opt[String]("commitment")
+              .action((x, c) => c.copy(someCommitment = Some(x)))
+              .text(
+                "The commitment to use, 32 bytes in hexadecimal formal. (optional)"
+              )
+              .validate(x =>
+                Encoding
+                  .decodeFromHex(x)
+                  .fold(
+                    _ => failure("Invalid commitment"),
+                    a =>
+                      if (a.length == 32) success
+                      else failure("Invalid commitment: Length must be 32")
+                  )
+              ),
+            opt[File]("ephemeralMetadata")
+              .action((x, c) => c.copy(ephemeralMetadata = Some(x)))
+              .text(
+                "A file containing the JSON metadata for the ephemeral metadata of the asset. (optional)"
+              )
+              .validate(x =>
+                if (x.exists()) success
+                else failure("Ephemeral metadata file does not exist")
+              )
           )) ++
             Seq(
-              amountArg,
+              mintAmountArg,
               opt[Long]("fee")
                 .action((x, c) => c.copy(fee = x))
                 .text("Fee paid for the transaction")
@@ -454,13 +489,37 @@ object BramblCliParamsParserModule {
                 if (
                   c.mode == BramblCliMode.simpleminting &&
                   c.tokenType != TokenType.group &&
-                  c.tokenType != TokenType.series
+                  c.tokenType != TokenType.series &&
+                  c.tokenType != TokenType.asset
                 )
                   failure(
-                    "Only group and series minting is supported at the moment"
+                    "Invalid asset to mint, supported assets are group, series and asset"
                   )
-                else
-                  success
+                else {
+                  if (
+                    c.mode == BramblCliMode.simpleminting &&
+                    c.subcmd == BramblCliSubCmd.create
+                  ) {
+                    if (c.tokenType == TokenType.asset) {
+                      if (c.amount < 0) { // not set
+                        success
+                      } else {
+                        failure(
+                          "Amount is only mandatory for group and series minting"
+                        )
+                      }
+                    } else {
+                      if (c.amount > 0) {
+                        success
+                      } else {
+                        failure(
+                          "Amount is mandatory for group and series minting"
+                        )
+                      }
+                    }
+                  } else
+                    success
+                }
               )
             )): _*
         )

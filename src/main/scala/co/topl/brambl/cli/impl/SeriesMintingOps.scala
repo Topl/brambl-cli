@@ -13,21 +13,19 @@ import co.topl.brambl.models.TransactionOutputAddress
 import co.topl.brambl.models.box.FungibilityType
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.models.box.QuantityDescriptorType
-import co.topl.brambl.models.box.Value
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.SpentTransactionOutput
-import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
 import com.google.protobuf.ByteString
+import com.google.protobuf.struct.Struct
 import quivr.models.Int128
 import quivr.models.KeyPair
 
 import java.io.FileOutputStream
 
 import TransactionBuilderApi.implicits._
-import com.google.protobuf.struct.Struct
 
 trait SeriesMintingOps[G[_]] extends CommonTxOps {
 
@@ -41,102 +39,9 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
 
   val wa: WalletApi[G]
 
-  def seriesOutput(
-      lockAddress: LockAddress,
-      quantity: Int128,
-      seriesId: SeriesId,
-      tokenSupply: Option[Int],
-      quantityDescriptor: QuantityDescriptorType,
-      fungibility: FungibilityType
-  ): G[UnspentTransactionOutput] =
-    UnspentTransactionOutput(
-      lockAddress,
-      Value.defaultInstance.withSeries(
-        Value.Series(
-          seriesId = seriesId,
-          quantity = quantity,
-          tokenSupply = tokenSupply,
-          quantityDescriptor = quantityDescriptor,
-          fungibility = fungibility
-        )
-      )
-    ).pure[G]
-
-  private def buildSimpleSeriesMintingTransaction(
-      lvlTxos: Seq[Txo],
-      lockPredicateFrom: Lock.Predicate,
-      recipientLockAddress: LockAddress,
-      amount: Long,
-      fee: Long,
-      seriesId: SeriesId,
-      label: String,
-      tokenSupply: Option[Int],
-      quantityDescriptor: QuantityDescriptorType,
-      fungibility: FungibilityType,
-      registrationUtxo: TransactionOutputAddress,
-      ephemeralMetadataScheme: Option[Struct],
-      permanentMetadataScheme: Option[Struct]
-  ): G[IoTransaction] =
-    for {
-      unprovenAttestationToProve <- tba.unprovenAttestation(
-        lockPredicateFrom
-      )
-      totalValues = computeLvlQuantity(lvlTxos)
-      datum <- tba.datum()
-      lvlOutputForChange <- tba.lvlOutput(
-        recipientLockAddress,
-        Int128(
-          ByteString.copyFrom(
-            BigInt(totalValues.toLong - fee).toByteArray
-          )
-        )
-      )
-      gOutput <- seriesOutput(
-        recipientLockAddress,
-        Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
-        seriesId,
-        tokenSupply,
-        quantityDescriptor,
-        fungibility
-      )
-      _ = Sync[G].delay(println("gOutput: " + gOutput))
-      ioTransaction = IoTransaction.defaultInstance
-        .withInputs(
-          lvlTxos.map(x =>
-            SpentTransactionOutput(
-              x.outputAddress,
-              unprovenAttestationToProve,
-              x.transactionOutput.value
-            )
-          )
-        )
-        .withOutputs(
-          // If there is no change, we don't need to add it to the outputs
-          if (totalValues.toLong - fee > 0)
-            Seq(lvlOutputForChange, gOutput)
-          else
-            Seq(gOutput)
-        )
-        .withDatum(datum)
-        .withSeriesPolicies(
-          Seq(
-            Datum.SeriesPolicy(
-              Event.SeriesPolicy(
-                label,
-                tokenSupply,
-                registrationUtxo,
-                quantityDescriptor,
-                fungibility,
-                ephemeralMetadataScheme,
-                permanentMetadataScheme
-              )
-            )
-          )
-        )
-    } yield ioTransaction
-
   private def buildSeriesTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       lockForChange: Lock,
       recipientLockAddress: LockAddress,
@@ -158,6 +63,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
       ioTransaction <-
         buildSimpleSeriesMintingTransaction(
           lvlTxos,
+          nonLvlTxos,
           predicateFundsToUnlock,
           recipientLockAddress,
           amount,
@@ -220,6 +126,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
 
   def buildSeriesTxAux(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       amount: Long,
       fee: Long,
@@ -245,6 +152,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
                .flatMap { changeAddress =>
                  buildSeriesTransaction(
                    lvlTxos,
+                   nonLvlTxos,
                    predicateFundsToUnlock,
                    lockPredicateForChange,
                    changeAddress,
@@ -269,4 +177,86 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
              )
          }
        })
+
+  private def buildSimpleSeriesMintingTransaction(
+      lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
+      lockPredicateFrom: Lock.Predicate,
+      recipientLockAddress: LockAddress,
+      amount: Long,
+      fee: Long,
+      seriesId: SeriesId,
+      label: String,
+      tokenSupply: Option[Int],
+      quantityDescriptor: QuantityDescriptorType,
+      fungibility: FungibilityType,
+      registrationUtxo: TransactionOutputAddress,
+      ephemeralMetadataScheme: Option[Struct],
+      permanentMetadataScheme: Option[Struct]
+  ): G[IoTransaction] =
+    for {
+      unprovenAttestationToProve <- tba.unprovenAttestation(
+        lockPredicateFrom
+      )
+      totalValues = computeLvlQuantity(lvlTxos)
+      datum <- tba.datum()
+      lvlOutputForChange <- tba.lvlOutput(
+        recipientLockAddress,
+        Int128(
+          ByteString.copyFrom(
+            BigInt(totalValues.toLong - fee).toByteArray
+          )
+        )
+      )
+      sOutput <- seriesOutput[G](
+        recipientLockAddress,
+        Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
+        seriesId,
+        tokenSupply,
+        quantityDescriptor,
+        fungibility
+      )
+      ioTransaction = IoTransaction.defaultInstance
+        .withInputs(
+          lvlTxos.map(x =>
+            SpentTransactionOutput(
+              x.outputAddress,
+              unprovenAttestationToProve,
+              x.transactionOutput.value
+            )
+          ) ++ nonLvlTxos.map(x =>
+            SpentTransactionOutput(
+              x.outputAddress,
+              unprovenAttestationToProve,
+              x.transactionOutput.value
+            )
+          )
+        )
+        .withOutputs(
+          // If there is no change, we don't need to add it to the outputs
+          (if (totalValues.toLong - fee > 0)
+             Seq(lvlOutputForChange, sOutput)
+           else
+             Seq(sOutput)) ++ nonLvlTxos.map(
+            _.transactionOutput.copy(address = recipientLockAddress)
+          )
+        )
+        .withDatum(datum)
+        .withSeriesPolicies(
+          Seq(
+            Datum.SeriesPolicy(
+              Event.SeriesPolicy(
+                label,
+                tokenSupply,
+                registrationUtxo,
+                quantityDescriptor,
+                fungibility,
+                ephemeralMetadataScheme,
+                permanentMetadataScheme
+              )
+            )
+          )
+        )
+    } yield ioTransaction
+
 }

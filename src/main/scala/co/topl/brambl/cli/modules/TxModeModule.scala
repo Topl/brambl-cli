@@ -12,6 +12,13 @@ trait TxModeModule extends TxParserAlgebraModule {
       validateParams: BramblCliParams
   ): IO[Either[String, String]] = {
     validateParams.subcmd match {
+      case BramblCliSubCmd.inspect =>
+        new TxController(
+          txParserAlgebra(
+            validateParams.network.networkId,
+            NetworkConstants.MAIN_LEDGER_ID
+          )
+        ).inspectTransaction(validateParams.someInputFile.get)
       case BramblCliSubCmd.create =>
         new TxController(
           txParserAlgebra(

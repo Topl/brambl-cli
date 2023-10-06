@@ -1,25 +1,29 @@
 package co.topl.brambl.cli.controllers
 
-import munit.CatsEffectSuite
+import cats.effect.IO
+import cats.effect.kernel.Sync
+import co.topl.brambl.cli.impl.AssetStatementParserModule
 import co.topl.brambl.cli.impl.GroupPolicyParserModule
 import co.topl.brambl.cli.impl.SeriesPolicyParserModule
-import co.topl.brambl.cli.modules.SimpleMintingAlgebraModule
-import co.topl.brambl.cli.modules.DummyObjects
 import co.topl.brambl.cli.impl.SimpleMintingAlgebra
-import cats.effect.IO
+import co.topl.brambl.cli.modules.DummyObjects
+import co.topl.brambl.cli.modules.SimpleMintingAlgebraModule
 import co.topl.brambl.constants.NetworkConstants
-import cats.effect.kernel.Sync
+import munit.CatsEffectSuite
+import java.io.File
 
 class SimpleMintingControllerSpec
     extends CatsEffectSuite
     with GroupPolicyParserModule
     with SeriesPolicyParserModule
+    with AssetStatementParserModule
     with SimpleMintingAlgebraModule
     with DummyObjects {
 
   val controllerUnderTest = new SimpleMintingController(
     groupPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
     seriesPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
+    assetMintingStatementParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
     simpleMintingAlgebra()
   )
 
@@ -69,6 +73,45 @@ class SimpleMintingControllerSpec
         1L,
         100,
         "target/transaction_series_mint.pbuf"
+      ),
+      Right("Transaction successfully created")
+    )
+  }
+  test(
+    "createSimpleAssetMintingTransactionFromParams should create a minting transaction"
+  ) {
+    assertIO(
+      controllerUnderTest.createSimpleAssetMintingTransactionFromParams(
+        "src/test/resources/valid_asset_minting_statement.yaml",
+        "src/test/resources/keyfile.json",
+        "test",
+        "self",
+        "default",
+        None,
+        100,
+        None,
+        None,
+        "target/transaction_asset_mint.pbuf"
+      ),
+      Right("Transaction successfully created")
+    )
+  }
+
+  test(
+    "createSimpleAssetMintingTransactionFromParams should create a minting transaction with ephemeral and permanent metadata"
+  ) {
+    assertIO(
+      controllerUnderTest.createSimpleAssetMintingTransactionFromParams(
+        "src/test/resources/valid_asset_minting_statement_metadata.yaml",
+        "src/test/resources/keyfile.json",
+        "test",
+        "self",
+        "default",
+        None,
+        100,
+        Some(new File("src/test/resources/simple_metadata.json")),
+        None,
+        "target/transaction_asset_metadata_mint.pbuf"
       ),
       Right("Transaction successfully created")
     )

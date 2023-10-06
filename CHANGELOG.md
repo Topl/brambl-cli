@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependency to monocle optics library.
 - Support for minting group tokens.
 - Support for minting series tokens.
+- Support for minting asset tokens.
+- New command to inspect transactions on disk
 - Added full documentation in docusaurus. Available [here](https://topl.github.io/brambl-cli).
 
 ### Changed
@@ -25,6 +27,10 @@ instead of `--walletdb`.
 This is because of a problem with the scopt library that forced that change.
 - Modified the display of tokens (genus-query) to show the group and series 
 tokens and include all the information in the token.
+- Change the default behavior of minting so that it moves all the assets as
+the group, series and asset tokens are minted.
+- The `simple-mint` command now uses the parameter `--mint-amount` instead of
+`--amount` to avoid confusion with the amount of the asset to mint.
 
 ### Removed
 

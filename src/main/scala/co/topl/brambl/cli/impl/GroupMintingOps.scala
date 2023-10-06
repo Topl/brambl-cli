@@ -12,10 +12,8 @@ import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.SeriesId
 import co.topl.brambl.models.TransactionOutputAddress
 import co.topl.brambl.models.box.Lock
-import co.topl.brambl.models.box.Value
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.brambl.models.transaction.SpentTransactionOutput
-import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
@@ -31,7 +29,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   import cats.implicits._
 
-  implicit val sync: Sync[G] 
+  implicit val sync: Sync[G]
 
   val tba: TransactionBuilderApi[G]
 
@@ -39,26 +37,9 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   val wa: WalletApi[G]
 
-
-  def groupOutput(
-      lockAddress: LockAddress,
-      quantity: Int128,
-      groupId: GroupId,
-      fixedSeries: Option[SeriesId]
-  ): G[UnspentTransactionOutput] =
-    UnspentTransactionOutput(
-      lockAddress,
-      Value.defaultInstance.withGroup(
-        Value.Group(
-          groupId = groupId,
-          quantity = quantity,
-          fixedSeries = fixedSeries
-        )
-      )
-    ).pure[G]
-
   def buildGroupTxAux(
       lvlTxos: Seq[Txo],
+      notlvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       amount: Long,
       fee: Long,
@@ -80,6 +61,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
                .flatMap { changeAddress =>
                  buildGroupTransaction(
                    lvlTxos,
+                   notlvlTxos,
                    predicateFundsToUnlock,
                    lockPredicateForChange,
                    changeAddress,
@@ -103,6 +85,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   private def buildSimpleGroupMintingTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       lockPredicateFrom: Lock.Predicate,
       recipientLockAddress: LockAddress,
       amount: Long,
@@ -126,16 +109,21 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
           )
         )
       )
-      gOutput <- groupOutput(
+      gOutput <- groupOutput[G](
         recipientLockAddress,
         Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
         groupId,
         fixedSeries
       )
-      _ = Sync[G].delay(println("gOutput: " + gOutput))
       ioTransaction = IoTransaction.defaultInstance
         .withInputs(
           lvlTxos.map(x =>
+            SpentTransactionOutput(
+              x.outputAddress,
+              unprovenAttestationToProve,
+              x.transactionOutput.value
+            )
+          ) ++ nonLvlTxos.map(x =>
             SpentTransactionOutput(
               x.outputAddress,
               unprovenAttestationToProve,
@@ -145,10 +133,12 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
         )
         .withOutputs(
           // If there is no change, we don't need to add it to the outputs
-          if (totalValues.toLong - fee > 0)
-            Seq(lvlOutputForChange, gOutput)
-          else
-            Seq(gOutput)
+          (if (totalValues.toLong - fee > 0)
+             Seq(lvlOutputForChange, gOutput)
+           else
+             Seq(gOutput)) ++ nonLvlTxos.map(
+            _.transactionOutput.copy(address = recipientLockAddress)
+          )
         )
         .withDatum(datum)
         .withGroupPolicies(
@@ -166,6 +156,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   private def buildGroupTransaction(
       lvlTxos: Seq[Txo],
+      nonLvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       lockForChange: Lock,
       recipientLockAddress: LockAddress,
@@ -183,6 +174,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
       ioTransaction <-
         buildSimpleGroupMintingTransaction(
           lvlTxos,
+          nonLvlTxos,
           predicateFundsToUnlock,
           recipientLockAddress,
           amount,
