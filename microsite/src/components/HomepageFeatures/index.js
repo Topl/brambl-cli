@@ -8,28 +8,27 @@ const FeatureList = [
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        brambl-cli was designed from the ground up to be easily installed and
+        used to get you using the Topl Blockchain in no time.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Powerful',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        brambl-cli lets use use the most advanced functionality available
+        in the Topl Blockchain, without needing to code.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'Powered by the Topl Blockchain',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Get to use the full power of the Topl Blockchain with brambl-cli.
       </>
     ),
   },
