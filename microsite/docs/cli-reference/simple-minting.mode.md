@@ -24,4 +24,3 @@ Create minting transaction
   --fee <value>            Fee paid for the transaction
   --mint-token <value>     The token type. The valid token types are 'asset', 'group', and 'series'
 ```
-
