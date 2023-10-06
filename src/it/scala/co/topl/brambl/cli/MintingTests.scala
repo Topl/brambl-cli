@@ -138,12 +138,12 @@ class MintingTests
         )
         _ <- IO.sleep(5.seconds)
         _ <- IO.println(
-          "Check change  account for from alice's wallet, expected 500 LVLs"
+          "Check change  account for from alice's wallet, group tokens"
         )
         res <- IO.asyncForIO.timeout(
           (for {
             _ <- IO.println("Querying alice's change account")
-            queryRes <- queryAccountAllTokens("self", "default").run(
+            queryRes <- queryAccountGroupTokens("self", "default").run(
               aliceContext
             )
             _ <- IO.sleep(5.seconds)
@@ -178,7 +178,7 @@ class MintingTests
           "Alice Series",
           "group-and-series",
           "liquid",
-          aliceUtxoAddress,
+          aliceUtxoAddress
         )
         _ <- assertIO(
           createSimpleSeriesMintingTransaction(
@@ -207,12 +207,90 @@ class MintingTests
         )
         _ <- IO.sleep(5.seconds)
         _ <- IO.println(
-          "Check change  account for from alice's wallet, expected 500 LVLs"
+          "Check change  account for from alice's wallet, expected group and series tokens"
         )
         res <- IO.asyncForIO.timeout(
           (for {
             _ <- IO.println("Querying alice's change account")
-            queryRes <- queryAccountAllTokens("self", "default").run(
+            queryRes <- queryAccountSeriesTokens("self", "default").run(
+              aliceContext
+            )
+            _ <- IO.sleep(5.seconds)
+          } yield queryRes)
+            .iterateUntil(_ == ExitCode.Success),
+          60.seconds
+        )
+      } yield res,
+      ExitCode.Success
+    )
+  }
+
+  test("Use alice's funds to mint an asset") {
+    import scala.concurrent.duration._
+    assertIO(
+      for {
+        _ <- IO.println("Crate an asset minting statement")
+        ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
+          .currentaddress("self", "default", None)
+        utxos <- genusQueryAlgebra
+          .queryUtxo(
+            decodeAddress(ALICE_CURRENT_ADDRESS.get).toOption.get
+          )
+        groupTokenUtxo = utxos.filter(_.transactionOutput.value.value.isGroup)
+        _ <- IO.println(s"Alice's address is $ALICE_CURRENT_ADDRESS")
+        groupTokenUtxoAddress = Encoding.encodeToBase58(
+          groupTokenUtxo.head.outputAddress.id.value.toByteArray
+        ) + "#" + groupTokenUtxo.head.outputAddress.index.toString
+        seriesTokenUtxo = utxos.filter(_.transactionOutput.value.value.isSeries)
+        _ <- IO.println(s"Alice's address is $ALICE_CURRENT_ADDRESS")
+        seriesTokenUtxoAddress = Encoding.encodeToBase58(
+          seriesTokenUtxo.head.outputAddress.id.value.toByteArray
+        ) + "#" + seriesTokenUtxo.head.outputAddress.index.toString
+        _ <- createAliceAssetMintingStatement(
+          ALICE_FIRST_ASSET_MINTING_STATEMENT,
+          groupTokenUtxoAddress,
+          seriesTokenUtxoAddress,
+          1000
+        )
+        _ <- createAliceEphemeralMetadata(
+          ALICE_FIRST_ASSET_MINTING_METADATA,
+          "http://topl.co",
+          "http://topl.co/image.png",
+          42
+        )
+        _ <- assertIO(
+          createSimpleAssetMintingTransaction(
+            "self",
+            "default",
+            None,
+            100,
+            ALICE_FIRST_ASSET_MINTING_STATEMENT,
+            ALICE_FIRST_ASSET_MINTING_TX,
+            ALICE_FIRST_ASSET_MINTING_METADATA
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          proveSimpleTransaction(
+            ALICE_FIRST_ASSET_MINTING_TX,
+            ALICE_FIRST_ASSET_MINTING_TX_PROVED
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          broadcastSimpleTx(ALICE_FIRST_ASSET_MINTING_TX_PROVED),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- IO.println(
+          "Check change  account for from alice's wallet, expected a new asset"
+        )
+        res <- IO.asyncForIO.timeout(
+          (for {
+            _ <- IO.println("Querying alice's change account")
+            queryRes <- queryAccountAssetTokens("self", "default").run(
               aliceContext
             )
             _ <- IO.sleep(5.seconds)

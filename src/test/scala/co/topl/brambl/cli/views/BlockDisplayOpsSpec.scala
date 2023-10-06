@@ -9,7 +9,7 @@ class BlockDisplayOpsSpec extends munit.FunSuite with DummyObjects {
     assertEquals(
       display,
       """
-TxoAddress : 11111111111111111111111111111111#1
+TxoAddress : DAas2fmY1dfpVkTYSJXp3U1CD7yTMEonum2xG9BJmNtQ#1
 LockAddress: ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
 Type       : LVL
 Value      : 100
@@ -24,14 +24,33 @@ BlockId: 11111111111111111111111111111111
 
 Block Body:
 
-TransactionId: 11111111111111111111111111111111
+TransactionId : DAas2fmY1dfpVkTYSJXp3U1CD7yTMEonum2xG9BJmNtQ
 
-Inputs       : 
-TxoAddress   : 11111111111111111111111111111111#1
+Group Policies
+==============
+
+
+
+Series Policies
+===============
+
+
+
+Asset Minting Statements
+========================
+  
+
+
+
+Inputs
+======
+
+TxoAddress   : DAas2fmY1dfpVkTYSJXp3U1CD7yTMEonum2xG9BJmNtQ#1
 Attestation  : Not implemented
 Value        : 100
 
-Outputs      :
+Outputs
+=======
 
 LockAddress  : ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
 Type         : LVL
@@ -39,7 +58,7 @@ Value        : 100
 
 Datum        :
 
-Value: 
+Value      :
 """.trim())
   }
 

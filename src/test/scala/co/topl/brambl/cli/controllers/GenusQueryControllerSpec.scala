@@ -58,7 +58,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
     "queryUtxoFromParams should return a formatted string if the address is there"
   ) {
     val walletStateAlgebra = makeWalletStateAlgebraMockWithAddress[IO]
-    val genusQueryAlgebra = makeGenusQueryAlgebraMockWithAddress[IO]
+    val genusQueryAlgebra = makeGenusQueryAlgebraMockWithOneAddress[IO]
     val genusQueryController =
       new GenusQueryController[IO](walletStateAlgebra, genusQueryAlgebra)
     val result =

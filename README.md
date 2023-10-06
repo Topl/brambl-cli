@@ -163,25 +163,27 @@ Import verification key
 ### Transaction mode
 
 ```  
-Command: tx [create] [options]
+Command: tx [inspect|create]
 Transaction mode
-Command: tx create
+Command: tx inspect [options]
+Inspect transaction
+  -i, --input <value>      The input file. (mandatory)
+Command: tx create [options]
 Create transaction
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --bifrost-port <value>   Port Bifrost node. (mandatory)
   -o, --output <value>     The output file. (mandatory)
   -i, --input <value>      The input file. (mandatory)
-  
 ```
 
 ### Simple transaction mode
 
 ```  
-Command: simpletransaction [create|broadcast|prove] [options]
-Simple transaction mode
-Command: simpletransaction create
-Create transaction
+Command: simple-minting [create]
+Simple minting mode
+Command: simple-minting create [options]
+Create minting transaction
   --from-party <value>     Party where we are sending the funds from
   --from-contract <value>  Contract where we are sending the funds from
   --from-state <value>     State from where we are sending the funds from
@@ -192,23 +194,13 @@ Create transaction
   -w, --password <value>   Password for the encrypted key. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
   -o, --output <value>     The output file. (mandatory)
-  -t, --to <value>         Address to send LVLs to. (mandatory if to-party and to-contract are not provided)
-  --to-party <value>       Party to send LVLs to. (mandatory if to is not provided)
-  --to-contract <value>    Contract to send LVLs to. (mandatory if to is not provided)
-  -a, --amount <value>     Amount to send simple transaction
-Command: simpletransaction broadcast
-Broadcast transaction
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
   -i, --input <value>      The input file. (mandatory)
-Command: simpletransaction prove
-Prove transaction
-  -k, --keyfile <value>    The key file.
-  -w, --password <value>   Password for the encrypted key. (mandatory)
-  --walletdb <value>       Wallet DB file. (mandatory)
-  -o, --output <value>     The output file. (mandatory)
-  -i, --input <value>      The input file. (mandatory)
+  --commitment <value>     The commitment to use, 32 bytes in hexadecimal formal. (optional)
+  --ephemeralMetadata <value>
+                           A file containing the JSON metadata for the ephemeral metadata of the asset. (optional)
+  --mint-amount <value>    Amount to mint
+  --fee <value>            Fee paid for the transaction
+  --mint-token <value>     The token type. The valid token types are 'asset', 'group', 'series'.
 ```
 
 
@@ -510,7 +502,7 @@ To create a simple minting transaction of group constructor tokens we run the
 following command:
 
 ```bash
-brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $GROUP_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token group
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $GROUP_POLICY --mint-amount $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token group
 ```
 
 This will create a minting transaction for the party `$PARTY` and contract `$CONTRACT` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The group policy file is `$GROUP_POLICY`. The amount of tokens to mint is `$AMOUN_TOKENS_TO_MINT`. The fee amount is `$FEE_AMOUNT`.
@@ -538,7 +530,7 @@ To create a simple minting transaction of series constructor tokens we run the
 following command:
 
 ```bash
-brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $SERIES_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token series
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $SERIES_POLICY  --mint-amount $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token series
 ```
 
 This will create a minting transaction for the party `$PARTY` and contract `$CONTRACT` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The series policy file is `$SERIES_POLICY`. The amount of tokens to mint is `$AMOUN_TOKENS_TO_MINT`. The fee amount is `$FEE_AMOUNT`.
@@ -561,7 +553,7 @@ label: Alice Series
 registrationUtxo: 33HxStncsrptPB3ffkGpJNmoYwkkURvhiw92afWzjV3B#0
 fungibility: group-and-series
 quantityDescriptor: liquid
-permanentMetadata:
+permanentMetadataScheme:
   type: object
   properties:
     name:
@@ -570,11 +562,127 @@ permanentMetadata:
       type: string
     description:
       type: string
-ephemeralMetadata:
+ephemeralMetadataScheme:
   type: object
   properties:
     url:
       type: string
     image:
       type: string
+```
+
+### Create a simple minting transaction of asset tokens
+
+To create a simple minting transaction of asset tokens we run the following
+command:
+
+```bash
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $AMS --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token asset
+```
+
+This will create a minting transaction for the party `$PARTY` and contract `$CONTRACT` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The asset minting statement file is `$AMS`. The fee amount is `$FEE_AMOUNT`. Please note that the amount of tokens to mint is specified in the asset minting statement file.
+
+The asset minting also supports a commitment and metadata. These can be added to the statement as follows.
+
+```bash
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --bifrost-port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $AMS --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token asset
+--commitment $COMMITMENT --ephemeralMetadata $EPHEMERAL_METADATA_FILE
+```
+
+The commitment is a 32 byte hexadecimal string. The ephemeral metadata is a JSON file containing the metadata for the ephemeral metadata of the asset.
+
+#### Example of asset minting statement file format
+
+An asset minting statement looks like this:
+
+```yaml
+groupTokenUtxo: FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#2
+seriesTokenUtxo: FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#1
+quantity: 1000
+```
+
+The `groupTokenUtxo` is where the group minting token comes from. The `seriesTokenUtxo` is where the series minting token comes from. The `quantity` is the amount of tokens to mint. This statement also
+supports metadata. The metadata is optional and can be added to the statement
+as follows.
+
+```yaml
+groupTokenUtxo: FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#2
+seriesTokenUtxo: FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#1
+quantity: 1000
+permanentMetadata:
+  tickerName: TST
+  name: Test Token
+  description: Test Token Description
+```
+
+### Inspecting a transaction
+
+To inspect a transaction run the following command:
+
+```bash
+brambl-cli tx inspect -i $TX_FILE
+```
+
+This will inspect the transaction in the file `$TX_FILE` and output the result to the console. The output will look something like this:
+
+```
+TransactionId : No transaction id
+Group Policies
+==============
+Series Policies
+===============
+Asset Minting Statements
+========================
+  
+Group-Token-Utxo: FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#2
+Series-Token-Utxo: FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#1
+Quantity: 1000
+Permanent-Metadata:
+No permanent metadata
+      
+Inputs
+======
+TxoAddress   : FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#0
+Attestation  : Not implemented
+Value        : 9998800
+-----------
+TxoAddress   : FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#2
+Attestation  : Not implemented
+Value        : 1
+-----------
+TxoAddress   : FYX4xtEh9vvXjSwKvXczqa9TCjgyTCawvfnL6L5M2P5N#1
+Attestation  : Not implemented
+Value        : 1
+Outputs
+=======
+LockAddress  : ptetP7jshHUHx1621p51SSQekgpXzKLaYudhmz5FKMSUDThccGj274Y1P89n
+Type         : LVL
+Value        : 9998700
+-----------
+LockAddress  : ptetP7jshHUHx1621p51SSQekgpXzKLaYudhmz5FKMSUDThccGj274Y1P89n
+Type         : Group Constructor
+Id           : 072c5e13d6b72888ee4d77f347d15a12f21627f5fa5ddd8e59c7f279d9663380
+Fixed-Series : NO FIXED SERIES
+Value        : 1
+-----------
+LockAddress  : ptetP7jshHUHx1621p51SSQekgpXzKLaYudhmz5FKMSUDThccGj274Y1P89n
+Type         : Series Constructor
+Id           : 416ff145cafc2369063684847abf06ec03a5ef16e8d95a7d66f2a4f062e001c9
+Fungibility  : group-and-series
+Token-Supply : UNLIMITED
+Quant-Descr. : liquid
+Value        : 1
+-----------
+LockAddress  : ptetP7jshHUHx1621p51SSQekgpXzKLaYudhmz5FKMSUDThccGj274Y1P89n
+Type         : Asset
+GroupId      : 072c5e13d6b72888ee4d77f347d15a12f21627f5fa5ddd8e59c7f279d9663380
+SeriesId     : 416ff145cafc2369063684847abf06ec03a5ef16e8d95a7d66f2a4f062e001c9
+Commitment   : 3e8fd1ed52e0c8107f3265da13a42b323a492d334b6da23b0f1ef279b988a225
+Ephemeral-Metadata: 
+  url: http://topl.co
+  image: http://topl.co/image.png
+  number: 42.0
+Value        : 1000
+Datum        :
+Value      : 
 ```

@@ -12,7 +12,17 @@ permanentMetadata:
       type: string
     description:
       type: string
-ephemeralMetadata:
+ephemeralMetadataScheme:
+  type: object
+  properties:
+    url:
+      type: string
+    image:
+      type: string
+    someList:
+      - elt1: string
+      - elt2: string
+permanentMetadataScheme:
   type: object
   properties:
     url:
