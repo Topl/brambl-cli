@@ -9,7 +9,7 @@ The Brambl CLI is a command line interface to the Topl platform. It is a simple 
 
 Your system needs to have the following software installed.
 
-- A Java Virtual Machine (JVM).- The bifrost-daml-broker is a Java application, and thus Java is needed.
+- A Java Virtual Machine (JVM).- The brambl-cli is a Java application, and thus Java is needed.
 - [Coursier](https://get-coursier.io/docs/cli-installation).- A simple command line tool (CLI) to run Java applications without any setup. It is very easy to install.
 - Just go to the [Coursier installation page](https://get-coursier.io/docs/cli-installation) and follow the instructions for your operating system.
 - Once you have it, you can check it like this:
