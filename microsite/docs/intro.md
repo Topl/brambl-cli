@@ -1,47 +1,32 @@
 ---
 sidebar_position: 1
 ---
+# Getting Started
 
-# Tutorial Intro
+The Brambl CLI is a command line interface to the Topl platform. It is a simple tool to interact with the Topl platform.
 
-Let's discover **Docusaurus in less than 5 minutes**.
+## System Requirements
 
-## Getting Started
+Your system needs to have the following software installed.
 
-Get started by **creating a new site**.
-
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
-
-### What you'll need
-
-- [Node.js](https://nodejs.org/en/download/) version 16.14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
-
-## Generate a new site
-
-Generate a new Docusaurus site using the **classic template**.
-
-The classic template will automatically be added to your project after you run the command:
-
-```bash
-npm init docusaurus@latest my-website classic
+- A Java Virtual Machine (JVM).- The bifrost-daml-broker is a Java application, and thus Java is needed.
+- [Coursier](https://get-coursier.io/docs/cli-installation).- A simple command line tool (CLI) to run Java applications without any setup. It is very easy to install.
+- Just go to the [Coursier installation page](https://get-coursier.io/docs/cli-installation) and follow the instructions for your operating system.
+- Once you have it, you can check it like this:
+ 
+```shell
+$ cd csInstallPath
+$ ./cs version  
+2.1.6
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+## Using the CLI
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+- There is no need to clone a repository to use the CLI, you can launch a release version of the CLI using coursier directly.
+- You can check releases on [sonatype](https://s01.oss.sonatype.org/content/repositories/releases/co/topl/brambl-cli_2.13/) or at the [releases page](https://github.com/Topl/brambl-cli/releases) on Github.
+- Then just launch your coursier application
 
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
+```shell
+$ cd csInstallPath
+$ ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
 ```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.

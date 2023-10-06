@@ -18,7 +18,7 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro">
-            Brambl-CLI Tutorial - 5min ⏱️
+            Get Started with brambl-cli - 5min ⏱️
           </Link>
         </div>
       </div>
@@ -30,8 +30,8 @@ export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title={`Welcome to ${siteConfig.title}`}
+      description="The documentation hub for brambl-cli.">
       <HomepageHeader />
       <main>
         <HomepageFeatures />
