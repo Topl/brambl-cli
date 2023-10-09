@@ -54,7 +54,7 @@ trait CommonTxOperations
   ) = Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
     Main.run(
       List(
-        "simple-transaction",
+        "tx",
         "prove",
         "-w",
         c.password,
@@ -615,7 +615,7 @@ trait CommonTxOperations
 
   def broadcastSimpleTx(provedTx: String) = Main.run(
     List(
-      "simple-transaction",
+      "tx",
       "broadcast",
       "-n",
       "private",

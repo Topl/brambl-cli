@@ -427,6 +427,23 @@ object BramblCliParamsParserModule {
         .children(
           inputFileArg
         ),
+      cmd("broadcast")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.broadcast))
+        .text("Broadcast transaction")
+        .children(
+          ((hostPortNetwork ++ Seq(
+            inputFileArg.required()
+          ))): _*
+        ),
+      cmd("prove")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.prove))
+        .text("Prove transaction")
+        .children(
+          ((keyfileAndPassword ++ Seq(
+            outputArg.required(),
+            inputFileArg.required()
+          ))): _*
+        ),
       cmd("create")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")
@@ -571,23 +588,6 @@ object BramblCliParamsParserModule {
                   success
               )
             )): _*
-        ),
-      cmd("broadcast")
-        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.broadcast))
-        .text("Broadcast transaction")
-        .children(
-          ((hostPortNetwork ++ Seq(
-            inputFileArg.required()
-          ))): _*
-        ),
-      cmd("prove")
-        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.prove))
-        .text("Prove transaction")
-        .children(
-          ((keyfileAndPassword ++ Seq(
-            outputArg.required(),
-            inputFileArg.required()
-          ))): _*
         )
     )
 

@@ -12,35 +12,6 @@ trait SimpleTransactionModeModule
   def simpleTransactionSubcmds(
       validateParams: BramblCliParams
   ): IO[Either[String, String]] = validateParams.subcmd match {
-    case BramblCliSubCmd.broadcast =>
-      new SimpleTransactionController(
-        walletStateAlgebra(
-          validateParams.walletFile
-        ),
-        simplTransactionOps(
-          validateParams.walletFile,
-          validateParams.network.networkId,
-          validateParams.host,
-          validateParams.bifrostPort
-        )
-      ).broadcastSimpleTransactionFromParams(validateParams.someInputFile.get)
-    case BramblCliSubCmd.prove =>
-      new SimpleTransactionController(
-        walletStateAlgebra(
-          validateParams.walletFile
-        ),
-        simplTransactionOps(
-          validateParams.walletFile,
-          validateParams.network.networkId,
-          validateParams.host,
-          validateParams.bifrostPort
-        )
-      ).proveSimpleTransactionFromParams(
-        validateParams.someInputFile.get,
-        validateParams.someKeyFile.get,
-        validateParams.password,
-        validateParams.someOutputFile.get
-      )
     case BramblCliSubCmd.create =>
       new SimpleTransactionController(
         walletStateAlgebra(
