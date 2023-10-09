@@ -39,6 +39,14 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
+          lastVersion: 'current',
+          versions: {
+            current: {
+              label: 'current',
+              path: 'current',
+              badge: true,
+            },
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -50,30 +58,23 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'brambl-cli',
+        style: 'dark',
+        title: '',
         logo: {
           alt: 'Brambll CLI Logo',
-          src: 'img/bramblclilogo.svg',
+          src: 'img/logo.svg',
         },
         items: [
-          {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
-            position: 'left',
-            label: 'Documentation',
-          },
-          {to: '/docs/intro', label: 'Getting Started', position: 'left'},
-          {to: '/docs/category/how-tos', label: 'How Tos', position: 'left'},
-          {to: '/docs/category/cli-reference', label: 'CLI Reference', position: 'left'},
+          {to: '/docs/current/intro', label: 'Getting Started', position: 'left'},
+          {to: '/docs/current/category/how-tos', label: 'How Tos', position: 'left'},
+          {to: '/docs/current/category/cli-reference', label: 'CLI Reference', position: 'left'},
           {
             href: 'https://github.com/Topl/brambl-cli',
             label: 'GitHub',
             position: 'right',
           },
-        ],
+        ], 
       },
       footer: {
         style: 'dark',
@@ -83,15 +84,15 @@ const config = {
             items: [
               {
                 label: 'Getting Started',
-                to: '/docs/intro',
+                to: '/docs/current/intro',
               },
               {
                 label: 'How Tos',
-                to: '/docs/category/how-tos',
+                to: '/docs/current/category/how-tos',
               },
               {
                 label: 'CLI Reference',
-                to: '/docs/category/cli-reference',
+                to: '/docs/current/category/cli-reference',
               },
             ],
           },
