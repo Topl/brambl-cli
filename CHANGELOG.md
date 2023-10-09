@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for minting series tokens.
 - Support for minting asset tokens.
 - New command to inspect transactions on disk
+- Added full documentation in docusaurus. Available [here](https://topl.github.io/brambl-cli).
 
 ### Changed
 

@@ -8,7 +8,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
 
   test("Test valid transaction create using toAddress") {
     val args0 = List(
-      "simpletransaction",
+      "simple-transaction",
       "create",
       "-t",
       "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
@@ -34,7 +34,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
 
   test("Test noparty transactions require index") {
     val args0 = List(
-      "simpletransaction",
+      "simple-transaction",
       "create",
       "--from-party",
       "noparty",
@@ -64,7 +64,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
 
   test("Test from-party transactions require index") {
     val args0 = List(
-      "simpletransaction",
+      "simple-transaction",
       "create",
       "--from-party",
       "noparty",
@@ -96,7 +96,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
 
   test("Test valid transaction create using toParty and toContract") {
     val args0 = List(
-      "simpletransaction",
+      "simple-transaction",
       "create",
       "--to-party",
       "self",
@@ -126,7 +126,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
     "Test invalid transaction create with all toAddress, toParty and toContract"
   ) {
     val args0 = List(
-      "simpletransaction",
+      "simple-transaction",
       "create",
       "-t",
       "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
@@ -157,7 +157,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
     "Test invalid transaction create with no toAddress, toParty or toContract"
   ) {
     val args0 = List(
-      "simpletransaction",
+      "simple-transaction",
       "create",
       "-w",
       "test",
@@ -183,7 +183,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
     "Test invalid transaction create with only one of toParty or toContract"
   ) {
     val args0 = List(
-      "simpletransaction",
+      "simple-transaction",
       "create",
       "--to-contract",
       "default",

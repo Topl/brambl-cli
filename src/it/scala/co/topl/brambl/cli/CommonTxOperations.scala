@@ -54,7 +54,7 @@ trait CommonTxOperations
   ) = Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
     Main.run(
       List(
-        "simpletransaction",
+        "simple-transaction",
         "prove",
         "-w",
         c.password,
@@ -82,7 +82,7 @@ trait CommonTxOperations
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
-          "simpletransaction",
+          "simple-transaction",
           "create",
           "--from-party",
           fromParty, // "alice_bob_0",
@@ -147,7 +147,7 @@ trait CommonTxOperations
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
-          "simpletransaction",
+          "simple-transaction",
           "create",
           "--from-party",
           fromParty, // "alice_bob_0",
@@ -615,7 +615,7 @@ trait CommonTxOperations
 
   def broadcastSimpleTx(provedTx: String) = Main.run(
     List(
-      "simpletransaction",
+      "simple-transaction",
       "broadcast",
       "-n",
       "private",
