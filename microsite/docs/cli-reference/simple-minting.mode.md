@@ -14,7 +14,7 @@ Create minting transaction
   --from-state <value>     State from where we are sending the funds from
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --port <value>   Port Bifrost node. (mandatory)
   -k, --keyfile <value>    The key file.
   -w, --password <value>   Password for the encrypted key. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)

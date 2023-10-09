@@ -14,7 +14,7 @@ Command: tx create [options]
 Create transaction
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --port <value>   Port Bifrost node. (mandatory)
   -o, --output <value>     The output file. (mandatory)
   -i, --input <value>      The input file. (mandatory)
 ```

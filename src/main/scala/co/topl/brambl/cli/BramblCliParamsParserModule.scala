@@ -124,7 +124,7 @@ object BramblCliParamsParserModule {
         if (x.trim().isEmpty) failure("Host may not be empty") else success
       )
 
-  def portArg = opt[Int]("bifrost-port")
+  def portArg = opt[Int]("port")
     .action((x, c) => c.copy(bifrostPort = x))
     .text("Port Bifrost node. (mandatory)")
     .validate(x =>
