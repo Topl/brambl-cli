@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
-          cache-dependency-path: documentation/package-lock.json
+          cache-dependency-path: microsite/package-lock.json
 
       - name: Install dependencies
         run: cd microsite && npm ci
