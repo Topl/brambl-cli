@@ -35,6 +35,7 @@ the group, series and asset tokens are minted.
 - The subcomands `prove` and `broadcast` were moved from `simple-transaction`
 to `tx` mode.
 - The parameter `--bifrost-port` has been renamed to `--port` in all commands. 
+- Update dependency to BramblSc 2.0.0-alpha6.
 
 ### Removed
 
