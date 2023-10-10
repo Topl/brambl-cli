@@ -3,6 +3,7 @@ package co.topl.brambl.cli.controllers
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.impl.CommonParserError
+import co.topl.brambl.cli.impl.TransactionAlgebra
 import co.topl.brambl.cli.impl.TxParserAlgebra
 import co.topl.brambl.models.transaction.IoTransaction
 
@@ -10,7 +11,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 
 class TxController[F[_]: Sync](
-    txParserAlgebra: TxParserAlgebra[F]
+    txParserAlgebra: TxParserAlgebra[F],
+    transactionOps: TransactionAlgebra[F]
 ) {
 
   def inspectTransaction(
@@ -57,6 +59,49 @@ class TxController[F[_]: Sync](
       case Left(value: CommonParserError) => Left(value.description)
       case Left(e)                        => Left(e.getMessage())
     })
+  }
+  def broadcastSimpleTransactionFromParams(
+      provedTxFile: String
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    transactionOps
+      .broadcastSimpleTransactionFromParams(
+        provedTxFile
+      )
+      .map(_ match {
+        case Right(_)    => Right("Transaction broadcasted")
+        case Left(value) => Left(value.description)
+      })
+  }
+
+  def proveSimpleTransactionFromParams(
+      inputFile: String,
+      keyFile: String,
+      password: String,
+      outputFile: String
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    val inputRes = Resource
+      .make {
+        Sync[F].delay(new FileInputStream(inputFile))
+      }(fos => Sync[F].delay(fos.close()))
+
+    val outputRes = Resource
+      .make(
+        Sync[F].delay(new FileOutputStream(outputFile))
+      )(fos => Sync[F].delay(fos.close()))
+
+    transactionOps
+      .proveSimpleTransactionFromParams(
+        inputRes,
+        keyFile,
+        password,
+        outputRes
+      )
+      .map(_ match {
+        case Right(_)    => Right("Transaction successfully proved")
+        case Left(value) => Left(value.description)
+      })
   }
 
 }

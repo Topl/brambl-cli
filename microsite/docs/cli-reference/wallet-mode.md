@@ -11,7 +11,7 @@ Command: wallet sync
 Sync wallet
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --port <value>   Port Bifrost node. (mandatory)
   --party-name <value>     Name of the party. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)

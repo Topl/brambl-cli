@@ -28,5 +28,5 @@ $ ./cs version
 
 ```shell
 $ cd csInstallPath
-$ ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --bifrost-port 9084  
+$ ./cs launch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-alpha3 -- bifrost-query block-by-height --height 1 -h localhost --port 9084  
 ```

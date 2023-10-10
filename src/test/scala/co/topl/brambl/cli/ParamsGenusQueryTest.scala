@@ -17,7 +17,7 @@ class ParamsGenusQueryTest extends FunSuite {
       "genesis",
       "--from-state",
       "0",
-      "--bifrost-port",
+      "--port",
       "9084",
       "-h",
       "localhost",

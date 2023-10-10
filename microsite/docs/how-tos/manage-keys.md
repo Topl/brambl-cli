@@ -34,7 +34,7 @@ brambl-cli wallet import-vks --input-vks $BASE_VK_1,$BASE_VK_2 --party-name $PAR
 To sync the wallet run the following command:
 
 ```bash
-brambl-cli wallet sync --contract-name $CONTRACT_NAME --party-name $PARTY_NAME --walletdb $WALLET -n $NETWORK -h $HOST --bifrost-port $PORT --keyfile $KEYFILE -w $PASSWORD
+brambl-cli wallet sync --contract-name $CONTRACT_NAME --party-name $PARTY_NAME --walletdb $WALLET -n $NETWORK -h $HOST --port $PORT --keyfile $KEYFILE -w $PASSWORD
 ```
 
 This will sync the wallet for the party `$PARTY_NAME` and contract `$CONTRACT_NAME` with the bifrost node running on `$HOST` on port `$PORT`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. 

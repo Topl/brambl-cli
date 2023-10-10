@@ -7,7 +7,7 @@ sidebar_position: 12
 To create a transaction from a file run the following command:
 
 ```bash
-brambl-cli tx create -i $INPUT_FILE --bifrost-port 9084 -o $OUTPUT_FILE -n private -h localhost
+brambl-cli tx create -i $INPUT_FILE --port 9084 -o $OUTPUT_FILE -n private -h localhost
 ```
 
 This will create a transaction from the file `$INPUT_FILE` and store the result in the file `$OUTPUT_FILE`.

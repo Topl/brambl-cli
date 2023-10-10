@@ -26,7 +26,6 @@ trait SimpleTransactionAlgebraModule
         networkId,
         NetworkConstants.MAIN_LEDGER_ID
       ),
-      walletManagementUtils,
-      channelResource(host, bifrostPort)
+      walletManagementUtils
     )
 }

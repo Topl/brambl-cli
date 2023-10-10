@@ -14,7 +14,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "block-by-height",
       "--height",
       "1",
-      "--bifrost-port",
+      "--port",
       "9084",
       "-h",
       "localhost"
@@ -27,7 +27,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "block-by-id",
       "--block-id",
       "8PrjN9RtFK44nmR1dTo1jG2ggaRHaGNYhePEhnWY1TTM",
-      "--bifrost-port",
+      "--port",
       "9084",
       "-h",
       "localhost"
@@ -40,7 +40,7 @@ class ParamsBifrostQueryTest extends FunSuite {
       "transaction-by-id",
       "--transaction-id",
       "8PrjN9RtFK44nmR1dTo1jG2ggaRHaGNYhePEhnWY1TTM",
-      "--bifrost-port",
+      "--port",
       "9084",
       "-h",
       "localhost"

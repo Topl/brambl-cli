@@ -10,25 +10,13 @@ import co.topl.brambl.models.Indices
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.box.Lock
 import co.topl.brambl.utils.Encoding
-import co.topl.brambl.wallet.CredentiallerInterpreter
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
-import co.topl.node.services.BroadcastTransactionReq
-import co.topl.node.services.NodeRpcGrpc
-import io.grpc.ManagedChannel
 import quivr.models.KeyPair
 
-import java.io.FileInputStream
 import java.io.FileOutputStream
 
 trait SimpleTransactionAlgebra[F[_]] {
-
-  def proveSimpleTransactionFromParams(
-      inputRes: Resource[F, FileInputStream],
-      keyFile: String,
-      password: String,
-      outputRes: Resource[F, FileOutputStream]
-  ): F[Either[SimpleTransactionAlgebraError, Unit]]
 
   def createSimpleTransactionFromParams(
       keyfile: String,
@@ -43,11 +31,8 @@ trait SimpleTransactionAlgebra[F[_]] {
       outputFile: String
   ): F[Either[SimpleTransactionAlgebraError, Unit]]
 
-  def broadcastSimpleTransactionFromParams(
-      provedTxFile: String
-  ): F[Either[SimpleTransactionAlgebraError, Unit]]
-
 }
+
 object SimpleTransactionAlgebra {
 
   def make[F[_]: Sync](
@@ -55,99 +40,9 @@ object SimpleTransactionAlgebra {
       walletStateApi: WalletStateAlgebra[F],
       utxoAlgebra: GenusQueryAlgebra[F],
       transactionBuilderApi: TransactionBuilderApi[F],
-      walletManagementUtils: WalletManagementUtils[F],
-      channelResource: Resource[F, ManagedChannel]
+      walletManagementUtils: WalletManagementUtils[F]
   ) =
     new SimpleTransactionAlgebra[F] {
-
-      override def broadcastSimpleTransactionFromParams(
-          provedTxFile: String
-      ): F[Either[SimpleTransactionAlgebraError, Unit]] = {
-        import co.topl.brambl.models.transaction.IoTransaction
-        import cats.implicits._
-        val inputRes = Resource
-          .make {
-            Sync[F]
-              .delay(new FileInputStream(provedTxFile))
-          }(fos => Sync[F].delay(fos.close()))
-
-        (for {
-          provedTransaction <-
-            inputRes.use(fis =>
-              Sync[F]
-                .blocking(IoTransaction.parseFrom(fis))
-                .adaptErr({ case _ =>
-                  InvalidProtobufFile("Invalid protobuf file")
-                })
-            )
-          response <- channelResource.use { channel =>
-            (for {
-              blockingStub <- Sync[F]
-                .point(NodeRpcGrpc.blockingStub(channel))
-                .adaptErr(_ => CannotInitializeProtobuf("Cannot obtain stub"))
-              response <- Sync[F]
-                .blocking(
-                  blockingStub
-                    .broadcastTransaction(
-                      BroadcastTransactionReq(provedTransaction)
-                    )
-                )
-                .adaptErr { e =>
-                  e.printStackTrace()
-                  NetworkProblem("Problem connecting to node")
-                }
-            } yield response)
-          }
-        } yield response).attempt.map(e =>
-          e match {
-            case Right(_)                               => ().asRight
-            case Left(e: SimpleTransactionAlgebraError) => e.asLeft
-            case Left(e) => UnexpectedError(e.getMessage()).asLeft
-          }
-        )
-      }
-
-      override def proveSimpleTransactionFromParams(
-          inputRes: Resource[F, FileInputStream],
-          keyFile: String,
-          password: String,
-          outputRes: Resource[F, FileOutputStream]
-      ): F[Either[SimpleTransactionAlgebraError, Unit]] = {
-        import co.topl.brambl.models.transaction.IoTransaction
-        import cats.implicits._
-
-        (for {
-          ioTransaction <- inputRes.use(fis =>
-            Sync[F]
-              .blocking(IoTransaction.parseFrom(fis))
-              .adaptErr(_ => InvalidProtobufFile("Invalid protobuf file"))
-          )
-          keyPair <- walletManagementUtils
-            .loadKeys(
-              keyFile,
-              password
-            )
-          credentialer <- Sync[F]
-            .delay(
-              CredentiallerInterpreter
-                .make[F](walletApi, walletStateApi, keyPair)
-            )
-          provedTransaction <- credentialer.prove(ioTransaction)
-          _ <- outputRes.use(fos =>
-            Sync[F]
-              .delay(provedTransaction.writeTo(fos))
-              .adaptErr(_ =>
-                CannotSerializeProtobufFile("Cannot write to file")
-              )
-          )
-        } yield ()).attempt.map(e =>
-          e match {
-            case Right(_)                               => ().asRight
-            case Left(e: SimpleTransactionAlgebraError) => e.asLeft
-            case Left(e) => UnexpectedError(e.getMessage()).asLeft
-          }
-        )
-      }
 
       private def buildTransaction(
           lvlTxos: Seq[Txo],

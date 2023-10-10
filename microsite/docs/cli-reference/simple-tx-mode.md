@@ -5,7 +5,7 @@ sidebar_position: 7
 # Simple Transaction Mode
 
 ```  
-Command: simple-transaction [create|broadcast|prove] [options]
+Command: simple-transaction [create] [options]
 Simple transaction mode
 Command: simple-transaction create
 Create transaction
@@ -14,7 +14,7 @@ Create transaction
   --from-state <value>     State from where we are sending the funds from
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
+  --port <value>   Port Bifrost node. (mandatory)
   -k, --keyfile <value>    The key file.
   -w, --password <value>   Password for the encrypted key. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
@@ -23,17 +23,4 @@ Create transaction
   --to-party <value>       Party to send LVLs to. (mandatory if to is not provided)
   --to-contract <value>    Contract to send LVLs to. (mandatory if to is not provided)
   -a, --amount <value>     Amount to send simple transaction
-Command: simple-transaction broadcast
-Broadcast transaction
-  -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
-  -h, --host <value>       The host of the node. (mandatory)
-  --bifrost-port <value>   Port Bifrost node. (mandatory)
-  -i, --input <value>      The input file. (mandatory)
-Command: simple-transaction prove
-Prove transaction
-  -k, --keyfile <value>    The key file.
-  -w, --password <value>   Password for the encrypted key. (mandatory)
-  --walletdb <value>       Wallet DB file. (mandatory)
-  -o, --output <value>     The output file. (mandatory)
-  -i, --input <value>      The input file. (mandatory)
 ```
