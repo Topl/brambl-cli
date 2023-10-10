@@ -31,6 +31,10 @@ tokens and include all the information in the token.
 the group, series and asset tokens are minted.
 - The `simple-mint` command now uses the parameter `--mint-amount` instead of
 `--amount` to avoid confusion with the amount of the asset to mint.
+- The `simpletransaction` command has been renamed to `simple-transaction`.
+- The subcomands `prove` and `broadcast` were moved from `simple-transaction`
+to `tx` mode.
+- The parameter `--bifrost-port` has been renamed to `--port` in all commands. 
 
 ### Removed
 
