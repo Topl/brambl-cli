@@ -11,6 +11,12 @@ import co.topl.brambl.cli.modules.SimpleMintingAlgebraModule
 import co.topl.brambl.constants.NetworkConstants
 import munit.CatsEffectSuite
 import java.io.File
+import cats.Monad
+import co.topl.brambl.cli.mockbase.BaseWalletStateAlgebra
+import co.topl.brambl.models.Indices
+import co.topl.brambl.models.box.Lock
+import co.topl.brambl.models.box.Challenge
+import quivr.models.Proposition
 
 class SimpleMintingControllerSpec
     extends CatsEffectSuite
@@ -27,11 +33,81 @@ class SimpleMintingControllerSpec
     simpleMintingAlgebra()
   )
 
+  def makeWalletStateAlgebraMockWithAddress[F[_]: Monad] =
+    new BaseWalletStateAlgebra[F] {
+
+      override def getCurrentIndicesForFunds(
+          party: String,
+          contract: String,
+          state: Option[Int]
+      ): F[Option[Indices]] = Monad[F].pure(
+        Some(Indices(1, 1, 1))
+      )
+
+      override def getNextIndicesForFunds(
+          party: String,
+          contract: String
+      ): F[Option[Indices]] = Monad[F].pure(
+        Some(Indices(1, 1, 1))
+      )
+
+      override def updateWalletState(
+          lockPredicate: String,
+          lockAddress: String,
+          routine: Option[String],
+          vk: Option[String],
+          indices: Indices
+      ): F[Unit] = Monad[F].pure(())
+
+      override def getLock(
+          party: String,
+          contract: String,
+          nextState: Int
+      ): F[Option[Lock]] =
+        Monad[F].pure(
+          Some(
+            Lock().withPredicate(
+              Lock.Predicate.of(
+                Seq(
+                  Challenge.defaultInstance.withProposition(
+                    Challenge.Proposition.Revealed(
+                      Proposition.of(
+                        Proposition.Value.Locked(Proposition.Locked())
+                      )
+                    )
+                  )
+                ),
+                1
+              )
+            )
+          )
+        )
+
+      override def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
+        Monad[F].pure(
+          Some(
+            Lock.Predicate.of(
+              Seq(
+                Challenge.defaultInstance.withProposition(
+                  Challenge.Proposition.Revealed(
+                    Proposition.of(
+                      Proposition.Value.Locked(Proposition.Locked())
+                    )
+                  )
+                )
+              ),
+              1
+            )
+          )
+        )
+
+    }
+
   def simpleMintingAlgebra(
   ) = SimpleMintingAlgebra.make[IO](
     Sync[IO],
     walletApi,
-    walletStateAlgebra("src/test/resources/wallet.db"),
+    makeWalletStateAlgebraMockWithAddress[IO],
     walletManagementUtils,
     transactionBuilderApi(
       NetworkConstants.PRIVATE_NETWORK_ID,
