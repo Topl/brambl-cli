@@ -124,6 +124,7 @@ class ComplexTransactionWithFileTest
       for {
         _ <- IO.println("Create a wallet for bob")
         _ <- assertIO(createWallet().run(bobContext), ExitCode.Success)
+        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Add bob to alice's wallet")
         _ <- assertIO(
           addPartyToWallet("alice_bob_0").run(aliceContext),
