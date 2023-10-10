@@ -4,7 +4,7 @@ object Dependencies {
 
   lazy val toplOrg = "co.topl"
 
-  lazy val bramblVersion = "2.0.0-alpha5+1-ab025d5c-SNAPSHOT"
+  lazy val bramblVersion = "2.0.0-alpha6"
   val bramblSdk = toplOrg %% "brambl-sdk" % bramblVersion
 
   val monocleCore = "dev.optics" %% "monocle-core" % "3.2.0"
@@ -13,8 +13,6 @@ object Dependencies {
 
   val bramblCrypto = toplOrg %% "crypto" % bramblVersion
   val bramblServiceKit = toplOrg %% "service-kit" % bramblVersion
-
-  val bramblJitPack = "com.github.Topl" % "BramblSc" % "fc834fa"
 
   val grpcNetty =
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
