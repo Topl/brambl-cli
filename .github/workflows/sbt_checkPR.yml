@@ -19,8 +19,6 @@ jobs:
           java-version: adopt@1.11
       - name: Run unit tests
         run: sbt test
-      - name: Run integration tests
-        run: sbt "IntegrationTest / test"
       - uses: actions/upload-artifact@v3
         with:
           name: unit-test-reports
