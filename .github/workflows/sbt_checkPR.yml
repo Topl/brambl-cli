@@ -2,6 +2,7 @@ name: Check and Deploy
 on:
   push:
     branches: ['*']
+    tags: ["*"]
 
 jobs:
   unit-test:
