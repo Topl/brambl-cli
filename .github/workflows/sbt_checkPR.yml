@@ -8,7 +8,26 @@ on:
 jobs:
   unit-test:
     runs-on: ubuntu-20.04
-    # Service containers to run with `runner-job`
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v13
+        with:
+          java-version: adopt@1.11
+      - name: Run unit tests
+        run: sbt test
+      - name: Run integration tests
+        run: sbt "IntegrationTest / test"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-reports
+          path: target/test-reports/
+  integration-test:
+    runs-on: ubuntu-20.04
+    needs: unit-test
     services:
       # Label used to access the service container
       bifrost:
@@ -26,10 +45,12 @@ jobs:
         uses: olafurpg/setup-scala@v13
         with:
           java-version: adopt@1.11
-      - name: Run unit tests
-        run: sbt test
       - name: Run integration tests
         run: sbt "IntegrationTest / test"
+      - uses: actions/download-artifact@v3
+        with:
+          path: target/test-reports/
+          name: unit-test-reports
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: success()
