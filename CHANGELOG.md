@@ -10,9 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improve `sbt_checkPR` to be split in several jobs.
+- Improve `sbt_checkPR` to be split in several jobs instead of one workflow per 
+task. This is done to have dependencies among the tasks and to avoid running
+all the tasks when only one is needed.
+- Update bifrost node for integration tests to `bifrost-node:2.0.0-alpha9`.
 
-## [v2.0.0-alpha4] - 2023-10-10 (this date should be changed on release)
+## [v2.0.0-alpha4] - 2023-10-10
 ### Added
 
 - Dependency to monocle optics library.

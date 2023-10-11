@@ -30,7 +30,7 @@ jobs:
       # Label used to access the service container
       bifrost:
         # Docker Hub image
-        image: docker.io/toplprotocol/bifrost-node:2.0.0-alpha8
+        image: docker.io/toplprotocol/bifrost-node:2.0.0-alpha9
         #
         ports:
           - 9084:9084 
@@ -74,6 +74,7 @@ jobs:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
   deploy-docs:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
