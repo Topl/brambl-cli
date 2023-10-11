@@ -1,12 +1,11 @@
-name: Check PR
+name: Check and Deploy
 on:
-  pull_request:
-    branches: ['*']
   push:
     branches: ['*']
 
 jobs:
   unit-test:
+    name: Run Unit Tests
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
@@ -24,6 +23,7 @@ jobs:
           name: unit-test-reports
           path: target/test-reports/
   integration-test:
+    name: Run Integration Tests
     runs-on: ubuntu-20.04
     needs: unit-test
     services:
@@ -57,6 +57,7 @@ jobs:
             target/test-reports/**/*.xml
             target/it-reports/**/*.xml
   publish:
+    name: Deploy to Maven Central
     runs-on: ubuntu-20.04
     needs: [ unit-test, integration-test ]
     steps:
