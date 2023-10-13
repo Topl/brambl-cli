@@ -289,7 +289,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
         .text("Add a new parties")
         .children(
-          hostPortNetwork ++ Seq(
+          Seq(
             walletDbArg,
             partyNameArg
           ): _*
