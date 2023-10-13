@@ -9,6 +9,7 @@ import java.io.File
 import java.nio.file.Paths
 import co.topl.brambl.models.GroupId
 import com.google.protobuf.ByteString
+import co.topl.brambl.models.SeriesId
 
 object BramblCliParamsParserModule {
 
@@ -22,10 +23,16 @@ object BramblCliParamsParserModule {
   implicit val networkRead: scopt.Read[NetworkIdentifiers] =
     scopt.Read.reads(NetworkIdentifiers.fromString(_).get)
 
-  implicit val arrayByteRead: scopt.Read[GroupId] =
+  implicit val groupIdRead: scopt.Read[GroupId] =
     scopt.Read.reads { x =>
       val array = Encoding.decodeFromHex(x).toOption.get
       GroupId(ByteString.copyFrom(array))
+    }
+
+  implicit val seriesIdRead: scopt.Read[SeriesId] =
+    scopt.Read.reads { x =>
+      val array = Encoding.decodeFromHex(x).toOption.get
+      SeriesId(ByteString.copyFrom(array))
     }
 
   val inputFileArg = opt[String]('i', "input")
@@ -159,6 +166,10 @@ object BramblCliParamsParserModule {
   val groupId = opt[Option[GroupId]]("group-id")
     .action((x, c) => c.copy(someGroupId = x))
     .text("Group id.")
+
+  val seriesId = opt[Option[SeriesId]]("series-id")
+    .action((x, c) => c.copy(someSeriesId = x))
+    .text("Series id.")
 
   val hostPortNetwork =
     Seq(
@@ -615,6 +626,7 @@ object BramblCliParamsParserModule {
               amountArg,
               transferTokenType,
               groupId,
+              seriesId,
               checkConfig { c =>
                 if (
                   c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create

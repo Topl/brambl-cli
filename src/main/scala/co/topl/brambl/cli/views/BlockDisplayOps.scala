@@ -141,6 +141,7 @@ Value      : ${display(txo.transactionOutput.value.value)}
     case FungibilityType.GROUP_AND_SERIES => "group-and-series"
     case FungibilityType.GROUP            => "group"
     case FungibilityType.SERIES           => "series"
+    case _ => throw new Exception("Unknown fungibility type") // this should not happen
   }
 
   def quantityDescriptorToString(qt: QuantityDescriptorType) = qt match {
@@ -148,25 +149,32 @@ Value      : ${display(txo.transactionOutput.value.value)}
     case QuantityDescriptorType.ACCUMULATOR  => "accumulator"
     case QuantityDescriptorType.FRACTIONABLE => "fractionable"
     case QuantityDescriptorType.IMMUTABLE    => "immutable"
+    case _ => throw new Exception("Unknown quantity descriptor type") // should not happen
   }
 
   def displayType(txoValue: Value.Value) =
     if (txoValue.isLvl) "LVL"
-    else if (txoValue.isGroup) s"Group Constructor\n" +
-      s"Id           : ${Encoding.encodeToHex(txoValue.group.get.groupId.value.toByteArray())}\n" +
-      s"Fixed-Series : ${txoValue.group.get.fixedSeries.map(x => Encoding.encodeToHex(x.value.toByteArray())).getOrElse("NO FIXED SERIES")}"
-    else if (txoValue.isSeries) s"Series Constructor\n" +
-      s"Id           : ${Encoding.encodeToHex(txoValue.series.get.seriesId.value.toByteArray())}\n" +
-      s"Fungibility  : ${fungibilityToString(txoValue.series.get.fungibility)}\n" +
-      s"Token-Supply : ${txoValue.series.get.tokenSupply.getOrElse("UNLIMITED")}\n" +
-      s"Quant-Descr. : ${quantityDescriptorToString(txoValue.series.get.quantityDescriptor)}"
+    else if (txoValue.isGroup)
+      s"Group Constructor\n" +
+        s"Id           : ${Encoding.encodeToHex(txoValue.group.get.groupId.value.toByteArray())}\n" +
+        s"Fixed-Series : ${txoValue.group.get.fixedSeries
+            .map(x => Encoding.encodeToHex(x.value.toByteArray()))
+            .getOrElse("NO FIXED SERIES")}"
+    else if (txoValue.isSeries)
+      s"Series Constructor\n" +
+        s"Id           : ${Encoding.encodeToHex(txoValue.series.get.seriesId.value.toByteArray())}\n" +
+        s"Fungibility  : ${fungibilityToString(txoValue.series.get.fungibility)}\n" +
+        s"Token-Supply : ${txoValue.series.get.tokenSupply.getOrElse("UNLIMITED")}\n" +
+        s"Quant-Descr. : ${quantityDescriptorToString(txoValue.series.get.quantityDescriptor)}"
     else if (txoValue.isAsset)
       s"Asset\n" +
         s"GroupId      : ${Encoding.encodeToHex(txoValue.asset.get.groupId.get.value.toByteArray())}\n" +
-        s"SeriesId     : ${Encoding.encodeToHex(txoValue.asset.get.seriesId.get.value.toByteArray())}\n" + 
-      s"Commitment   : ${txoValue.asset.get.commitment.map(x => Encoding.encodeToHex(x.toByteArray())).getOrElse("No commitment")}\n" +
-      s"Ephemeral-Metadata: \n" +
-      s"${txoValue.asset.get.ephemeralMetadata.map(x => displayFirst(x, 2)).getOrElse("No ephemeral metadata")}"
+        s"SeriesId     : ${Encoding.encodeToHex(txoValue.asset.get.seriesId.get.value.toByteArray())}\n" +
+        s"Commitment   : ${txoValue.asset.get.commitment
+            .map(x => Encoding.encodeToHex(x.toByteArray()))
+            .getOrElse("No commitment")}\n" +
+        s"Ephemeral-Metadata: \n" +
+        s"${txoValue.asset.get.ephemeralMetadata.map(x => displayFirst(x, 2)).getOrElse("No ephemeral metadata")}"
     else if (txoValue.isTopl) "TOPL"
     else "Unknown txo type"
 
@@ -174,59 +182,85 @@ Value      : ${display(txo.transactionOutput.value.value)}
     s"""
 Label: ${groupPolicy.event.label}
 Regitratioin-Utxo: ${display(groupPolicy.event.registrationUtxo)}
-Fixed-Series: ${groupPolicy.event.fixedSeries.map(x => Encoding.encodeToHex(x.value.toByteArray())).getOrElse("No fixed series")}  
+Fixed-Series: ${groupPolicy.event.fixedSeries
+        .map(x => Encoding.encodeToHex(x.value.toByteArray()))
+        .getOrElse("No fixed series")}  
     """
 
-    def display(mintingStatement: AssetMintingStatement): String = 
-      s"""
+  def display(mintingStatement: AssetMintingStatement): String =
+    s"""
 Group-Token-Utxo: ${display(mintingStatement.groupTokenUtxo)}
 Series-Token-Utxo: ${display(mintingStatement.seriesTokenUtxo)}
 Quantity: ${BigInt(mintingStatement.quantity.value.toByteArray()).toString()}
 Permanent-Metadata:
-${mintingStatement.permanentMetadata.map(displayFirst(_, 2)).getOrElse("No permanent metadata")}
+${mintingStatement.permanentMetadata
+        .map(displayFirst(_, 2))
+        .getOrElse("No permanent metadata")}
       """
 
-    def display(seriesPolicy: Datum.SeriesPolicy): String = 
+  def display(seriesPolicy: Datum.SeriesPolicy): String =
     s"""
 Label: ${seriesPolicy.event.label}
 Regitratioin-Utxo: ${display(seriesPolicy.event.registrationUtxo)}
 Fungibility: ${fungibilityToString(seriesPolicy.event.fungibility)}
-Quantity-Descriptor: ${quantityDescriptorToString(seriesPolicy.event.quantityDescriptor)}
+Quantity-Descriptor: ${quantityDescriptorToString(
+        seriesPolicy.event.quantityDescriptor
+      )}
 Token-Supply: ${seriesPolicy.event.tokenSupply.getOrElse("UNLIMITED")}
 Permanent-Metadata-Scheme:
-${seriesPolicy.event.permanentMetadataScheme.map(displayFirst(_, 2)).getOrElse("No permanent metadata")}
+${seriesPolicy.event.permanentMetadataScheme
+        .map(displayFirst(_, 2))
+        .getOrElse("No permanent metadata")}
 Ephemeral-Metadata-Scheme:
-${seriesPolicy.event.ephemeralMetadataScheme.map(displayFirst(_, 2)).getOrElse("No ephemeral metadata")}
+${seriesPolicy.event.ephemeralMetadataScheme
+        .map(displayFirst(_, 2))
+        .getOrElse("No ephemeral metadata")}
     """
 
-    def display(v: protobuf.struct.Value, indent: Int): String = v match {
-      case struct.Value(protobuf.struct.Value.Kind.NullValue(_), _) => "null"
-      case struct.Value(protobuf.struct.Value.Kind.Empty, _) => "empty"
-      case struct.Value(protobuf.struct.Value.Kind.BoolValue(b), _) => b.toString()
-      case struct.Value(protobuf.struct.Value.Kind.NumberValue(n), _) => n.toString()
-      case struct.Value(protobuf.struct.Value.Kind.StringValue(s), _) => s
-      case struct.Value(protobuf.struct.Value.Kind.ListValue(l), _) =>  l.values.map(s =>" "*indent + s"- ${display(s, 0)}").mkString("\n")
-      case struct.Value(protobuf.struct.Value.Kind.StructValue(s), _) => " " * indent + display(s, indent)
-    }
-    def displayFirst(struct: Struct, indent: Int): String = {
-      " " * indent + struct.fields.view.keys.map({key => 
+  def display(v: protobuf.struct.Value, indent: Int): String = v match {
+    case struct.Value(protobuf.struct.Value.Kind.NullValue(_), _) => "null"
+    case struct.Value(protobuf.struct.Value.Kind.Empty, _)        => "empty"
+    case struct.Value(protobuf.struct.Value.Kind.BoolValue(b), _) =>
+      b.toString()
+    case struct.Value(protobuf.struct.Value.Kind.NumberValue(n), _) =>
+      n.toString()
+    case struct.Value(protobuf.struct.Value.Kind.StringValue(s), _) => s
+    case struct.Value(protobuf.struct.Value.Kind.ListValue(l), _) =>
+      l.values.map(s => " " * indent + s"- ${display(s, 0)}").mkString("\n")
+    case struct.Value(protobuf.struct.Value.Kind.StructValue(s), _) =>
+      " " * indent + display(s, indent)
+  }
+  def displayFirst(struct: Struct, indent: Int): String = {
+    " " * indent + struct.fields.view.keys
+      .map({ key =>
         struct.fields.get(key).get.kind match {
-          case protobuf.struct.Value.Kind.StructValue(s) => s"$key:\n" + " "*(indent + 2) + s"${display(s, indent + 2)}"
-          case protobuf.struct.Value.Kind.ListValue(l) => s"$key:\n" + l.values.map(s =>" "*(indent + 2) + s"-${display(s, 0)}").mkString("\n")
+          case protobuf.struct.Value.Kind.StructValue(s) =>
+            s"$key:\n" + " " * (indent + 2) + s"${display(s, indent + 2)}"
+          case protobuf.struct.Value.Kind.ListValue(l) =>
+            s"$key:\n" + l.values
+              .map(s => " " * (indent + 2) + s"-${display(s, 0)}")
+              .mkString("\n")
           case _ => s"$key: ${display(struct.fields.get(key).get, indent)}"
         }
-      }).mkString("\n" + " " * indent)
-    }
-    def display(struct: Struct, indent: Int): String = {
-      struct.fields.view.keys.map({key => 
+      })
+      .mkString("\n" + " " * indent)
+  }
+  def display(struct: Struct, indent: Int): String = {
+    struct.fields.view.keys
+      .map({ key =>
         struct.fields.get(key).get.kind match {
-          case protobuf.struct.Value.Kind.StructValue(s) => s"$key:\n" + " "*(indent + 2) + s"${display(s, indent + 2)}"
-          case protobuf.struct.Value.Kind.ListValue(l) => s"$key:\n" + l.values.map(s =>" "*(indent + 2) + s"-${display(s, 0)}").mkString("\n")
+          case protobuf.struct.Value.Kind.StructValue(s) =>
+            s"$key:\n" + " " * (indent + 2) + s"${display(s, indent + 2)}"
+          case protobuf.struct.Value.Kind.ListValue(l) =>
+            s"$key:\n" + l.values
+              .map(s => " " * (indent + 2) + s"-${display(s, 0)}")
+              .mkString("\n")
           case _ => s"$key: ${display(struct.fields.get(key).get, indent)}"
         }
-      }).mkString("\n" + " " * indent)
-    }
-    
+      })
+      .mkString("\n" + " " * indent)
+  }
+
   def display(txoValue: Value.Value) =
     if (txoValue.isLvl)
       BigInt(txoValue.lvl.get.quantity.value.toByteArray()).toString()
