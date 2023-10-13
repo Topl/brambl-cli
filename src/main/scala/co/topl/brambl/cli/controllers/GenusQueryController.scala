@@ -36,6 +36,10 @@ class GenusQueryController[F[_]: Monad](
                 lens.get.isTopl
               else if (tokenType == TokenType.asset)
                 lens.get.isAsset
+              else if (tokenType == TokenType.series)
+                lens.get.isSeries
+              else if (tokenType == TokenType.group)
+                lens.get.isGroup
               else
                 true
             })

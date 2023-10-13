@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support to transfer group tokens using the `simple-transaction` command.
+- Support to transfer series tokens using the `simple-transaction` command.
 
 ### Changed
 
@@ -20,8 +21,11 @@ all the tasks when only one is needed.
 - Update bifrost node for integration tests to `bifrost-node:2.0.0-alpha9`.
 - Modified the `simple-transaction` command so that it now requires two extra parameters: `--fee` and `--transfer-token`. We also add
 an optional parameter `--group-id` to specify the group token to transfer.
+- Modified the `simple-transaction` command so that it allows to specify the series token to transfer using the parameter `--series-id`.
 - Made `--host` and `--port` required. Each time these parameters appear they are required. Some commands presented strange behaviours
 because we allowed them to be optional.
+- Updated documentation for `simple-transaction` command to include the new parameters.
+- Updated reference documentation for the CLI.
 
 ## [v2.0.0-alpha4] - 2023-10-10
 ### Added

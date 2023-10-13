@@ -633,9 +633,9 @@ object BramblCliParamsParserModule {
                 )
                   (c.toAddress, c.someToParty, c.someToContract) match {
                     case (Some(_), None, None) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId)
+                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
                     case (None, Some(_), Some(_)) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId)
+                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
                     case _ =>
                       failure(
                         "Exactly toParty and toContract together or only toAddress must be specified"
@@ -650,16 +650,19 @@ object BramblCliParamsParserModule {
 
   private def checkTokenAndId(
       tokenType: TokenType.Value,
-      groupId: Option[GroupId]
+      groupId: Option[GroupId],
+      seriesId: Option[SeriesId]
   ) = {
-    (tokenType, groupId) match {
-      case (TokenType.group, Some(_)) =>
+    (tokenType, groupId, seriesId) match {
+      case (TokenType.group, Some(_), None) =>
         success
-      case (TokenType.lvl, None) =>
+      case (TokenType.series, None, Some(_)) =>
+        success
+      case (TokenType.lvl, None, None) =>
         success
       case _ =>
         failure(
-          "Exactly group and groupId together or only lvl must be specified"
+          "Exactly group and groupId together, or series and seriesId, or only lvl must be specified"
         )
     }
   }

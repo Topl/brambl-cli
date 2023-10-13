@@ -80,7 +80,8 @@ trait CommonTxOperations
       fee: Int,
       outputFile: String,
       token: TokenType.Value,
-      someGroupId: Option[String]
+      someGroupId: Option[String],
+      someSeriesId: Option[String]
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -121,6 +122,9 @@ trait CommonTxOperations
           ++ someGroupId
             .map(s => List("--group-id", s.toString()))
             .getOrElse(List.empty)
+          ++ someSeriesId
+            .map(s => List("--series-id", s.toString()))
+            .getOrElse(List.empty)
       )
     )
 
@@ -155,7 +159,8 @@ trait CommonTxOperations
       fee: Int,
       outputFile: String,
       token: TokenType.Value,
-      someGroupId: Option[String]
+      someGroupId: Option[String],
+      someSeriesId: Option[String]
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode] { (c: WalletKeyConfig) =>
       Main.run(
@@ -193,6 +198,9 @@ trait CommonTxOperations
           .getOrElse(List.empty)
           ++ someGroupId
             .map(s => List("--group-id", s.toString()))
+            .getOrElse(List.empty)
+          ++ someSeriesId
+            .map(s => List("--series-id", s.toString()))
             .getOrElse(List.empty)
       )
     }

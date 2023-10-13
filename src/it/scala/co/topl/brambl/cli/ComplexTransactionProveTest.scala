@@ -88,6 +88,7 @@ class ComplexTransactionProveTest
             BASE_FEE,
             ALICE_SECOND_TX_RAW,
             TokenType.lvl,
+            None,
             None
           ).run(aliceContext),
           ExitCode.Success
@@ -178,6 +179,7 @@ class ComplexTransactionProveTest
             BASE_FEE,
             ALICE_THIRD_TX_RAW,
             TokenType.lvl,
+            None,
             None
           ).run(aliceContext),
           ExitCode.Success
@@ -238,6 +240,7 @@ class ComplexTransactionProveTest
             BASE_FEE,
             BOB_SECOND_TX_RAW,
             TokenType.lvl,
+            None,
             None
           ).run(bobContext),
           ExitCode.Success
@@ -308,6 +311,7 @@ class ComplexTransactionProveTest
             BASE_FEE,
             BOB_THIRD_TX_RAW,
             TokenType.lvl,
+            None,
             None
           ).run(bobContext),
           ExitCode.Success

@@ -47,6 +47,7 @@ trait IntegrationTearDown
           BASE_FEE,
           txFileLocation("raw"),
           TokenType.lvl,
+          None,
           None
         ).run(walletKeyConfig),
         ExitCode.Success

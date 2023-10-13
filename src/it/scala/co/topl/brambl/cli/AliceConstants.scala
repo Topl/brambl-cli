@@ -8,9 +8,13 @@ trait AliceConstants extends BaseConstants {
 
   val ALICE_PASSWORD = "test"
 
-  val ALICE_TRANSFER_GROUP_TX_RAW = s"$TMP_DIR/bob_transfer_group_tx.pbuf"
+  val ALICE_TRANSFER_GROUP_TX_RAW = s"$TMP_DIR/alice_transfer_group_tx.pbuf"
 
-  val ALICE_TRANSFER_GROUP_TX_PROVED = s"$TMP_DIR/bob_transfer_group_tx_proved.pbuf"
+  val ALICE_TRANSFER_GROUP_TX_PROVED = s"$TMP_DIR/alice_transfer_group_tx_proved.pbuf"
+
+  val ALICE_TRANSFER_SERIES_TX_RAW = s"$TMP_DIR/alice_transfer_series_tx.pbuf"
+
+  val ALICE_TRANSFER_SERIES_TX_PROVED = s"$TMP_DIR/alice_transfer_series_tx_proved.pbuf"
 
   val ALICE_FIRST_TX_RAW = s"$TMP_DIR/alice_first_tx.pbuf"
 
