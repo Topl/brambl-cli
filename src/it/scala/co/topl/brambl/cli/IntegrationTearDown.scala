@@ -14,25 +14,28 @@ import munit.CatsEffectAssertions.assertIO
 import scala.concurrent.duration.DurationInt
 
 trait IntegrationTearDown
-  extends BaseConstants
-  with GenusQueryAlgebraModule
-  with WalletStateAlgebraModule
-  with TransactionBuilderApiModule
-  with CommonTxOperations {
+    extends BaseConstants
+    with GenusQueryAlgebraModule
+    with WalletStateAlgebraModule
+    with TransactionBuilderApiModule
+    with CommonTxOperations {
 
   val TO_PARTY = "noparty"
   val TO_CONTRACT = "genesis"
   val FROM_PARTY = "self"
   val FROM_CONTRACT = "default"
 
-  private def txFileLocation(label: String): String = s"$TMP_DIR/teardown_$label.pbuf"
+  private def txFileLocation(label: String): String =
+    s"$TMP_DIR/teardown_$label.pbuf"
 
   def tearDown(walletKeyConfig: WalletKeyConfig): IO[ExitCode] = {
     val genus = genusQueryAlgebra(HOST, BIFROST_PORT)
     val walletState = walletStateAlgebra(walletKeyConfig.walletFile)
     for {
       changeAmount <- getChangeAmount(genus, walletState)
-      _ <- IO.println(s"Creating teardown transaction: Moving change ($changeAmount LVLs) back to genesis")
+      _ <- IO.println(
+        s"Creating teardown transaction: Moving change ($changeAmount LVLs) back to genesis"
+      )
       _ <- assertIO(
         createSimpleTransactionToCartesianIdx(
           FROM_PARTY,
@@ -40,8 +43,11 @@ trait IntegrationTearDown
           None,
           TO_PARTY,
           TO_CONTRACT,
-          changeAmount.toInt,
-          txFileLocation("raw")
+          changeAmount.toInt - BASE_FEE,
+          BASE_FEE,
+          txFileLocation("raw"),
+          TokenType.lvl,
+          None
         ).run(walletKeyConfig),
         ExitCode.Success
       )
@@ -64,7 +70,8 @@ trait IntegrationTearDown
       _ <- IO.println(s"Check $TO_PARTY & $TO_CONTRACT Transaction on the node")
       res <- IO.asyncForIO.timeout(
         (for {
-          queryRes <- queryAccount(TO_PARTY, TO_CONTRACT, Some(1)).run(walletKeyConfig)
+          queryRes <- queryAccount(TO_PARTY, TO_CONTRACT, Some(1))
+            .run(walletKeyConfig)
           _ <- IO.sleep(5.seconds)
         } yield queryRes)
           .iterateUntil(_ == ExitCode.Success),
@@ -74,12 +81,14 @@ trait IntegrationTearDown
   }
 
   private def getChangeAmount(
-    genus: GenusQueryAlgebra[IO],
-    walletState: WalletStateAlgebra[IO]
+      genus: GenusQueryAlgebra[IO],
+      walletState: WalletStateAlgebra[IO]
   ): IO[BigInt] = for {
     address <- walletState.getCurrentAddress
     txos <- genus.queryUtxo(AddressCodecs.decodeAddress(address).toOption.get)
-    lvlTxos <- Sync[IO].delay(txos.filter(_.transactionOutput.value.value.isLvl))
+    lvlTxos <- Sync[IO].delay(
+      txos.filter(_.transactionOutput.value.value.isLvl)
+    )
   } yield lvlTxos
     .foldLeft(BigInt(0))((acc, x) =>
       acc + x.transactionOutput.value.value.lvl

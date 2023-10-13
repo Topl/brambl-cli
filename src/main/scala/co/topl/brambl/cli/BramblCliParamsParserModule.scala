@@ -7,6 +7,8 @@ import scopt.OParser
 
 import java.io.File
 import java.nio.file.Paths
+import co.topl.brambl.models.GroupId
+import com.google.protobuf.ByteString
 
 object BramblCliParamsParserModule {
 
@@ -20,6 +22,12 @@ object BramblCliParamsParserModule {
   implicit val networkRead: scopt.Read[NetworkIdentifiers] =
     scopt.Read.reads(NetworkIdentifiers.fromString(_).get)
 
+  implicit val arrayByteRead: scopt.Read[GroupId] =
+    scopt.Read.reads { x =>
+      val array = Encoding.decodeFromHex(x).toOption.get
+      GroupId(ByteString.copyFrom(array))
+    }
+
   val inputFileArg = opt[String]('i', "input")
     .action((x, c) => c.copy(someInputFile = Some(x)))
     .text("The input file. (mandatory)")
@@ -29,6 +37,15 @@ object BramblCliParamsParserModule {
         failure(s"Input file $x does not exist")
       else success
     )
+
+  val feeArg = opt[Long]("fee")
+    .action((x, c) => c.copy(fee = x))
+    .text("Fee paid for the transaction")
+    .validate(x =>
+      if (x > 0) success
+      else failure("Amount must be greater than 0")
+    )
+    .required()
 
   val passphraseArg =
     opt[String]('P', "passphrase")
@@ -136,6 +153,11 @@ object BramblCliParamsParserModule {
     hostArg,
     portArg
   )
+
+  val groupId = opt[Option[GroupId]]("group-id")
+    .action((x, c) => c.copy(someGroupId = x))
+    .text("Group id.")
+
   val hostPortNetwork =
     Seq(
       networkArg,
@@ -154,6 +176,31 @@ object BramblCliParamsParserModule {
     .text(
       "The token type. The valid token types are 'asset', 'group', 'series'."
     )
+    .validate(x =>
+      if (x == TokenType.lvl || x == TokenType.topl || x == TokenType.all) {
+        failure(
+          "Invalid token type, supported types are asset, group and series"
+        )
+      } else {
+        success
+      }
+    )
+
+  val transferTokenType = opt[TokenType.Value]("transfer-token")
+    .action((x, c) => c.copy(tokenType = x))
+    .text(
+      "The token type. The valid token types are 'lvl', 'asset', 'group', 'series'."
+    )
+    .validate(x =>
+      if (x == TokenType.topl || x == TokenType.all) {
+        failure(
+          "Invalid token type, supported types are lvl, asset, group and series"
+        )
+      } else {
+        success
+      }
+    )
+    .required()
 
   val coordinates = {
     import builder._
@@ -493,14 +540,7 @@ object BramblCliParamsParserModule {
           )) ++
             Seq(
               mintAmountArg,
-              opt[Long]("fee")
-                .action((x, c) => c.copy(fee = x))
-                .text("Fee paid for the transaction")
-                .validate(x =>
-                  if (x > 0) success
-                  else failure("Amount must be greater than 0")
-                )
-                .required(),
+              feeArg,
               mintTokenType.required(),
               checkConfig(c =>
                 if (
@@ -554,6 +594,7 @@ object BramblCliParamsParserModule {
             outputArg.required()
           )) ++
             Seq(
+              feeArg,
               opt[Option[LockAddress]]('t', "to")
                 .action((x, c) => c.copy(toAddress = x))
                 .text(
@@ -570,15 +611,17 @@ object BramblCliParamsParserModule {
                   "Contract to send LVLs to. (mandatory if to is not provided)"
                 ),
               amountArg,
-              checkConfig(c =>
+              transferTokenType,
+              groupId,
+              checkConfig { c =>
                 if (
                   c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
                 )
                   (c.toAddress, c.someToParty, c.someToContract) match {
                     case (Some(_), None, None) =>
-                      success
+                      checkTokenAndId(c.tokenType, c.someGroupId)
                     case (None, Some(_), Some(_)) =>
-                      success
+                      checkTokenAndId(c.tokenType, c.someGroupId)
                     case _ =>
                       failure(
                         "Exactly toParty and toContract together or only toAddress must be specified"
@@ -586,10 +629,26 @@ object BramblCliParamsParserModule {
                   }
                 else
                   success
-              )
+              }
             )): _*
         )
     )
+
+  private def checkTokenAndId(
+      tokenType: TokenType.Value,
+      groupId: Option[GroupId]
+  ) = {
+    (tokenType, groupId) match {
+      case (TokenType.group, Some(_)) =>
+        success
+      case (TokenType.lvl, None) =>
+        success
+      case _ =>
+        failure(
+          "Exactly group and groupId together or only lvl must be specified"
+        )
+    }
+  }
 
   val paramParser = {
     OParser.sequence(

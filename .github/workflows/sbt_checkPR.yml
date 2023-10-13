@@ -76,6 +76,20 @@ jobs:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      - uses: chrnorm/deployment-action@v2
+        name: Create GitHub deployment (production)
+        id: deployment-prod
+        if: github.ref == 'refs/heads/master'
+        with:
+          token: '${{ github.token }}'
+          environment: production
+      - uses: chrnorm/deployment-action@v2
+        name: Create GitHub deployment (production)
+        id: deployment-snap
+        if: github.ref != 'refs/heads/master'
+        with:
+          token: '${{ github.token }}'
+          environment: snapshot
   deploy-docs:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest

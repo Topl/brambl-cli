@@ -8,12 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ## [v2.0.0-alpha5] - 2023-mm-dd (this date should be changed on release)
 
+### Added
+
+- Support to transfer group tokens using the `simple-transaction` command.
+
 ### Changed
 
 - Improve `sbt_checkPR` to be split in several jobs instead of one workflow per 
 task. This is done to have dependencies among the tasks and to avoid running
 all the tasks when only one is needed.
 - Update bifrost node for integration tests to `bifrost-node:2.0.0-alpha9`.
+- Modified the `simple-transaction` command so that it now requires two extra parameters: `--fee` and `--transfer-token`. We also add
+an optional parameter `--group-id` to specify the group token to transfer.
 
 ## [v2.0.0-alpha4] - 2023-10-10
 ### Added
