@@ -140,6 +140,7 @@ object BramblCliParamsParserModule {
       .validate(x =>
         if (x.trim().isEmpty) failure("Host may not be empty") else success
       )
+      .required()
 
   def portArg = opt[Int]("port")
     .action((x, c) => c.copy(bifrostPort = x))
@@ -148,6 +149,7 @@ object BramblCliParamsParserModule {
       if (x >= 0 && x <= 65536) success
       else failure("Port must be between 0 and 65536")
     )
+    .required()
 
   val hostPort = Seq(
     hostArg,

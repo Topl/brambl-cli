@@ -77,18 +77,20 @@ jobs:
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       - uses: chrnorm/deployment-action@v2
-        name: Create GitHub deployment (production)
-        id: deployment-prod
+        name: Create GitHub deployment (release)
+        id: deployment-release
         if: github.ref == 'refs/heads/master'
         with:
           token: '${{ github.token }}'
-          environment: production
+          initial-status: success
+          environment: release
       - uses: chrnorm/deployment-action@v2
-        name: Create GitHub deployment (production)
+        name: Create GitHub deployment (snapshot)
         id: deployment-snap
         if: github.ref != 'refs/heads/master'
         with:
           token: '${{ github.token }}'
+          initial-status: success
           environment: snapshot
   deploy-docs:
     name: Deploy to GitHub Pages

@@ -176,12 +176,6 @@ object SimpleTransactionAlgebra {
           response <- utxoAlgebra.queryUtxo(fromAddress)
           txos = response
           .filter(x =>
-            // tokenType match {
-            //   case 
-            // }
-            // if (tokenType == ValueTypeIdentifier.GroupType) x.transactionOutput.value.value.isGroup
-            // else if (tokenType == ValueTypeIdentifier.LvlType) x.transactionOutput.value.value.isLvl
-            // else throw new Exception("Token type not supported")
             !x.transactionOutput.value.value.isTopl &&
             !x.transactionOutput.value.value.isUpdateProposal
           )

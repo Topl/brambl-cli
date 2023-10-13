@@ -1,26 +1,31 @@
 package co.topl.brambl.cli.modules
+import cats.Monad
 import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.models.Datum
+import co.topl.brambl.models.GroupId
+import co.topl.brambl.models.LockAddress
+import co.topl.brambl.models.SeriesId
 import co.topl.brambl.models.TransactionId
 import co.topl.brambl.models.TransactionOutputAddress
+import co.topl.brambl.models.box.Attestation
+import co.topl.brambl.models.box.Challenge
+import co.topl.brambl.models.box.FungibilityType
+import co.topl.brambl.models.box.Lock
+import co.topl.brambl.models.box.QuantityDescriptorType
 import co.topl.brambl.models.box.Value
-import co.topl.brambl.models.transaction.UnspentTransactionOutput
 import co.topl.brambl.models.transaction.SpentTransactionOutput
+import co.topl.brambl.models.transaction.UnspentTransactionOutput
+import co.topl.brambl.utils.Encoding
+import co.topl.consensus.models.BlockId
 import co.topl.genus.services.Txo
+import co.topl.genus.services.TxoState
+import co.topl.node.models.BlockBody
 import com.google.protobuf.ByteString
 import quivr.models.Int128
-import co.topl.consensus.models.BlockId
-import co.topl.node.models.BlockBody
-import co.topl.brambl.models.box.Attestation
-import co.topl.brambl.models.Datum
-import co.topl.brambl.dataApi.GenusQueryAlgebra
-import co.topl.brambl.models.LockAddress
-import co.topl.genus.services.TxoState
-import cats.Monad
-import co.topl.brambl.models.GroupId
-import co.topl.brambl.utils.Encoding
-import co.topl.brambl.models.SeriesId
-import co.topl.brambl.models.box.FungibilityType
-import co.topl.brambl.models.box.QuantityDescriptorType
+import quivr.models.Proposition
+
+
 trait DummyObjects {
 
   import co.topl.brambl.syntax._
@@ -33,10 +38,23 @@ trait DummyObjects {
         .get
     )
   )
+  // corresponds to the address of the lockAddress01
+  val lock01 = Lock.Predicate.of(
+    Seq(
+      Challenge.defaultInstance.withProposition(
+        Challenge.Proposition.Revealed(
+          Proposition.of(
+            Proposition.Value.Locked(Proposition.Locked())
+          )
+        )
+      )
+    ),
+    1
+  )
 
   lazy val lockAddress01 = AddressCodecs
     .decodeAddress(
-      "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr"
+      "ptetP7jshHUqDhjMhP88yhtQhhvrnBUVJkSvEo5xZvHE4UDL9FShTf1YBqSU"
     )
     .toOption
     .get

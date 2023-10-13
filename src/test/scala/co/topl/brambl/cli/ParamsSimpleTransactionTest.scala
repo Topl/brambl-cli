@@ -6,6 +6,38 @@ class ParamsSimpleTransactionTest extends FunSuite {
 
   import BramblCliParamsParserModule._
 
+  test("Test valid group transaction create using toAddress".only) {
+    val args0 = List(
+      "simple-transaction",
+      "create",
+      "-t",
+      "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
+      "-w",
+      "test",
+      "-o",
+      "newTransaction.pbuf",
+      "--port",
+      "9084",
+      "-h",
+      "localhost",
+      "-n",
+      "private",
+      "-a",
+      "100",
+      "--fee",
+      "10",
+      "--transfer-token",
+      "group",
+      "--group-id",
+      "0"*64,	
+      "--keyfile",
+      "src/test/resources/keyfile.json",
+      "--walletdb",
+      "src/test/resources/wallet.db"
+    )
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
+  }
+
   test("Test valid transaction create using toAddress") {
     val args0 = List(
       "simple-transaction",
