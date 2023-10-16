@@ -9,6 +9,7 @@ import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.box.Lock
+import co.topl.brambl.syntax.ValueTypeIdentifier
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
@@ -28,7 +29,9 @@ trait SimpleTransactionAlgebra[F[_]] {
       someToParty: Option[String],
       someToContract: Option[String],
       amount: Long,
-      outputFile: String
+      fee: Long,
+      outputFile: String,
+      tokenType: ValueTypeIdentifier
   ): F[Either[SimpleTransactionAlgebraError, Unit]]
 
 }
@@ -45,27 +48,32 @@ object SimpleTransactionAlgebra {
     new SimpleTransactionAlgebra[F] {
 
       private def buildTransaction(
-          lvlTxos: Seq[Txo],
+          txos: Seq[Txo],
           predicateFundsToUnlock: Lock.Predicate,
           lockForChange: Lock,
           recipientLockAddress: LockAddress,
           amount: Long,
+          fee: Long,
           someNextIndices: Option[Indices],
           keyPair: KeyPair,
-          outputFile: String
+          outputFile: String,
+          typeIdentifier: ValueTypeIdentifier
       ) = {
         import cats.implicits._
         import TransactionBuilderApi.implicits._
-
         for {
-          ioTransaction <- transactionBuilderApi
-            .buildSimpleLvlTransaction(
-              lvlTxos,
+          lockChange <- transactionBuilderApi.lockAddress(lockForChange)
+          eitherIoTransaction <- transactionBuilderApi
+            .buildTransferAmountTransaction(
+              typeIdentifier,
+              txos,
               predicateFundsToUnlock,
-              lockForChange.getPredicate,
+              amount,
               recipientLockAddress,
-              amount
+              lockChange,
+              fee
             )
+          ioTransaction <- Sync[F].fromEither(eitherIoTransaction)
           // Only save to wallet state if there is a change output in the transaction
           _ <-
             if (ioTransaction.outputs.length >= 2) for {
@@ -122,7 +130,9 @@ object SimpleTransactionAlgebra {
           someToParty: Option[String],
           someToContract: Option[String],
           amount: Long,
-          outputFile: String
+          fee: Long,
+          outputFile: String,
+          tokenType: ValueTypeIdentifier
       ): F[Either[SimpleTransactionAlgebraError, Unit]] = {
         import cats.implicits._
 
@@ -164,8 +174,10 @@ object SimpleTransactionAlgebra {
             predicateFundsToUnlock.get
           )
           response <- utxoAlgebra.queryUtxo(fromAddress)
-          lvlTxos = response.filter(
-            _.transactionOutput.value.value.isLvl
+          txos = response
+          .filter(x =>
+            !x.transactionOutput.value.value.isTopl &&
+            !x.transactionOutput.value.value.isUpdateProposal
           )
           // either toAddress or both toContract and toParty must be defined
           toAddressOpt <- (
@@ -185,20 +197,22 @@ object SimpleTransactionAlgebra {
             case _ => Sync[F].point(None)
           }
           _ <-
-            (if (lvlTxos.isEmpty) {
+            (if (txos.isEmpty) {
                Sync[F].raiseError(CreateTxError("No LVL txos found"))
              } else {
                (changeLock, toAddressOpt) match {
                  case (Some(lockPredicateForChange), Some(toAddress)) =>
                    buildTransaction(
-                     lvlTxos,
+                     txos,
                      predicateFundsToUnlock.get.getPredicate,
                      lockPredicateForChange,
                      toAddress,
                      amount,
+                     fee,
                      someNextIndices,
                      keyPair,
-                     outputFile
+                     outputFile,
+                     tokenType
                    )
                  case (None, _) =>
                    Sync[F].raiseError(

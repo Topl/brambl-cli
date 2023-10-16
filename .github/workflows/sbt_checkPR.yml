@@ -1,19 +1,37 @@
-name: Check PR
+name: Check and Deploy
 on:
-  pull_request:
-    branches: ['*']
   push:
-    branches: [main]
+    branches: ['*']
+    tags: ["*"]
 
 jobs:
   unit-test:
+    name: Run Unit Tests
     runs-on: ubuntu-20.04
-    # Service containers to run with `runner-job`
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v13
+        with:
+          java-version: adopt@1.11
+      - name: Run unit tests
+        run: sbt test
+      - uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-reports
+          path: target/test-reports/
+  integration-test:
+    name: Run Integration Tests
+    runs-on: ubuntu-20.04
+    needs: unit-test
     services:
       # Label used to access the service container
       bifrost:
         # Docker Hub image
-        image: docker.io/toplprotocol/bifrost-node:2.0.0-alpha8
+        image: docker.io/toplprotocol/bifrost-node:2.0.0-alpha9
         #
         ports:
           - 9084:9084 
@@ -26,10 +44,12 @@ jobs:
         uses: olafurpg/setup-scala@v13
         with:
           java-version: adopt@1.11
-      - name: Run unit tests
-        run: sbt test
       - name: Run integration tests
         run: sbt "IntegrationTest / test"
+      - uses: actions/download-artifact@v3
+        with:
+          path: target/test-reports/
+          name: unit-test-reports
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: success()
@@ -37,3 +57,61 @@ jobs:
           files: |
             target/test-reports/**/*.xml
             target/it-reports/**/*.xml
+  publish:
+    name: Deploy to Maven Central
+    runs-on: ubuntu-20.04
+    needs: [ unit-test, integration-test ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v13
+      - uses: olafurpg/setup-gpg@v3
+      - name: Deploy 
+        run: sbt ci-release
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      - uses: chrnorm/deployment-action@v2
+        name: Create GitHub deployment (release)
+        id: deployment-release
+        if: github.ref == 'refs/heads/master'
+        with:
+          token: '${{ github.token }}'
+          initial-status: success
+          environment: release
+      - uses: chrnorm/deployment-action@v2
+        name: Create GitHub deployment (snapshot)
+        id: deployment-snap
+        if: github.ref != 'refs/heads/master'
+        with:
+          token: '${{ github.token }}'
+          initial-status: success
+          environment: snapshot
+  deploy-docs:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [ unit-test, integration-test ]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: microsite/package-lock.json
+      - name: Install dependencies
+        run: cd microsite && npm ci
+      - name: Build website
+        run: cd microsite &&  npm run build
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./microsite/build
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com

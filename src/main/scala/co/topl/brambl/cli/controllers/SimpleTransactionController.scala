@@ -6,6 +6,10 @@ import cats.effect.kernel.Sync
 import co.topl.brambl.cli.impl.SimpleTransactionAlgebra
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.LockAddress
+import co.topl.brambl.cli.TokenType
+import co.topl.brambl.syntax.LvlType
+import co.topl.brambl.syntax.GroupType
+import co.topl.brambl.models.GroupId
 
 class SimpleTransactionController[F[_]: Sync](
     walletStateAlgebra: WalletStateAlgebra[F],
@@ -22,7 +26,10 @@ class SimpleTransactionController[F[_]: Sync](
       someToParty: Option[String],
       someToContract: Option[String],
       amount: Long,
-      outputFile: String
+      fee: Long,
+      outputFile: String,
+      tokenType: TokenType.Value,
+      groupId: Option[GroupId]
   ): F[Either[String, String]] = {
     import cats.implicits._
     walletStateAlgebra
@@ -34,19 +41,28 @@ class SimpleTransactionController[F[_]: Sync](
       case Validated.Invalid(errors) =>
         Monad[F].point(Left("Invalid params\n" + errors.toList.mkString(", ")))
       case Validated.Valid(_) =>
-        simplTransactionOps
-          .createSimpleTransactionFromParams(
-            keyfile,
-            password,
-            fromParty,
-            fromContract,
-            someFromState,
-            someToAddress,
-            someToParty,
-            someToContract,
-            amount,
-            outputFile
-          )
+        (for {
+          tt <- Sync[F].delay(tokenType match {
+            case TokenType.lvl   => LvlType
+            case TokenType.group => GroupType(groupId.get)
+            case _ => throw new Exception("Token type not supported")
+          })
+          res <- simplTransactionOps
+            .createSimpleTransactionFromParams(
+              keyfile,
+              password,
+              fromParty,
+              fromContract,
+              someFromState,
+              someToAddress,
+              someToParty,
+              someToContract,
+              amount,
+              fee,
+              outputFile,
+              tt
+            )
+        } yield res)
           .map(_ match {
             case Right(_)    => Right("Transaction successfully created")
             case Left(value) => Left(value.description)

@@ -77,7 +77,10 @@ trait CommonTxOperations
       toParty: String,
       toContract: String,
       amount: Int,
-      outputFile: String
+      fee: Int,
+      outputFile: String,
+      token: TokenType.Value,
+      someGroupId: Option[String]
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -104,13 +107,20 @@ trait CommonTxOperations
           amount.toString(),
           "-h",
           HOST,
+          "--fee",
+          fee.toString(),
           "--keyfile",
           c.keyFile,
           "--walletdb",
-          c.walletFile
+          c.walletFile,
+          "--transfer-token",
+          token.toString()
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)
+          ++ someGroupId
+            .map(s => List("--group-id", s.toString()))
+            .getOrElse(List.empty)
       )
     )
 
@@ -142,9 +152,12 @@ trait CommonTxOperations
       someFromState: Option[Int],
       aliceAddress: String,
       amount: Int,
-      outputFile: String
+      fee: Int,
+      outputFile: String,
+      token: TokenType.Value,
+      someGroupId: Option[String]
   ) =
-    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+    Kleisli[IO, WalletKeyConfig, ExitCode] { (c: WalletKeyConfig) =>
       Main.run(
         List(
           "simple-transaction",
@@ -163,6 +176,8 @@ trait CommonTxOperations
           outputFile, // BOB_SECOND_TX_RAW,
           "-a",
           amount.toString(),
+          "--fee",
+          fee.toString(),
           "-h",
           HOST,
           "-n",
@@ -170,12 +185,18 @@ trait CommonTxOperations
           "--keyfile",
           c.keyFile,
           "--walletdb",
-          c.walletFile
+          c.walletFile,
+          "--transfer-token",
+          token.toString()
         ) ++ someFromState
           .map(s => List("--from-state", s.toString()))
           .getOrElse(List.empty)
+          ++ someGroupId
+            .map(s => List("--group-id", s.toString()))
+            .getOrElse(List.empty)
       )
-    )
+    }
+
   def createSimpleGroupMintingTransaction(
       fromParty: String,
       fromContract: String,

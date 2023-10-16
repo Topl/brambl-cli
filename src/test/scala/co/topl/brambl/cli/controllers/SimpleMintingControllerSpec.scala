@@ -26,12 +26,6 @@ class SimpleMintingControllerSpec
     with SimpleMintingAlgebraModule
     with DummyObjects {
 
-  val controllerUnderTest = new SimpleMintingController(
-    groupPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
-    seriesPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
-    assetMintingStatementParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
-    simpleMintingAlgebra()
-  )
 
   def makeWalletStateAlgebraMockWithAddress[F[_]: Monad] =
     new BaseWalletStateAlgebra[F] {
@@ -102,6 +96,15 @@ class SimpleMintingControllerSpec
         )
 
     }
+
+
+
+  val controllerUnderTest = new SimpleMintingController(
+    groupPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
+    seriesPolicyParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
+    assetMintingStatementParserAlgebra(NetworkConstants.PRIVATE_NETWORK_ID),
+    simpleMintingAlgebra()
+  )
 
   def simpleMintingAlgebra(
   ) = SimpleMintingAlgebra.make[IO](

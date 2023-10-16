@@ -10,7 +10,7 @@ class BlockDisplayOpsSpec extends munit.FunSuite with DummyObjects {
       display,
       """
 TxoAddress : DAas2fmY1dfpVkTYSJXp3U1CD7yTMEonum2xG9BJmNtQ#1
-LockAddress: ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
+LockAddress: ptetP7jshHUqDhjMhP88yhtQhhvrnBUVJkSvEo5xZvHE4UDL9FShTf1YBqSU
 Type       : LVL
 Value      : 100
 """
@@ -52,7 +52,7 @@ Value        : 100
 Outputs
 =======
 
-LockAddress  : ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr
+LockAddress  : ptetP7jshHUqDhjMhP88yhtQhhvrnBUVJkSvEo5xZvHE4UDL9FShTf1YBqSU
 Type         : LVL
 Value        : 100
 

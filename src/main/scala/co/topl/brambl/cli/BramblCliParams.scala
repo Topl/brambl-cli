@@ -5,6 +5,7 @@ import co.topl.brambl.models.LockAddress
 
 import java.io.File
 import scala.collection.immutable.IndexedSeq
+import co.topl.brambl.models.GroupId
 
 object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
@@ -99,5 +100,6 @@ final case class BramblCliParams(
     someOutputFile: Option[String] = None,
     mnemonic: Seq[String] = IndexedSeq(),
     someMnemonicFile: Option[String] = None,
-    somePolicyFile: Option[File] = None
+    somePolicyFile: Option[File] = None,
+    someGroupId: Option[GroupId] = None
 )

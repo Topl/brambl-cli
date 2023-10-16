@@ -55,7 +55,10 @@ class WalletRecoveryTest
             Some(1),
             next_address.toOption.get,
             BASE_AMOUNT,
-            WALLET_FIRST_TX_RAW
+            BASE_FEE,
+            WALLET_FIRST_TX_RAW,
+            TokenType.lvl,
+            None
           ).run(walletContext),
           ExitCode.Success
         )
@@ -121,7 +124,10 @@ class WalletRecoveryTest
             None,
             next_address.toOption.get,
             500,
-            WALLET_SECOND_TX_RAW
+            BASE_FEE,
+            WALLET_SECOND_TX_RAW,
+            TokenType.lvl,
+            None
           ).run(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)),
           ExitCode.Success
         )
