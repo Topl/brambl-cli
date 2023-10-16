@@ -69,7 +69,7 @@ class TxController[F[_]: Sync](
         provedTxFile
       )
       .map(_ match {
-        case Right(_)    => Right("Transaction broadcasted")
+        case Right(s)    => Right(s)
         case Left(value) => Left(value.description)
       })
   }

@@ -26,6 +26,9 @@ an optional parameter `--group-id` to specify the group token to transfer.
 because we allowed them to be optional.
 - Updated documentation for `simple-transaction` command to include the new parameters.
 - Updated reference documentation for the CLI.
+- Instead of printing the message "Transaction broadcasted", the `broadcast` 
+subcommand now prints the transaction id. This makes is easier to check
+if the transaction has already been added to the blockchain. 
 
 ## [v2.0.0-alpha4] - 2023-10-10
 ### Added
@@ -34,7 +37,7 @@ because we allowed them to be optional.
 - Support for minting group tokens.
 - Support for minting series tokens.
 - Support for minting asset tokens.
-- New command to inspect transactions on disk
+- New command to inspect transactions on disk.
 - Added full documentation in docusaurus. Available [here](https://topl.github.io/brambl-cli).
 
 ### Changed

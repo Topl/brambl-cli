@@ -11,6 +11,7 @@ import io.grpc.ManagedChannel
 
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import co.topl.brambl.utils.Encoding
 
 trait TransactionAlgebra[F[_]] {
   def proveSimpleTransactionFromParams(
@@ -22,7 +23,7 @@ trait TransactionAlgebra[F[_]] {
 
   def broadcastSimpleTransactionFromParams(
       provedTxFile: String
-  ): F[Either[SimpleTransactionAlgebraError, Unit]]
+  ): F[Either[SimpleTransactionAlgebraError, String]]
 
 }
 
@@ -38,7 +39,7 @@ object TransactionAlgebra {
 
       override def broadcastSimpleTransactionFromParams(
           provedTxFile: String
-      ): F[Either[SimpleTransactionAlgebraError, Unit]] = {
+      ): F[Either[SimpleTransactionAlgebraError, String]] = {
         import co.topl.brambl.models.transaction.IoTransaction
         import cats.implicits._
         val inputRes = Resource
@@ -61,7 +62,7 @@ object TransactionAlgebra {
               blockingStub <- Sync[F]
                 .point(NodeRpcGrpc.blockingStub(channel))
                 .adaptErr(_ => CannotInitializeProtobuf("Cannot obtain stub"))
-              response <- Sync[F]
+              _ <- Sync[F]
                 .blocking(
                   blockingStub
                     .broadcastTransaction(
@@ -72,11 +73,13 @@ object TransactionAlgebra {
                   e.printStackTrace()
                   NetworkProblem("Problem connecting to node")
                 }
-            } yield response)
+            } yield provedTransaction)
           }
         } yield response).attempt.map(e =>
           e match {
-            case Right(_)                               => ().asRight
+            case Right(tx) =>
+              import co.topl.brambl.syntax._
+              Encoding.encodeToBase58(tx.id.value.toByteArray()).asRight
             case Left(e: SimpleTransactionAlgebraError) => e.asLeft
             case Left(e) => UnexpectedError(e.getMessage()).asLeft
           }
