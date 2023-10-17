@@ -84,6 +84,7 @@ jobs:
           token: '${{ github.token }}'
           initial-status: success
           environment: release
+          environment-url: https://s01.oss.sonatype.org/content/repositories/releases/co/topl/brambl-cli_2.13/
       - uses: chrnorm/deployment-action@v2
         name: Create GitHub deployment (snapshot)
         id: deployment-snap
@@ -91,6 +92,7 @@ jobs:
         with:
           token: '${{ github.token }}'
           initial-status: success
+          environment-url: https://s01.oss.sonatype.org/content/repositories/snapshots/co/topl/brambl-cli_2.13/
           environment: snapshot
   deploy-docs:
     name: Deploy to GitHub Pages

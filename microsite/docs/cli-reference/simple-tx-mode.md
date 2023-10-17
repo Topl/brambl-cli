@@ -27,4 +27,5 @@ Create transaction
   --transfer-token <value>
                            The token type. The valid token types are 'lvl', 'asset', 'group', 'series'.
   --group-id <value>       Group id.
+  --series-id <value>      Series id.
 ```

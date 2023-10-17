@@ -35,3 +35,13 @@ brambl-cli simple-transaction create --from-party $PARTY --from-contract $CONTRA
 ```
 
 This will create a transaction that spends the state `$STATE` of the contract `$CONTRACT` of the party `$PARTY` and sends `$SEND_AMOUNT` group tokens to the address `$TO_ADDRESS`. The transaction will be stored in the file `$TX_FILE`. The `--group-id` parameter is required to specify the group token to transfer.	
+
+# Transfering Series Tokens
+
+To transfer series tokens, you need to run the following command:
+
+```bash
+brambl-cli simple-transaction create --from-party $PARTY --from-contract $CONTRACT --from-state $STATE -t $TO_ADDRESS -w $PASSWORD --port $PORT -o $TX_FILE -n $NETWORK -a $SEND_AMOUNT -h $HOST -i $MAIN_KEY --walletdb $WALLET --fee $FEE --transfer-token series --series-id $SERIES_ID
+```
+
+This will create a transaction that spends the state `$STATE` of the contract `$CONTRACT` of the party `$PARTY` and sends `$SEND_AMOUNT` series tokens to the address `$TO_ADDRESS`. The transaction will be stored in the file `$TX_FILE`. The `--series-id` parameter is required to specify the series token to transfer.

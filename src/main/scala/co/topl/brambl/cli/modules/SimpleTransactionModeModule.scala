@@ -36,7 +36,8 @@ trait SimpleTransactionModeModule
         validateParams.fee,
         validateParams.someOutputFile.get,
         validateParams.tokenType,
-        validateParams.someGroupId
+        validateParams.someGroupId,
+        validateParams.someSeriesId
       )
   }
 }

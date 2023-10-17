@@ -58,6 +58,7 @@ class WalletRecoveryTest
             BASE_FEE,
             WALLET_FIRST_TX_RAW,
             TokenType.lvl,
+            None,
             None
           ).run(walletContext),
           ExitCode.Success
@@ -127,6 +128,7 @@ class WalletRecoveryTest
             BASE_FEE,
             WALLET_SECOND_TX_RAW,
             TokenType.lvl,
+            None,
             None
           ).run(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)),
           ExitCode.Success

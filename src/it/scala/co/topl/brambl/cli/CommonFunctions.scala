@@ -55,6 +55,7 @@ trait CommonFunctions extends PolicyTemplates {
           BASE_FEE,
           ALICE_FIRST_TX_RAW,
           TokenType.lvl,
+          None,
           None
         ).run(aliceContext),
         ExitCode.Success

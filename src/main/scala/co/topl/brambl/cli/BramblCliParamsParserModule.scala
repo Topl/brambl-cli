@@ -9,6 +9,7 @@ import java.io.File
 import java.nio.file.Paths
 import co.topl.brambl.models.GroupId
 import com.google.protobuf.ByteString
+import co.topl.brambl.models.SeriesId
 
 object BramblCliParamsParserModule {
 
@@ -22,10 +23,16 @@ object BramblCliParamsParserModule {
   implicit val networkRead: scopt.Read[NetworkIdentifiers] =
     scopt.Read.reads(NetworkIdentifiers.fromString(_).get)
 
-  implicit val arrayByteRead: scopt.Read[GroupId] =
+  implicit val groupIdRead: scopt.Read[GroupId] =
     scopt.Read.reads { x =>
       val array = Encoding.decodeFromHex(x).toOption.get
       GroupId(ByteString.copyFrom(array))
+    }
+
+  implicit val seriesIdRead: scopt.Read[SeriesId] =
+    scopt.Read.reads { x =>
+      val array = Encoding.decodeFromHex(x).toOption.get
+      SeriesId(ByteString.copyFrom(array))
     }
 
   val inputFileArg = opt[String]('i', "input")
@@ -159,6 +166,10 @@ object BramblCliParamsParserModule {
   val groupId = opt[Option[GroupId]]("group-id")
     .action((x, c) => c.copy(someGroupId = x))
     .text("Group id.")
+
+  val seriesId = opt[Option[SeriesId]]("series-id")
+    .action((x, c) => c.copy(someSeriesId = x))
+    .text("Series id.")
 
   val hostPortNetwork =
     Seq(
@@ -615,15 +626,16 @@ object BramblCliParamsParserModule {
               amountArg,
               transferTokenType,
               groupId,
+              seriesId,
               checkConfig { c =>
                 if (
                   c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
                 )
                   (c.toAddress, c.someToParty, c.someToContract) match {
                     case (Some(_), None, None) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId)
+                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
                     case (None, Some(_), Some(_)) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId)
+                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
                     case _ =>
                       failure(
                         "Exactly toParty and toContract together or only toAddress must be specified"
@@ -638,16 +650,19 @@ object BramblCliParamsParserModule {
 
   private def checkTokenAndId(
       tokenType: TokenType.Value,
-      groupId: Option[GroupId]
+      groupId: Option[GroupId],
+      seriesId: Option[SeriesId]
   ) = {
-    (tokenType, groupId) match {
-      case (TokenType.group, Some(_)) =>
+    (tokenType, groupId, seriesId) match {
+      case (TokenType.group, Some(_), None) =>
         success
-      case (TokenType.lvl, None) =>
+      case (TokenType.series, None, Some(_)) =>
+        success
+      case (TokenType.lvl, None, None) =>
         success
       case _ =>
         failure(
-          "Exactly group and groupId together or only lvl must be specified"
+          "Exactly group and groupId together, or series and seriesId, or only lvl must be specified"
         )
     }
   }

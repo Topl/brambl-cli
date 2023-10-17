@@ -10,6 +10,8 @@ import co.topl.brambl.cli.TokenType
 import co.topl.brambl.syntax.LvlType
 import co.topl.brambl.syntax.GroupType
 import co.topl.brambl.models.GroupId
+import co.topl.brambl.models.SeriesId
+import co.topl.brambl.syntax.SeriesType
 
 class SimpleTransactionController[F[_]: Sync](
     walletStateAlgebra: WalletStateAlgebra[F],
@@ -29,7 +31,8 @@ class SimpleTransactionController[F[_]: Sync](
       fee: Long,
       outputFile: String,
       tokenType: TokenType.Value,
-      groupId: Option[GroupId]
+      groupId: Option[GroupId],
+      seriesId: Option[SeriesId],
   ): F[Either[String, String]] = {
     import cats.implicits._
     walletStateAlgebra
@@ -45,6 +48,7 @@ class SimpleTransactionController[F[_]: Sync](
           tt <- Sync[F].delay(tokenType match {
             case TokenType.lvl   => LvlType
             case TokenType.group => GroupType(groupId.get)
+            case TokenType.series => SeriesType(seriesId.get)
             case _ => throw new Exception("Token type not supported")
           })
           res <- simplTransactionOps
