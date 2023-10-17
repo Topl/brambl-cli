@@ -63,7 +63,7 @@ class BaseTransactionBuilderApi[F[_]] extends TransactionBuilderApi[F] {
       mintedAssetLockAddress: LockAddress,
       changeAddress: LockAddress,
       ephemeralMetadata: Option[Struct],
-      commitment: Option[Array[Byte]]
+      commitment: Option[ByteString]
   ): F[Either[BuilderError, IoTransaction]] = ???
 
   override def unprovenAttestation(
