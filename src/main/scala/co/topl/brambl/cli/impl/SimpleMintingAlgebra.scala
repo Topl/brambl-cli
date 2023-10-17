@@ -153,10 +153,7 @@ object SimpleMintingAlgebra {
         someNextIndices,
         keyPair,
         outputFile,
-        groupPolicy.computeId,
-        groupPolicy.label,
-        groupPolicy.registrationUtxo,
-        groupPolicy.fixedSeries,
+        groupPolicy,
         changeLock
       )
     } yield ()
