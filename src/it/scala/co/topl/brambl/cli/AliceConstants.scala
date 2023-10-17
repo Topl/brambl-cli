@@ -14,7 +14,11 @@ trait AliceConstants extends BaseConstants {
 
   val ALICE_TRANSFER_SERIES_TX_RAW = s"$TMP_DIR/alice_transfer_series_tx.pbuf"
 
+  val ALICE_TRANSFER_ASSET_TX_RAW = s"$TMP_DIR/alice_transfer_asset_tx.pbuf"
+
   val ALICE_TRANSFER_SERIES_TX_PROVED = s"$TMP_DIR/alice_transfer_series_tx_proved.pbuf"
+
+  val ALICE_TRANSFER_ASSET_TX_PROVED = s"$TMP_DIR/alice_transfer_asset_tx_proved.pbuf"
 
   val ALICE_FIRST_TX_RAW = s"$TMP_DIR/alice_first_tx.pbuf"
 
