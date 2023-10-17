@@ -7,7 +7,7 @@ class ParamsWalletModuleTest extends FunSuite {
 
   import BramblCliParamsParserModule._
 
-  test("Test valid wallet create".only) {
+  test("Test valid wallet create") {
     val args0 = List(
       "wallet",
       "init",
