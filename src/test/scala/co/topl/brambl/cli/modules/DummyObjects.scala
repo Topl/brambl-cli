@@ -25,7 +25,6 @@ import com.google.protobuf.ByteString
 import quivr.models.Int128
 import quivr.models.Proposition
 
-
 trait DummyObjects {
 
   import co.topl.brambl.syntax._
@@ -105,6 +104,31 @@ trait DummyObjects {
       )
     )
   )
+  lazy val assetValue01 = Value(
+    Value.Asset(
+      Some(GroupId(
+        ByteString.copyFrom(
+          Encoding
+            .decodeFromHex(
+              "fdae7b6ea08b7d5489c3573abba8b1765d39365b4e803c4c1af6b97cf02c54bf"
+            )
+            .toOption
+            .get
+        )
+      )
+    ),
+    Some(SeriesId(
+      ByteString.copyFrom(
+        Encoding
+          .decodeFromHex(
+            "1ed1caaefda61528936051929c525a17a0d43ea6ae09592da06c9735d9416c03"
+          )
+          .toOption
+          .get
+      )
+    )),
+    1L
+  ))
 
   lazy val transactionOutputAddress01 = TransactionOutputAddress(
     lockAddress01.network,
@@ -154,6 +178,15 @@ trait DummyObjects {
     transactionOutputAddress03
   )
 
+  lazy val txo04 = Txo(
+    UnspentTransactionOutput(
+      lockAddress01,
+      assetValue01
+    ),
+    co.topl.genus.services.TxoState.UNSPENT,
+    transactionOutputAddress03
+  )
+
   lazy val blockId01 = BlockId(
     ByteString.copyFrom(
       Array.fill[Byte](32)(0)
@@ -191,7 +224,7 @@ trait DummyObjects {
           txoState: TxoState
       ): F[Seq[Txo]] = {
         Monad[F].pure(
-          Seq(txo01, txo02, txo03)
+          Seq(txo01, txo02, txo03, txo04)
         )
       }
     }

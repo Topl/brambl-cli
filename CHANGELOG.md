@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support to transfer group tokens using the `simple-transaction` command.
 - Support to transfer series tokens using the `simple-transaction` command.
+- Support to transfer asset tokens using the `simple-transaction` command.
 
 ### Changed
 

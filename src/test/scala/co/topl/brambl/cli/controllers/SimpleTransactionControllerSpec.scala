@@ -214,5 +214,48 @@ class SimpleTransactionControllerSpec
       Right("Transaction successfully created")
     )
   }
+  test(
+    "createSimpleTransactionFromParams should create an asset transfer transaction"
+  ) {
+    assertIO(
+      controllerUnderTest.createSimpleTransactionFromParams(
+        "src/test/resources/keyfile.json",
+        "test",
+        "self",
+        "default",
+        None,
+        None,
+        Some("self"),
+        Some("default"),
+        1L,
+        10,
+        "target/transaction.pbuf",
+        TokenType.asset,
+        Some(
+          GroupId(
+            ByteString.copyFrom(Encoding
+                .decodeFromHex(
+                  "fdae7b6ea08b7d5489c3573abba8b1765d39365b4e803c4c1af6b97cf02c54bf"
+                )
+                .toOption
+                .get
+            )
+          )
+        ),
+        Some(
+          SeriesId(
+            ByteString.copyFrom(Encoding
+                .decodeFromHex(
+                  "1ed1caaefda61528936051929c525a17a0d43ea6ae09592da06c9735d9416c03"
+                )
+                .toOption
+                .get
+            )
+          )
+        ),
+      ),
+      Right("Transaction successfully created")
+    )
+  }
 
 }
