@@ -200,14 +200,7 @@ object SimpleMintingAlgebra {
         someNextIndices,
         keyPair,
         outputFile,
-        seriesPolicy.computeId,
-        seriesPolicy.label,
-        seriesPolicy.tokenSupply,
-        seriesPolicy.quantityDescriptor,
-        seriesPolicy.fungibility,
-        seriesPolicy.registrationUtxo,
-        seriesPolicy.ephemeralMetadataScheme,
-        seriesPolicy.permanentMetadataScheme,
+        seriesPolicy,
         changeLock
       )
     } yield ()
