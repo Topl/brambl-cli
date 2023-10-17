@@ -22,7 +22,8 @@ class GeneralTransferTests
       for {
         _ <- moveFundsFromGenesisToAlice()
         _ <- mintGroup()
-        res <- mintSeries(),
+        _ <- mintSeries()
+        res <- mintAsset()
       } yield res,
       ExitCode.Success
     )
@@ -142,6 +143,69 @@ class GeneralTransferTests
           (for {
             _ <- IO.println("Querying bob's account")
             queryRes <- queryAccountSeriesTokens("self", "default").run(
+              bobContext
+            )
+            _ <- IO.sleep(5.seconds)
+          } yield queryRes)
+            .iterateUntil(_ == ExitCode.Success),
+          60.seconds
+        )
+      } yield res,
+      ExitCode.Success
+    )
+  }
+
+  test("Move asset from alice to bob") {
+    import scala.concurrent.duration._
+    assertIO(
+      for {
+        ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
+          .currentaddress("self", "default", None)
+        BOB_CURRENT_ADDRESS <- walletController(BOB_WALLET)
+          .currentaddress("self", "default", None)
+        utxos <- genusQueryAlgebra
+          .queryUtxo(
+            decodeAddress(ALICE_CURRENT_ADDRESS.get).toOption.get
+          )
+          .map(_.filter(_.transactionOutput.value.value.isAsset))
+        _ <- assertIO(
+          createSimpleTransactionToAddress(
+            "self",
+            "default",
+            None,
+            BOB_CURRENT_ADDRESS.get,
+            1,
+            BASE_FEE,
+            ALICE_TRANSFER_ASSET_TX_RAW,
+            TokenType.asset,
+            utxos.head.transactionOutput.value.value.asset
+              .map(x => Encoding.encodeToHex(x.groupId.get.value.toByteArray())),
+            utxos.head.transactionOutput.value.value.asset
+              .map(x => Encoding.encodeToHex(x.seriesId.get.value.toByteArray()))
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          proveSimpleTransaction(
+            ALICE_TRANSFER_ASSET_TX_RAW,
+            ALICE_TRANSFER_ASSET_TX_PROVED
+          ).run(aliceContext),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- assertIO(
+          broadcastSimpleTx(ALICE_TRANSFER_ASSET_TX_PROVED),
+          ExitCode.Success
+        )
+        _ <- IO.sleep(5.seconds)
+        _ <- IO.println(
+          "Check change  account for from bob's wallet, asset tokens"
+        )
+        res <- IO.asyncForIO.timeout(
+          (for {
+            _ <- IO.println("Querying bob's account")
+            queryRes <- queryAccountAssetTokens("self", "default").run(
               bobContext
             )
             _ <- IO.sleep(5.seconds)

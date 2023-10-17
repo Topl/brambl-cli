@@ -658,6 +658,8 @@ object BramblCliParamsParserModule {
         success
       case (TokenType.series, None, Some(_)) =>
         success
+        case (TokenType.asset, Some(_), Some(_)) =>
+        success
       case (TokenType.lvl, None, None) =>
         success
       case _ =>
