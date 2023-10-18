@@ -66,16 +66,17 @@ trait IntegrationTearDown
         ExitCode.Success
       )
       _ <- IO.println(s"Check $TO_PARTY & $TO_CONTRACT Transaction on the node")
-      res <- IO.asyncForIO.timeout(
+      _ <- IO.asyncForIO.timeout(
         (for {
-          queryRes <- queryAccount(TO_PARTY, TO_CONTRACT, Some(1))
-            .run(walletKeyConfig)
+          queryRes <- getGenesisAmount(genus, walletState)
           _ <- IO.sleep(5.seconds)
+          _ <- queryAccount(TO_PARTY, TO_CONTRACT, Some(1))
+            .run(walletKeyConfig)
         } yield queryRes)
-          .iterateUntil(_ == ExitCode.Success),
+          .iterateUntil(_ > 10000),
         60.seconds
       )
-    } yield res
+    } yield ExitCode.Success
   }
 
   private def getChangeAmount(
@@ -84,6 +85,22 @@ trait IntegrationTearDown
   ): IO[BigInt] = for {
     address <- walletState.getCurrentAddress
     txos <- genus.queryUtxo(AddressCodecs.decodeAddress(address).toOption.get)
+    lvlTxos <- Sync[IO].delay(
+      txos.filter(_.transactionOutput.value.value.isLvl)
+    )
+  } yield lvlTxos
+    .foldLeft(BigInt(0))((acc, x) =>
+      acc + x.transactionOutput.value.value.lvl
+        .map(y => BigInt(y.quantity.value.toByteArray))
+        .getOrElse(BigInt(0))
+    )
+
+  private def getGenesisAmount(
+      genus: GenusQueryAlgebra[IO],
+      walletState: WalletStateAlgebra[IO]
+  ): IO[BigInt] = for {
+    address <- walletState.getAddress("noparty", "genesis", Some(1))
+    txos <- genus.queryUtxo(AddressCodecs.decodeAddress(address.get).toOption.get)
     lvlTxos <- Sync[IO].delay(
       txos.filter(_.transactionOutput.value.value.isLvl)
     )
