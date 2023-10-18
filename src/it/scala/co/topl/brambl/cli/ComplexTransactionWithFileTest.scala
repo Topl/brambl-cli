@@ -91,7 +91,6 @@ class ComplexTransactionWithFileTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_FIRST_COMPLEX_TX_RAW,
@@ -99,7 +98,6 @@ class ComplexTransactionWithFileTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_FIRST_COMPLEX_TX_PROVED),
           ExitCode.Success
@@ -124,7 +122,6 @@ class ComplexTransactionWithFileTest
       for {
         _ <- IO.println("Create a wallet for bob")
         _ <- assertIO(createWallet().run(bobContext), ExitCode.Success)
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Add bob to alice's wallet")
         _ <- assertIO(
           addPartyToWallet("alice_bob_0").run(aliceContext),
@@ -184,7 +181,6 @@ class ComplexTransactionWithFileTest
           ),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Importing or VK to bob's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "or_sign", BOB_COMPLEX_VK_OR).run(
@@ -213,7 +209,6 @@ class ComplexTransactionWithFileTest
           ),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Importing VK to bob's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "and_sign", BOB_COMPLEX_VK_AND).run(
@@ -272,7 +267,6 @@ class ComplexTransactionWithFileTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_SECOND_COMPLEX_TX_RAW,
@@ -280,12 +274,10 @@ class ComplexTransactionWithFileTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_SECOND_COMPLEX_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println(
           "Check shared accounts for from alice's wallet, expected 1000 in each LVLs"
         )
@@ -398,7 +390,6 @@ class ComplexTransactionWithFileTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_THIRD_COMPLEX_TX_RAW,
@@ -413,12 +404,10 @@ class ComplexTransactionWithFileTest
           ).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_THIRD_COMPLEX_TX_PROVED_BY_BOTH),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println(
           "Check bob wallet, expected 2000 LVLs"
         )

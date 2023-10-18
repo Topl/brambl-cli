@@ -63,7 +63,6 @@ class WalletRecoveryTest
           ).run(walletContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             WALLET_FIRST_TX_RAW,
@@ -71,7 +70,6 @@ class WalletRecoveryTest
           ).run(walletContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(WALLET_FIRST_TX_PROVED),
           ExitCode.Success
@@ -114,7 +112,6 @@ class WalletRecoveryTest
           ),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         next_address <- walletController(WALLET).currentaddress()
         _ <- IO.println(s"Next address is $next_address")
         _ <- IO.println("Spend funds (500 LVLs) using new key")
@@ -133,7 +130,6 @@ class WalletRecoveryTest
           ).run(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             WALLET_SECOND_TX_RAW,
@@ -141,12 +137,10 @@ class WalletRecoveryTest
           ).run(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(WALLET_SECOND_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Query account")
         res <- IO.asyncForIO.timeout(
           (for {

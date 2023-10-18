@@ -241,6 +241,7 @@ object BramblCliParamsParserModule {
           if (c.someFromState.isEmpty) {
             failure("You must specify a from-state when using noparty")
           } else {
+            if (c.someChangeParty.isDefined && )
             success
           }
         } else {

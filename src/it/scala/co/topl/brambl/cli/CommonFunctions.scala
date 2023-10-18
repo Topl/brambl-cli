@@ -60,7 +60,6 @@ trait CommonFunctions extends PolicyTemplates {
         ).run(aliceContext),
         ExitCode.Success
       )
-      _ <- IO.sleep(5.seconds)
       _ <- assertIO(
         proveSimpleTransaction(
           ALICE_FIRST_TX_RAW,
@@ -68,7 +67,6 @@ trait CommonFunctions extends PolicyTemplates {
         ).run(aliceContext),
         ExitCode.Success
       )
-      _ <- IO.sleep(5.seconds)
       _ <- assertIO(
         broadcastSimpleTx(ALICE_FIRST_TX_PROVED),
         ExitCode.Success

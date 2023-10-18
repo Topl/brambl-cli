@@ -52,7 +52,6 @@ trait IntegrationTearDown
         ).run(walletKeyConfig),
         ExitCode.Success
       )
-      _ <- IO.sleep(5.seconds)
       _ <- IO.println(s"Proving teardown transaction")
       _ <- assertIO(
         proveSimpleTransaction(
@@ -61,13 +60,11 @@ trait IntegrationTearDown
         ).run(walletKeyConfig),
         ExitCode.Success
       )
-      _ <- IO.sleep(5.seconds)
       _ <- IO.println(s"Broadcasting teardown transaction")
       _ <- assertIO(
         broadcastSimpleTx(txFileLocation("proved")),
         ExitCode.Success
       )
-      _ <- IO.sleep(5.seconds)
       _ <- IO.println(s"Check $TO_PARTY & $TO_CONTRACT Transaction on the node")
       res <- IO.asyncForIO.timeout(
         (for {

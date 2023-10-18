@@ -60,7 +60,6 @@ class GeneralTransferTests
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_TRANSFER_GROUP_TX_RAW,
@@ -68,12 +67,10 @@ class GeneralTransferTests
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_TRANSFER_GROUP_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println(
           "Check change  account for from bob's wallet, group tokens"
         )
@@ -122,7 +119,6 @@ class GeneralTransferTests
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_TRANSFER_SERIES_TX_RAW,
@@ -130,12 +126,10 @@ class GeneralTransferTests
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_TRANSFER_SERIES_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println(
           "Check change  account for from bob's wallet, series tokens"
         )
@@ -185,7 +179,6 @@ class GeneralTransferTests
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_TRANSFER_ASSET_TX_RAW,
@@ -193,12 +186,10 @@ class GeneralTransferTests
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_TRANSFER_ASSET_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println(
           "Check change  account for from bob's wallet, asset tokens"
         )
