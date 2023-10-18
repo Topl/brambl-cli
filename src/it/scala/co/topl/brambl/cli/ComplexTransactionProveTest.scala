@@ -70,7 +70,6 @@ class ComplexTransactionProveTest
           importVk("alice_bob_0", "or_sign", ALICE_VK).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Importing VK to bob's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "or_sign", BOB_VK).run(aliceContext),
@@ -93,7 +92,6 @@ class ComplexTransactionProveTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_SECOND_TX_RAW,
@@ -101,12 +99,10 @@ class ComplexTransactionProveTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_SECOND_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println(
           "Check shared account for from alice's wallet, expected 500 LVLs"
         )
@@ -159,7 +155,6 @@ class ComplexTransactionProveTest
           importVk("alice_bob_0", "and_sign", ALICE_VK_AND).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Importing VK to bob's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "and_sign", BOB_VK_AND).run(aliceContext),
@@ -184,7 +179,6 @@ class ComplexTransactionProveTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             ALICE_THIRD_TX_RAW,
@@ -192,12 +186,10 @@ class ComplexTransactionProveTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_THIRD_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println(
           "Check shared and account for from alice's wallet, expected 700 LVLs"
         )
@@ -245,7 +237,6 @@ class ComplexTransactionProveTest
           ).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           proveSimpleTransaction(
             BOB_SECOND_TX_RAW,
@@ -253,7 +244,6 @@ class ComplexTransactionProveTest
           ).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(BOB_SECOND_TX_PROVED),
           ExitCode.Success
@@ -316,7 +306,6 @@ class ComplexTransactionProveTest
           ).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Proving by Alice")
         _ <- assertIO(
           proveSimpleTransaction(
@@ -325,7 +314,6 @@ class ComplexTransactionProveTest
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- IO.println("Proving by Bob")
         _ <- assertIO(
           proveSimpleTransaction(
@@ -334,7 +322,6 @@ class ComplexTransactionProveTest
           ).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.sleep(5.seconds)
         _ <- assertIO(
           broadcastSimpleTx(ALICE_FOURTH_TX_PROVED),
           ExitCode.Success

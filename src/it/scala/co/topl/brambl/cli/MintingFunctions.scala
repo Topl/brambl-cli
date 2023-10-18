@@ -46,7 +46,6 @@ trait MintingFunctions extends PolicyTemplates {
       ).run(aliceContext),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- assertIO(
       proveSimpleTransaction(
         ALICE_FIRST_GROUP_MINTING_TX,
@@ -54,12 +53,10 @@ trait MintingFunctions extends PolicyTemplates {
       ).run(aliceContext),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- assertIO(
       broadcastSimpleTx(ALICE_FIRST_GROUP_MINTING_TX_PROVED),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- IO.println(
       "Check change  account for from alice's wallet, group tokens"
     )
@@ -109,7 +106,6 @@ trait MintingFunctions extends PolicyTemplates {
       ).run(aliceContext),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- assertIO(
       proveSimpleTransaction(
         ALICE_FIRST_SERIES_MINTING_TX,
@@ -117,12 +113,10 @@ trait MintingFunctions extends PolicyTemplates {
       ).run(aliceContext),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- assertIO(
       broadcastSimpleTx(ALICE_FIRST_SERIES_MINTING_TX_PROVED),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- IO.println(
       "Check change  account for from alice's wallet, expected group and series tokens"
     )
@@ -181,7 +175,6 @@ trait MintingFunctions extends PolicyTemplates {
       ).run(aliceContext),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- assertIO(
       proveSimpleTransaction(
         ALICE_FIRST_ASSET_MINTING_TX,
@@ -189,12 +182,10 @@ trait MintingFunctions extends PolicyTemplates {
       ).run(aliceContext),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- assertIO(
       broadcastSimpleTx(ALICE_FIRST_ASSET_MINTING_TX_PROVED),
       ExitCode.Success
     )
-    _ <- IO.sleep(5.seconds)
     _ <- IO.println(
       "Check change  account for from alice's wallet, expected a new asset"
     )

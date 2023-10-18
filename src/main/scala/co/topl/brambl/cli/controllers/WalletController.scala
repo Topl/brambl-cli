@@ -145,7 +145,7 @@ class WalletController[F[_]: Sync](
     } yield {
       Resource
         .make(Sync[F].delay(new PrintWriter(outputFile)))(file =>
-          Sync[F].delay(file.close())
+          Sync[F].delay(file.flush()) >> Sync[F].delay(file.close())
         )
         .use { file =>
           for {
@@ -188,7 +188,7 @@ class WalletController[F[_]: Sync](
     } yield {
       Resource
         .make(Sync[F].delay(new PrintWriter(outputFile)))(file =>
-          Sync[F].delay(file.close())
+          Sync[F].delay(file.flush()) >> Sync[F].delay(file.close())
         )
         .use { file =>
           for {
