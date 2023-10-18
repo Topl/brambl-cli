@@ -159,7 +159,7 @@ class WalletRecoveryTest
 
   test("Send Wallet Change back to HeightLock") {
     assertIO(
-      tearDown(walletContext),
+      tearDown(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)),
       ExitCode.Success
     )
   }
