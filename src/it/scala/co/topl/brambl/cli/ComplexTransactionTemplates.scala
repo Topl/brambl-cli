@@ -35,7 +35,7 @@ trait ComplexTransactionTemplates {
       genesisAmount: Long,
       address: String
   ) = {
-    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >> IO(f.close)).use { file =>
       IO(
         file.write(
           genesisToAddressTxTemplate(
@@ -57,7 +57,7 @@ trait ComplexTransactionTemplates {
       addressAliceBobAnd: String,
       addressAliceEveAnd: String
   ) = {
-    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >> IO(f.close)).use { file =>
       IO(
         file.write(
           aliceToSharedTxTemplate(
@@ -113,7 +113,7 @@ trait ComplexTransactionTemplates {
       orAmount: Long,
       addressBob: String
   ) = {
-    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >> IO(f.close)).use { file =>
       IO(
         file.write(
           sharedTemplatesToBob(

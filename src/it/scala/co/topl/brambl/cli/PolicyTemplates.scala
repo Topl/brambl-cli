@@ -57,7 +57,7 @@ trait PolicyTemplates {
       label: String,
       utxo: String
   ) = {
-    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >>  IO(f.close)).use { file =>
       IO(
         file.write(
           basicGroupPolicyTemplate(
@@ -75,7 +75,7 @@ trait PolicyTemplates {
       quantityDescriptor: String,
       utxo: String
   ) = {
-    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >> IO(f.close)).use { file =>
       IO(
         file.write(
           basicSeriesPolicyTemplate(
@@ -95,7 +95,7 @@ trait PolicyTemplates {
       seriesTokenUtxo: String,
       quantity: Long
   ) = {
-    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >> IO(f.close)).use { file =>
       IO(
         file.write(
           basicAssetMintingStatementTemplate(
@@ -114,7 +114,7 @@ trait PolicyTemplates {
     image: String,
     number: Int
   ) = {
-    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.close)).use { file =>
+    Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >> IO(f.close)).use { file =>
       IO(
         file.write(
           s"""{
