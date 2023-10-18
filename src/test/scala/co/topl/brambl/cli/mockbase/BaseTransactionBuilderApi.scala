@@ -3,7 +3,7 @@ package co.topl.brambl.cli.mockbase
 import co.topl.brambl.builders.BuilderError
 import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.models.Datum
-import co.topl.brambl.models.Event
+import co.topl.brambl.models.Event.{GroupPolicy, SeriesPolicy}
 import co.topl.brambl.models.GroupId
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.SeriesId
@@ -35,31 +35,35 @@ class BaseTransactionBuilderApi[F[_]] extends TransactionBuilderApi[F] {
 
 
 
-  override def buildSimpleGroupMintingTransaction(
-      registrationTxo: Txo,
-      registrationLock: Lock.Predicate,
-      groupPolicy: Event.GroupPolicy,
-      quantityToMint: Int128,
-      mintedConstructorLockAddress: LockAddress
+  override def buildGroupMintingTransaction(
+      txos: Seq[Txo],
+      lockPredicateFrom: Lock.Predicate,
+      groupPolicy: GroupPolicy,
+      quantityToMint: Long,
+      mintedAddress: LockAddress,
+      changeAddress: LockAddress,
+      fee: Long
   ): F[Either[BuilderError, IoTransaction]] = ???
 
-  override def buildSimpleSeriesMintingTransaction(
-      registrationTxo: Txo,
-      registrationLock: Lock.Predicate,
-      seriesPolicy: Event.SeriesPolicy,
-      quantityToMint: Int128,
-      mintedConstructorLockAddress: LockAddress
+  override def buildSeriesMintingTransaction(
+      txos: Seq[Txo],
+      lockPredicateFrom: Lock.Predicate,
+      seriesPolicy: SeriesPolicy,
+      quantityToMint: Long,
+      mintedAddress: LockAddress,
+      changeAddress: LockAddress,
+      fee: Long
   ): F[Either[BuilderError, IoTransaction]] = ???
 
-  override def buildSimpleAssetMintingTransaction(
+  override def buildAssetMintingTransaction(
       mintingStatement: AssetMintingStatement,
-      groupTxo: Txo,
-      seriesTxo: Txo,
-      groupLock: Lock.Predicate,
-      seriesLock: Lock.Predicate,
+      txos: Seq[Txo],
+      locks: Map[LockAddress, Lock.Predicate],
+      fee: Long,
       mintedAssetLockAddress: LockAddress,
+      changeAddress: LockAddress,
       ephemeralMetadata: Option[Struct],
-      commitment: Option[Array[Byte]]
+      commitment: Option[ByteString]
   ): F[Either[BuilderError, IoTransaction]] = ???
 
   override def unprovenAttestation(

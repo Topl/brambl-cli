@@ -4,21 +4,13 @@ import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.dataApi.WalletStateAlgebra
-import co.topl.brambl.models.Datum
 import co.topl.brambl.models.Event
-import co.topl.brambl.models.GroupId
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.LockAddress
-import co.topl.brambl.models.SeriesId
-import co.topl.brambl.models.TransactionOutputAddress
 import co.topl.brambl.models.box.Lock
-import co.topl.brambl.models.transaction.IoTransaction
-import co.topl.brambl.models.transaction.SpentTransactionOutput
 import co.topl.brambl.utils.Encoding
 import co.topl.brambl.wallet.WalletApi
 import co.topl.genus.services.Txo
-import com.google.protobuf.ByteString
-import quivr.models.Int128
 import quivr.models.KeyPair
 
 import java.io.FileOutputStream
@@ -39,17 +31,14 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
 
   def buildGroupTxAux(
       lvlTxos: Seq[Txo],
-      notlvlTxos: Seq[Txo],
+      nonlvlTxos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       amount: Long,
       fee: Long,
       someNextIndices: Option[Indices],
       keyPair: KeyPair,
       outputFile: String,
-      groupId: GroupId,
-      label: String,
-      registrationUtxo: TransactionOutputAddress,
-      fixedSeries: Option[SeriesId],
+      groupPolicy: Event.GroupPolicy,
       changeLock: Option[Lock]
   ) = (if (lvlTxos.isEmpty) {
          Sync[G].raiseError(CreateTxError("No LVL txos found"))
@@ -60,8 +49,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
                .lockAddress(lockPredicateForChange)
                .flatMap { changeAddress =>
                  buildGroupTransaction(
-                   lvlTxos,
-                   notlvlTxos,
+                   lvlTxos ++ nonlvlTxos,
                    predicateFundsToUnlock,
                    lockPredicateForChange,
                    changeAddress,
@@ -70,10 +58,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
                    someNextIndices,
                    keyPair,
                    outputFile,
-                   groupId,
-                   label,
-                   registrationUtxo,
-                   fixedSeries
+                   groupPolicy
                  )
                }
            case None =>
@@ -83,80 +68,8 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
          }
        })
 
-  private def buildSimpleGroupMintingTransaction(
-      lvlTxos: Seq[Txo],
-      nonLvlTxos: Seq[Txo],
-      lockPredicateFrom: Lock.Predicate,
-      recipientLockAddress: LockAddress,
-      amount: Long,
-      fee: Long,
-      groupId: GroupId,
-      label: String,
-      registrationUtxo: TransactionOutputAddress,
-      fixedSeries: Option[SeriesId]
-  ): G[IoTransaction] =
-    for {
-      unprovenAttestationToProve <- tba.unprovenAttestation(
-        lockPredicateFrom
-      )
-      totalValues = computeLvlQuantity(lvlTxos)
-      datum <- tba.datum()
-      lvlOutputForChange <- tba.lvlOutput(
-        recipientLockAddress,
-        Int128(
-          ByteString.copyFrom(
-            BigInt(totalValues.toLong - fee).toByteArray
-          )
-        )
-      )
-      gOutput <- groupOutput[G](
-        recipientLockAddress,
-        Int128(ByteString.copyFrom(BigInt(amount).toByteArray)),
-        groupId,
-        fixedSeries
-      )
-      ioTransaction = IoTransaction.defaultInstance
-        .withInputs(
-          lvlTxos.map(x =>
-            SpentTransactionOutput(
-              x.outputAddress,
-              unprovenAttestationToProve,
-              x.transactionOutput.value
-            )
-          ) ++ nonLvlTxos.map(x =>
-            SpentTransactionOutput(
-              x.outputAddress,
-              unprovenAttestationToProve,
-              x.transactionOutput.value
-            )
-          )
-        )
-        .withOutputs(
-          // If there is no change, we don't need to add it to the outputs
-          (if (totalValues.toLong - fee > 0)
-             Seq(lvlOutputForChange, gOutput)
-           else
-             Seq(gOutput)) ++ nonLvlTxos.map(
-            _.transactionOutput.copy(address = recipientLockAddress)
-          )
-        )
-        .withDatum(datum)
-        .withGroupPolicies(
-          Seq(
-            Datum.GroupPolicy(
-              Event.GroupPolicy(
-                label,
-                registrationUtxo,
-                fixedSeries
-              )
-            )
-          )
-        )
-    } yield ioTransaction
-
   private def buildGroupTransaction(
-      lvlTxos: Seq[Txo],
-      nonLvlTxos: Seq[Txo],
+      txos: Seq[Txo],
       predicateFundsToUnlock: Lock.Predicate,
       lockForChange: Lock,
       recipientLockAddress: LockAddress,
@@ -165,31 +78,25 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
       someNextIndices: Option[Indices],
       keyPair: KeyPair,
       outputFile: String,
-      groupId: GroupId,
-      label: String,
-      registrationUtxo: TransactionOutputAddress,
-      fixedSeries: Option[SeriesId]
+      groupPolicy: Event.GroupPolicy
   ): G[Unit] =
     for {
-      ioTransaction <-
-        buildSimpleGroupMintingTransaction(
-          lvlTxos,
-          nonLvlTxos,
-          predicateFundsToUnlock,
-          recipientLockAddress,
-          amount,
-          fee,
-          groupId,
-          label,
-          registrationUtxo,
-          fixedSeries
-        )
+      changeAddress <- tba.lockAddress(
+        lockForChange
+      )
+      eitherIoTransaction <- tba.buildGroupMintingTransaction(
+        txos,
+        predicateFundsToUnlock,
+        groupPolicy,
+        amount,
+        recipientLockAddress,
+        changeAddress,
+        fee
+      )
+      ioTransaction <- Sync[G].fromEither(eitherIoTransaction)
       // Only save to wallet state if there is a change output in the transaction
       _ <-
         if (ioTransaction.outputs.length >= 2) for {
-          lockAddress <- tba.lockAddress(
-            lockForChange
-          )
           vk <- someNextIndices
             .map(nextIndices =>
               wa
@@ -201,7 +108,7 @@ trait GroupMintingOps[G[_]] extends CommonTxOps {
             Encoding.encodeToBase58Check(
               lockForChange.getPredicate.toByteArray
             ),
-            lockAddress.toBase58(),
+            changeAddress.toBase58(),
             vk.map(_ => "ExtendedEd25519"),
             vk.map(x => Encoding.encodeToBase58(x.toByteArray)),
             someNextIndices.get

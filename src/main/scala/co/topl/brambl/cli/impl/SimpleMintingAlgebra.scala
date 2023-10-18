@@ -153,10 +153,7 @@ object SimpleMintingAlgebra {
         someNextIndices,
         keyPair,
         outputFile,
-        groupPolicy.computeId,
-        groupPolicy.label,
-        groupPolicy.registrationUtxo,
-        groupPolicy.fixedSeries,
+        groupPolicy,
         changeLock
       )
     } yield ()
@@ -203,14 +200,7 @@ object SimpleMintingAlgebra {
         someNextIndices,
         keyPair,
         outputFile,
-        seriesPolicy.computeId,
-        seriesPolicy.label,
-        seriesPolicy.tokenSupply,
-        seriesPolicy.quantityDescriptor,
-        seriesPolicy.fungibility,
-        seriesPolicy.registrationUtxo,
-        seriesPolicy.ephemeralMetadataScheme,
-        seriesPolicy.permanentMetadataScheme,
+        seriesPolicy,
         changeLock
       )
     } yield ()
@@ -286,15 +276,13 @@ object SimpleMintingAlgebra {
         outputFile,
         lvlTxos,
         nonLvlTxos,
+        groupTxo,
+        seriesTxo,
+        fromAddress,
         predicateFundsToUnlock.getPredicate,
-        assetMintingStatement.quantity,
         fee,
-        groupTxo.transactionOutput.value.value.group.get,
-        groupTxo.outputAddress,
         someNextIndices,
-        seriesTxo.transactionOutput.value.value.series.get,
-        seriesTxo.outputAddress,
-        assetMintingStatement.permanentMetadata,
+        assetMintingStatement,
         ephemeralMetadata,
         commitment,
         changeLock
