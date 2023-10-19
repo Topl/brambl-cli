@@ -25,6 +25,9 @@ trait SimpleTransactionAlgebra[F[_]] {
       fromParty: String,
       fromContract: String,
       someFromState: Option[Int],
+      someChangeParty: Option[String],
+      someChangeContract: Option[String],
+      someChangeState: Option[Int],
       someToAddress: Option[LockAddress],
       someToParty: Option[String],
       someToContract: Option[String],
@@ -49,6 +52,9 @@ object SimpleTransactionAlgebra {
 
       private def buildTransaction(
           txos: Seq[Txo],
+          someChangeParty: Option[String],
+          someChangeContract: Option[String],
+          someChangeState: Option[Int],
           predicateFundsToUnlock: Lock.Predicate,
           lockForChange: Lock,
           recipientLockAddress: LockAddress,
@@ -75,8 +81,23 @@ object SimpleTransactionAlgebra {
             )
           ioTransaction <- Sync[F].fromEither(eitherIoTransaction)
           // Only save to wallet state if there is a change output in the transaction
+          nextIndicesExist <- (
+            someChangeParty,
+            someChangeContract,
+            someChangeState
+          ) match {
+            case (Some(changeParty), Some(changeContract), Some(changeState)) =>
+              walletStateApi.getCurrentIndicesForFunds(
+                changeParty,
+                changeContract,
+                Some(changeState)
+              ).map(_.isDefined)
+            case _ => Sync[F].point(false)
+          }
           _ <-
-            if (ioTransaction.outputs.length >= 2) for {
+            if (
+              ioTransaction.outputs.length >= 2 && !nextIndicesExist
+            ) for {
               lockAddress <-
                 transactionBuilderApi.lockAddress(
                   lockForChange
@@ -88,6 +109,7 @@ object SimpleTransactionAlgebra {
                     .map(_.vk)
                 )
                 .sequence
+
               _ <- walletStateApi.updateWalletState(
                 Encoding.encodeToBase58Check(
                   lockForChange.getPredicate.toByteArray
@@ -126,6 +148,9 @@ object SimpleTransactionAlgebra {
           fromParty: String,
           fromContract: String,
           someFromState: Option[Int],
+          someChangeParty: Option[String],
+          someChangeContract: Option[String],
+          someChangeState: Option[Int],
           someToAddress: Option[LockAddress],
           someToParty: Option[String],
           someToContract: Option[String],
@@ -153,21 +178,26 @@ object SimpleTransactionAlgebra {
             )
             .sequence
             .map(_.flatten.map(Lock().withPredicate(_)))
-          someNextIndices <- walletStateApi.getNextIndicesForFunds(
-            if (fromParty == "noparty") "self" else fromParty,
-            if (fromParty == "noparty") "default"
-            else fromContract
-          )
+          someNextIndices <-
+            (someChangeParty, someChangeContract, someChangeState) match {
+              case (Some(party), Some(contract), Some(state)) =>
+                walletStateApi.getCurrentIndicesForFunds(
+                  party,
+                  contract,
+                  Some(state)
+                )
+              case _ =>
+                walletStateApi.getNextIndicesForFunds(
+                  fromParty,
+                  fromContract
+                )
+            }
           // Generate a new lock for the change, if possible
           changeLock <- someNextIndices
-            .map(idx =>
-              walletStateApi.getLock(
-                if (fromParty == "noparty") "self" else fromParty,
-                if (fromParty == "noparty") "default"
-                else fromContract,
-                idx.z
-              )
-            )
+            .map{idx =>
+              walletStateApi
+                .getLock(fromParty, fromContract, idx.z)
+            }
             .sequence
             .map(_.flatten)
           fromAddress <- transactionBuilderApi.lockAddress(
@@ -175,10 +205,10 @@ object SimpleTransactionAlgebra {
           )
           response <- utxoAlgebra.queryUtxo(fromAddress)
           txos = response
-          .filter(x =>
-            !x.transactionOutput.value.value.isTopl &&
-            !x.transactionOutput.value.value.isUpdateProposal
-          )
+            .filter(x =>
+              !x.transactionOutput.value.value.isTopl &&
+                !x.transactionOutput.value.value.isUpdateProposal
+            )
           // either toAddress or both toContract and toParty must be defined
           toAddressOpt <- (
             someToAddress,
@@ -204,6 +234,9 @@ object SimpleTransactionAlgebra {
                  case (Some(lockPredicateForChange), Some(toAddress)) =>
                    buildTransaction(
                      txos,
+                     someChangeParty,
+                     someChangeContract,
+                     someChangeState,
                      predicateFundsToUnlock.get.getPredicate,
                      lockPredicateForChange,
                      toAddress,
@@ -228,7 +261,9 @@ object SimpleTransactionAlgebra {
           e match {
             case Right(_)                               => ().asRight
             case Left(e: SimpleTransactionAlgebraError) => e.asLeft
-            case Left(e) => UnexpectedError(e.getMessage()).asLeft
+            case Left(e) => 
+              e.printStackTrace()
+              UnexpectedError(e.getMessage()).asLeft
           }
         )
 

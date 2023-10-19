@@ -17,6 +17,9 @@ trait ComplexTransactionTemplates {
   def genesisToAddressTxTemplate(
       genesisBlockAddresses: List[(String, Long)],
       genesisAmount: Long,
+      changeAmount: Long,
+      feeAmount: Long,
+      changeAddress: String,
       address: String
   ) =
     s"""|network: private
@@ -27,12 +30,17 @@ trait ComplexTransactionTemplates {
         |${utxos(genesisBlockAddresses).mkString("\n")}
         |outputs:
         |  - address: $address
-        |    value: $genesisAmount""".stripMargin
+        |    value: ${genesisAmount - changeAmount - feeAmount}
+        |  - address: $changeAddress
+        |    value: $changeAmount""".stripMargin
 
   def createComplexTxFileFromGenesisToAlice(
       fileName: String,
       genesisBlockAddresses: List[(String, Long)],
       genesisAmount: Long,
+      changeAmount: Long,
+      feeAmount: Long,
+      changeAddress: String,
       address: String
   ) = {
     Resource.make(IO(new PrintWriter(fileName)))(f => IO(f.flush()) >> IO(f.close)).use { file =>
@@ -41,6 +49,9 @@ trait ComplexTransactionTemplates {
           genesisToAddressTxTemplate(
             genesisBlockAddresses,
             genesisAmount,
+            changeAmount,
+            feeAmount,
+            changeAddress,
             address
           )
         )

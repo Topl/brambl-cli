@@ -227,15 +227,41 @@ object BramblCliParamsParserModule {
       opt[Option[Int]]("from-state")
         .action((x, c) => c.copy(someFromState = x))
         .text("State from where we are sending the funds from"),
+      opt[Option[String]]("change-party")
+        .action((x, c) => c.copy(someChangeParty = x))
+        .text("Party where we are sending the funds from"),
+      opt[Option[String]]("change-contract")
+        .action((x, c) => c.copy(someChangeContract = x))
+        .text("Contract where we are sending the funds from"),
+      opt[Option[Int]]("change-state")
+        .action((x, c) => c.copy(someChangeState = x))
+        .text("State from where we are sending the funds from"),
       checkConfig(c =>
         if (c.fromParty == "noparty") {
           if (c.someFromState.isEmpty) {
             failure("You must specify a from-state when using noparty")
           } else {
+            (c.someChangeParty, c.someChangeContract, c.someChangeState) match {
+              case (Some(_), Some(_), Some(_)) =>
+                success
+              case (_, _, _) =>
+                failure(
+                  "You must specify a change-party, change-contract and change-state when using noparty"
+                )
+            }
             success
           }
         } else {
-          success
+          (c.someChangeParty, c.someChangeContract, c.someChangeState) match {
+            case (Some(_), Some(_), Some(_)) =>
+              success
+            case (None, None, None) =>
+              success
+            case (_, _, _) =>
+              failure(
+                "You must specify a change-party, change-contract and change-state or not specify any of them"
+              )
+          }
         }
       )
     )
@@ -633,9 +659,17 @@ object BramblCliParamsParserModule {
                 )
                   (c.toAddress, c.someToParty, c.someToContract) match {
                     case (Some(_), None, None) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
+                      checkTokenAndId(
+                        c.tokenType,
+                        c.someGroupId,
+                        c.someSeriesId
+                      )
                     case (None, Some(_), Some(_)) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
+                      checkTokenAndId(
+                        c.tokenType,
+                        c.someGroupId,
+                        c.someSeriesId
+                      )
                     case _ =>
                       failure(
                         "Exactly toParty and toContract together or only toAddress must be specified"
@@ -658,7 +692,7 @@ object BramblCliParamsParserModule {
         success
       case (TokenType.series, None, Some(_)) =>
         success
-        case (TokenType.asset, Some(_), Some(_)) =>
+      case (TokenType.asset, Some(_), Some(_)) =>
         success
       case (TokenType.lvl, None, None) =>
         success

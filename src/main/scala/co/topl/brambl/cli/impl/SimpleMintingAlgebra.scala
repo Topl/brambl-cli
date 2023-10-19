@@ -77,7 +77,6 @@ object SimpleMintingAlgebra {
 
     val wa = walletApi
 
-    import co.topl.brambl.syntax._
     private def sharedOps(
         keyfile: String,
         password: String,
@@ -238,11 +237,11 @@ object SimpleMintingAlgebra {
       lvlTxos = response.filter(
         _.transactionOutput.value.value.isLvl
       )
-      nonLvlTxos = response.filter(
-        x => (
+      nonLvlTxos = response.filter(x =>
+        (
           !x.transactionOutput.value.value.isLvl &&
-          x.outputAddress != assetMintingStatement.groupTokenUtxo &&
-          x.outputAddress != assetMintingStatement.seriesTokenUtxo
+            x.outputAddress != assetMintingStatement.groupTokenUtxo &&
+            x.outputAddress != assetMintingStatement.seriesTokenUtxo
         )
       )
       groupTxo <- response

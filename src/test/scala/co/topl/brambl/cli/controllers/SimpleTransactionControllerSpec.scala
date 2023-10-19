@@ -124,15 +124,37 @@ class SimpleTransactionControllerSpec
   )
 
   test(
-    "createSimpleTransactionFromParams should create a lvl transfer transaction"
+    "createSimpleTransactionFromParams should create a lvl transfer transaction (no change)"
   ) {
     assertIO(
       controllerUnderTest.createSimpleTransactionFromParams(
         "src/test/resources/keyfile.json",
         "test",
-        "self",
-        "default",
+        ("self", "default", None),
+        (None, None, None),
         None,
+        Some("self"),
+        Some("default"),
+        1L,
+        10,
+        "target/transaction.pbuf",
+        TokenType.lvl,
+        None,
+        None
+      ),
+      Right("Transaction successfully created")
+    )
+  }
+
+  test(
+    "createSimpleTransactionFromParams should create a lvl transfer transaction (with change)".only
+  ) {
+    assertIO(
+      controllerUnderTest.createSimpleTransactionFromParams(
+        "src/test/resources/keyfile.json",
+        "test",
+        ("self", "default", None),
+        (Some("noparty"), Some("genesis"), None),
         None,
         Some("self"),
         Some("default"),
@@ -154,9 +176,8 @@ class SimpleTransactionControllerSpec
       controllerUnderTest.createSimpleTransactionFromParams(
         "src/test/resources/keyfile.json",
         "test",
-        "self",
-        "default",
-        None,
+        ("self", "default", None),
+        (None, None, None),
         None,
         Some("self"),
         Some("default"),
@@ -166,7 +187,8 @@ class SimpleTransactionControllerSpec
         TokenType.group,
         Some(
           GroupId(
-            ByteString.copyFrom(Encoding
+            ByteString.copyFrom(
+              Encoding
                 .decodeFromHex(
                   "fdae7b6ea08b7d5489c3573abba8b1765d39365b4e803c4c1af6b97cf02c54bf"
                 )
@@ -188,9 +210,8 @@ class SimpleTransactionControllerSpec
       controllerUnderTest.createSimpleTransactionFromParams(
         "src/test/resources/keyfile.json",
         "test",
-        "self",
-        "default",
-        None,
+        ("self", "default", None),
+        (None, None, None),
         None,
         Some("self"),
         Some("default"),
@@ -201,7 +222,8 @@ class SimpleTransactionControllerSpec
         None,
         Some(
           SeriesId(
-            ByteString.copyFrom(Encoding
+            ByteString.copyFrom(
+              Encoding
                 .decodeFromHex(
                   "1ed1caaefda61528936051929c525a17a0d43ea6ae09592da06c9735d9416c03"
                 )
@@ -209,7 +231,7 @@ class SimpleTransactionControllerSpec
                 .get
             )
           )
-        ),
+        )
       ),
       Right("Transaction successfully created")
     )
@@ -221,9 +243,8 @@ class SimpleTransactionControllerSpec
       controllerUnderTest.createSimpleTransactionFromParams(
         "src/test/resources/keyfile.json",
         "test",
-        "self",
-        "default",
-        None,
+        ("self", "default", None),
+        (None, None, None),
         None,
         Some("self"),
         Some("default"),
@@ -233,7 +254,8 @@ class SimpleTransactionControllerSpec
         TokenType.asset,
         Some(
           GroupId(
-            ByteString.copyFrom(Encoding
+            ByteString.copyFrom(
+              Encoding
                 .decodeFromHex(
                   "fdae7b6ea08b7d5489c3573abba8b1765d39365b4e803c4c1af6b97cf02c54bf"
                 )
@@ -244,7 +266,8 @@ class SimpleTransactionControllerSpec
         ),
         Some(
           SeriesId(
-            ByteString.copyFrom(Encoding
+            ByteString.copyFrom(
+              Encoding
                 .decodeFromHex(
                   "1ed1caaefda61528936051929c525a17a0d43ea6ae09592da06c9735d9416c03"
                 )
@@ -252,7 +275,7 @@ class SimpleTransactionControllerSpec
                 .get
             )
           )
-        ),
+        )
       ),
       Right("Transaction successfully created")
     )

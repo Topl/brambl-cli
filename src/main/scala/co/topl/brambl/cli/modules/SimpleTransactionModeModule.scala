@@ -26,9 +26,16 @@ trait SimpleTransactionModeModule
       ).createSimpleTransactionFromParams(
         validateParams.someKeyFile.get,
         validateParams.password,
-        validateParams.fromParty,
-        validateParams.fromContract,
-        validateParams.someFromState,
+        (
+          validateParams.fromParty,
+          validateParams.fromContract,
+          validateParams.someFromState
+        ),
+        (
+          validateParams.someChangeParty,
+          validateParams.someChangeContract,
+          validateParams.someChangeState
+        ),
         validateParams.toAddress,
         validateParams.someToParty,
         validateParams.someToContract,
