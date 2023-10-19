@@ -147,7 +147,7 @@ class SimpleTransactionControllerSpec
   }
 
   test(
-    "createSimpleTransactionFromParams should create a lvl transfer transaction (with change)".only
+    "createSimpleTransactionFromParams should create a lvl transfer transaction (with change)"
   ) {
     assertIO(
       controllerUnderTest.createSimpleTransactionFromParams(

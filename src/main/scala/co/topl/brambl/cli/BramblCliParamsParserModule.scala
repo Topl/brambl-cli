@@ -229,13 +229,13 @@ object BramblCliParamsParserModule {
         .text("State from where we are sending the funds from"),
       opt[Option[String]]("change-party")
         .action((x, c) => c.copy(someChangeParty = x))
-        .text("Party where we are sending the funds from"),
+        .text("Party where we are sending the change to"),
       opt[Option[String]]("change-contract")
         .action((x, c) => c.copy(someChangeContract = x))
-        .text("Contract where we are sending the funds from"),
+        .text("Contract where we are sending the change to"),
       opt[Option[Int]]("change-state")
         .action((x, c) => c.copy(someChangeState = x))
-        .text("State from where we are sending the funds from"),
+        .text("State where we are sending the change to"),
       checkConfig(c =>
         if (c.fromParty == "noparty") {
           if (c.someFromState.isEmpty) {
