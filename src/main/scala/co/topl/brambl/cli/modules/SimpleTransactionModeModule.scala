@@ -12,6 +12,8 @@ trait SimpleTransactionModeModule
   def simpleTransactionSubcmds(
       validateParams: BramblCliParams
   ): IO[Either[String, String]] = validateParams.subcmd match {
+    case BramblCliSubCmd.invalid =>
+      IO.pure(Left("Invalid subcommand"))
     case BramblCliSubCmd.create =>
       new SimpleTransactionController(
         walletStateAlgebra(
@@ -26,9 +28,16 @@ trait SimpleTransactionModeModule
       ).createSimpleTransactionFromParams(
         validateParams.someKeyFile.get,
         validateParams.password,
-        validateParams.fromParty,
-        validateParams.fromContract,
-        validateParams.someFromState,
+        (
+          validateParams.fromParty,
+          validateParams.fromContract,
+          validateParams.someFromState
+        ),
+        (
+          validateParams.someChangeParty,
+          validateParams.someChangeContract,
+          validateParams.someChangeState
+        ),
         validateParams.toAddress,
         validateParams.someToParty,
         validateParams.someToContract,

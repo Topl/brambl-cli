@@ -12,7 +12,6 @@ class MintingTests
     with CommonTxOperations
     with AliceConstants
     with BobConstants
-    with IntegrationTearDown
     with PolicyTemplates {
 
   override val munitTimeout = Duration(180, "s")
@@ -45,11 +44,5 @@ class MintingTests
     )
   }
 
-  test("Send Wallet Change back to HeightLock") {
-    assertIO(
-      tearDown(aliceContext),
-      ExitCode.Success
-    )
-  }
 
 }

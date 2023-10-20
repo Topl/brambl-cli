@@ -11,7 +11,6 @@ class ComplexTransactionProveTest
     with CommonFunctions
     with AliceConstants
     with CommonTxOperations
-    with IntegrationTearDown
     with BobConstants {
 
   override val munitTimeout = Duration(180, "s")
@@ -80,6 +79,9 @@ class ComplexTransactionProveTest
           createSimpleTransactionToCartesianIdx(
             "self",
             "default",
+            None,
+            None,
+            None,
             None,
             "alice_bob_0",
             "or_sign",
@@ -168,6 +170,9 @@ class ComplexTransactionProveTest
             "self",
             "default",
             None,
+            None,
+            None,
+            None,
             "alice_bob_0",
             "and_sign",
             700,
@@ -226,6 +231,9 @@ class ComplexTransactionProveTest
           createSimpleTransactionToAddress(
             "alice_bob_0",
             "or_sign",
+            None,
+            None,
+            None,
             None,
             ALICE_TO_ADDRESS.toOption.get,
             200,
@@ -296,6 +304,9 @@ class ComplexTransactionProveTest
             "alice_bob_0",
             "and_sign",
             None,
+            None,
+            None,
+            None,
             ALICE_TO_ADDRESS.toOption.get,
             100,
             BASE_FEE,
@@ -356,10 +367,4 @@ class ComplexTransactionProveTest
     )
   }
 
-  test("Send Alice Change back to HeightLock") {
-    assertIO(
-      tearDown(aliceContext),
-      ExitCode.Success
-    )
-  }
 }

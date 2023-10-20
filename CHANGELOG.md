@@ -30,6 +30,9 @@ because we allowed them to be optional.
 - Instead of printing the message "Transaction broadcasted", the `broadcast` 
 subcommand now prints the transaction id. This makes is easier to check
 if the transaction has already been added to the blockchain. 
+- Modified `simple-transaction` command so that it now requires the user
+to provide the change parameters (`--change-party`, `--change-contract`, `--change-state`)
+when the from party is a `noparty`. 
 
 ## [v2.0.0-alpha4] - 2023-10-10
 ### Added

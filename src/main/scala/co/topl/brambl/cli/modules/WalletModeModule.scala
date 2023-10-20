@@ -35,6 +35,8 @@ trait WalletModeModule
         )
     )
     validateParams.subcmd match {
+      case BramblCliSubCmd.invalid =>
+        IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.exportvk =>
         validateParams.someFromState
           .map(x =>

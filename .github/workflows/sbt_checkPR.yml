@@ -79,7 +79,7 @@ jobs:
       - uses: chrnorm/deployment-action@v2
         name: Create GitHub deployment (release)
         id: deployment-release
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         with:
           token: '${{ github.token }}'
           initial-status: success
@@ -88,7 +88,7 @@ jobs:
       - uses: chrnorm/deployment-action@v2
         name: Create GitHub deployment (snapshot)
         id: deployment-snap
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/main'
         with:
           token: '${{ github.token }}'
           initial-status: success
@@ -98,7 +98,7 @@ jobs:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     needs: [ unit-test, integration-test ]
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3

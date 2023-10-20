@@ -12,6 +12,10 @@ Create transaction
   --from-party <value>     Party where we are sending the funds from
   --from-contract <value>  Contract where we are sending the funds from
   --from-state <value>     State from where we are sending the funds from
+  --change-party <value>   Party where we are sending the change to
+  --change-contract <value>
+                           Contract where we are sending the change to
+  --change-state <value>   State where we are sending the change to
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --port <value>           Port Bifrost node. (mandatory)

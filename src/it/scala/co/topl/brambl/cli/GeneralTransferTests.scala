@@ -12,8 +12,7 @@ class GeneralTransferTests
     with MintingFunctions
     with CommonTxOperations
     with AliceConstants
-    with BobConstants
-    with IntegrationTearDown {
+    with BobConstants {
 
   override val munitTimeout = Duration(180, "s")
 
@@ -39,6 +38,7 @@ class GeneralTransferTests
           .currentaddress("self", "default", None)
         BOB_CURRENT_ADDRESS <- walletController(BOB_WALLET)
           .currentaddress("self", "default", None)
+        _ <- IO.println("Bob's current address: " + BOB_CURRENT_ADDRESS)
         utxos <- genusQueryAlgebra
           .queryUtxo(
             decodeAddress(ALICE_CURRENT_ADDRESS.get).toOption.get
@@ -48,6 +48,9 @@ class GeneralTransferTests
           createSimpleTransactionToAddress(
             "self",
             "default",
+            None,
+            None,
+            None,
             None,
             BOB_CURRENT_ADDRESS.get,
             1,
@@ -108,6 +111,9 @@ class GeneralTransferTests
             "self",
             "default",
             None,
+            None,
+            None,
+            None,
             BOB_CURRENT_ADDRESS.get,
             1,
             BASE_FEE,
@@ -167,6 +173,9 @@ class GeneralTransferTests
             "self",
             "default",
             None,
+            None,
+            None,
+            None,
             BOB_CURRENT_ADDRESS.get,
             1,
             BASE_FEE,
@@ -205,13 +214,6 @@ class GeneralTransferTests
           60.seconds
         )
       } yield res,
-      ExitCode.Success
-    )
-  }
-
-  test("Send Wallet Change back to HeightLock") {
-    assertIO(
-      tearDown(aliceContext),
       ExitCode.Success
     )
   }

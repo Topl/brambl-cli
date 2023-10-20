@@ -18,7 +18,6 @@ class ComplexTransactionWithFileTest
     with CommonTxOperations
     with AliceConstants
     with BobConstants
-    with IntegrationTearDown
     with ComplexTransactionTemplates {
 
   val tmpDirectory = FunFixture[Path](
@@ -82,6 +81,9 @@ class ComplexTransactionWithFileTest
           ALICE_FIRST_COMPLEX_TX,
           genesisUtxoAddresses.toList,
           genesisAmount,
+          genesisAmount - BASE_AMOUNT,
+          BASE_FEE,
+          genesisAddress.get,
           ALICE_TO_ADDRESS.toOption.get
         )
         _ <- assertIO(
@@ -425,11 +427,5 @@ class ComplexTransactionWithFileTest
     )
   }
 
-  test("Send Wallet Change back to HeightLock") {
-    assertIO(
-      tearDown(aliceContext),
-      ExitCode.Success
-    )
-  }
 
 }
