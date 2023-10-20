@@ -5,10 +5,12 @@ import cats.effect.IO
 
 trait GenusQueryAlgebraModule extends ChannelResourceModule {
 
-  def genusQueryAlgebra(host: String, port: Int) = GenusQueryAlgebra.make[IO](
-    channelResource(
-      host,
-      port
+  def genusQueryAlgebra(host: String, port: Int, secureConnection: Boolean) =
+    GenusQueryAlgebra.make[IO](
+      channelResource(
+        host,
+        port,
+        secureConnection
+      )
     )
-  )
 }

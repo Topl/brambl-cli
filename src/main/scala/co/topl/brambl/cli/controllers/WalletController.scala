@@ -3,24 +3,29 @@ package co.topl.brambl.cli.controllers
 import cats.data.OptionT
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
+import co.topl.brambl.builders.TransactionBuilderApi
+import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.impl.WalletAlgebra
 import co.topl.brambl.cli.impl.WalletManagementUtils
-import co.topl.brambl.dataApi
-import co.topl.brambl.utils.Encoding
-import co.topl.brambl.wallet.WalletApi
-import quivr.models.VerificationKey
-
-import java.io.PrintWriter
-import java.io.File
-import co.topl.brambl.builders.TransactionBuilderApi
 import co.topl.brambl.codecs.AddressCodecs
-import co.topl.genus.services.TxoState
-import co.topl.genus.services.Txo
-import co.topl.brambl.models.Indices
 import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.dataApi
+import co.topl.brambl.models.Indices
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.LockId
-import co.topl.brambl.cli.BramblCliParams
+import co.topl.brambl.models.box.QuantityDescriptorType
+import co.topl.brambl.syntax.GroupAndSeriesFungible
+import co.topl.brambl.syntax.GroupType
+import co.topl.brambl.syntax.LvlType
+import co.topl.brambl.syntax.SeriesType
+import co.topl.brambl.utils.Encoding
+import co.topl.brambl.wallet.WalletApi
+import co.topl.genus.services.Txo
+import co.topl.genus.services.TxoState
+import quivr.models.VerificationKey
+
+import java.io.File
+import java.io.PrintWriter
 
 class WalletController[F[_]: Sync](
     walletStateAlgebra: dataApi.WalletStateAlgebra[F],
@@ -232,9 +237,22 @@ class WalletController[F[_]: Sync](
       .map(_ => Right("Wallet Main Key Recovered"))
   }
 
-  def currentaddress(): F[Either[String, String]] = {
+  def currentaddress(params: BramblCliParams): F[Either[String, String]] = {
     import cats.implicits._
-    walletStateAlgebra.getCurrentAddress.map(Right(_))
+    params.fromAddress
+      .map(x => Sync[F].point(Some(x)))
+      .getOrElse(
+        walletStateAlgebra
+          .getAddress(
+            params.fromParty,
+            params.fromContract,
+            params.someFromState
+          )
+      )
+      .map(_ match {
+        case Some(address) => Right(address)
+        case None          => Left("No address found")
+      })
   }
 
   def sync(
@@ -316,5 +334,100 @@ class WalletController[F[_]: Sync](
       someState: Option[Int]
   ): F[Option[String]] =
     walletStateAlgebra.getAddress(party, contract, someState)
+
+  def getBalance(
+      someAddress: Option[String],
+      someParty: Option[String],
+      someContract: Option[String],
+      someState: Option[Int]
+  ): F[Either[String, String]] = {
+
+    import cats.implicits._
+    val addressGetter = (someAddress, someParty, someContract) match {
+      case (Some(address), None, None) =>
+        Sync[F].point(Some(address))
+      case (None, Some(party), Some(contract)) =>
+        walletStateAlgebra.getAddress(
+          party,
+          contract,
+          someState
+        )
+      case (_, _, _) =>
+        Sync[F].raiseError(
+          new Exception("Invalid arguments (should not happen)")
+        )
+    }
+    for {
+      someAddress <- addressGetter
+      balance <- someAddress
+        .map(address =>
+          genusQueryAlgebra
+            .queryUtxo(
+              AddressCodecs.decodeAddress(address).toOption.get,
+              TxoState.UNSPENT
+            )
+        )
+        .getOrElse(Sync[F].pure(Seq.empty[Txo]))
+    } yield {
+      val assetMap = balance.groupBy(x =>
+        if (x.transactionOutput.value.value.isLvl)
+          LvlType
+        else if (x.transactionOutput.value.value.isGroup)
+          GroupType(x.transactionOutput.value.value.group.get.groupId)
+        else if (x.transactionOutput.value.value.isSeries)
+          SeriesType(x.transactionOutput.value.value.series.get.seriesId)
+        else if (x.transactionOutput.value.value.isAsset)
+          GroupAndSeriesFungible(
+            x.transactionOutput.value.value.asset.get.groupId.get,
+            x.transactionOutput.value.value.asset.get.seriesId.get,
+            QuantityDescriptorType.LIQUID
+          )
+        else ()
+      )
+      val res = assetMap.map { e =>
+        val (key, value) = e
+        val result = value.foldl(BigInt(0))((a, c) => {
+          a + (if (c.transactionOutput.value.value.isLvl)
+                 BigInt(
+                   c.transactionOutput.value.value.lvl.get.quantity.value.toByteArray
+                 )
+               else if (c.transactionOutput.value.value.isGroup)
+                 BigInt(
+                   c.transactionOutput.value.value.group.get.quantity.value.toByteArray
+                 )
+               else if (c.transactionOutput.value.value.isSeries)
+                 BigInt(
+                   c.transactionOutput.value.value.series.get.quantity.value.toByteArray
+                 )
+               else if (c.transactionOutput.value.value.isAsset)
+                 BigInt(
+                   c.transactionOutput.value.value.asset.get.quantity.value.toByteArray
+                 )
+               else BigInt(0))
+        })
+        val keyIdentifier = key match {
+          case LvlType => "LVL"
+          case GroupType(groupId) =>
+            "Group(" + Encoding.encodeToHex(groupId.toByteArray) + ")"
+          case SeriesType(seriesId) =>
+            "Series(" + Encoding.encodeToHex(seriesId.toByteArray) + ")"
+          case GroupAndSeriesFungible(groupId, seriesId, _) =>
+            "Asset(" + Encoding.encodeToHex(
+              groupId.toByteArray
+            ) + ", " + Encoding
+              .encodeToHex(seriesId.toByteArray) + ")"
+          case _ => "Unknown"
+        }
+        (keyIdentifier -> result)
+      }
+      Right(
+        res
+          .filterNot(_._1 == "Unknown")
+          .map(x => x._1 + ": " + x._2.toString)
+          .mkString("\n")
+      )
+    }
+
+  }
 
 }

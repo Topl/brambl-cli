@@ -11,7 +11,8 @@ trait TransactionAlgebraModule
   def transactionOps(
       walletFile: String,
       host: String,
-      port: Int
+      port: Int,
+      secureConnection: Boolean
   ) = TransactionAlgebra
     .make[IO](
       walletApi,
@@ -19,7 +20,8 @@ trait TransactionAlgebraModule
       walletManagementUtils,
       channelResource(
         host,
-        port
+        port,
+        secureConnection
       )
     )
 }

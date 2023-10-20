@@ -22,10 +22,12 @@ trait GenusQueryModeModule
           .make[IO](
             channelResource(
               validateParams.host,
-              validateParams.bifrostPort
+              validateParams.bifrostPort,
+              validateParams.secureConnection
             )
           )
       ).queryUtxoFromParams(
+        validateParams.fromAddress,
         validateParams.fromParty,
         validateParams.fromContract,
         validateParams.someFromState,

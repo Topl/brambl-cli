@@ -173,12 +173,23 @@ object SimpleTransactionAlgebra {
           fromAddress <- transactionBuilderApi.lockAddress(
             predicateFundsToUnlock.get
           )
-          response <- utxoAlgebra.queryUtxo(fromAddress)
+          response <- utxoAlgebra
+            .queryUtxo(fromAddress)
+            .attempt
+            .flatMap {
+              _ match {
+                case Left(_) =>
+                  Sync[F].raiseError(
+                    CreateTxError("Problem contacting network")
+                  ): F[Seq[Txo]]
+                case Right(txos) => Sync[F].pure(txos: Seq[Txo])
+              }
+            }
           txos = response
-          .filter(x =>
-            !x.transactionOutput.value.value.isTopl &&
-            !x.transactionOutput.value.value.isUpdateProposal
-          )
+            .filter(x =>
+              !x.transactionOutput.value.value.isTopl &&
+                !x.transactionOutput.value.value.isUpdateProposal
+            )
           // either toAddress or both toContract and toParty must be defined
           toAddressOpt <- (
             someToAddress,
@@ -228,7 +239,9 @@ object SimpleTransactionAlgebra {
           e match {
             case Right(_)                               => ().asRight
             case Left(e: SimpleTransactionAlgebraError) => e.asLeft
-            case Left(e) => UnexpectedError(e.getMessage()).asLeft
+            case Left(e) =>
+              e.printStackTrace()
+              UnexpectedError(e.getMessage()).asLeft
           }
         )
 

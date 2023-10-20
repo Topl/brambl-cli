@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support to transfer group tokens using the `simple-transaction` command.
 - Support to transfer series tokens using the `simple-transaction` command.
 - Support to transfer asset tokens using the `simple-transaction` command.
+- Add `wallet balance` command to check the balance of an address or of a 
+given pair of coordinates given `--from-party`, `--from-contract` and `--from-state` parameters. 
+- A new parameter `-s` or `--secure` to all commands that require a host address.
+This is necessary to use the TLS over the connection. This is particularly useful
+for the test net.
 
 ### Changed
 
@@ -30,6 +35,9 @@ because we allowed them to be optional.
 - Instead of printing the message "Transaction broadcasted", the `broadcast` 
 subcommand now prints the transaction id. This makes is easier to check
 if the transaction has already been added to the blockchain. 
+- Modify `wallet current-address` to require `--from-party`, `--from-contract` and `--from-state` parameters.
+Using this the user can get the address of any address on the wallet.
+
 
 ## [v2.0.0-alpha4] - 2023-10-10
 ### Added

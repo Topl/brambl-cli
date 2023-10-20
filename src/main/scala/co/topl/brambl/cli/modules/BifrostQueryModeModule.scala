@@ -15,7 +15,8 @@ trait BifrostQueryModeModule extends ChannelResourceModule {
     val bifrostQueryAlgebra = BifrostQueryAlgebra.make[IO](
       channelResource(
         validateParams.host,
-        validateParams.bifrostPort
+        validateParams.bifrostPort,
+        validateParams.secureConnection
       )
     )
     validateParams.subcmd match {

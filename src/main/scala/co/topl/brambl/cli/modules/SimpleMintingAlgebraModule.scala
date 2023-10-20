@@ -15,14 +15,15 @@ trait SimpleMintingAlgebraModule
       networkId: Int,
       ledgerId: Int,
       host: String,
-      bifrostPort: Int
+      bifrostPort: Int,
+      secureConnection: Boolean
   ) = SimpleMintingAlgebra.make[IO](
     Sync[IO],
     walletApi,
     walletStateAlgebra(walletFile),
     walletManagementUtils,
     transactionBuilderApi(networkId, ledgerId),
-    genusQueryAlgebra(host, bifrostPort)
+    genusQueryAlgebra(host, bifrostPort, secureConnection)
   )
 
 }

@@ -21,7 +21,8 @@ trait TxModeModule extends TxParserAlgebraModule with TransactionAlgebraModule {
           transactionOps(
             validateParams.walletFile,
             validateParams.host,
-            validateParams.bifrostPort
+            validateParams.bifrostPort,
+            validateParams.secureConnection
           )
         ).broadcastSimpleTransactionFromParams(validateParams.someInputFile.get)
       case BramblCliSubCmd.prove =>
@@ -33,7 +34,8 @@ trait TxModeModule extends TxParserAlgebraModule with TransactionAlgebraModule {
           transactionOps(
             validateParams.walletFile,
             validateParams.host,
-            validateParams.bifrostPort
+            validateParams.bifrostPort,
+            validateParams.secureConnection
           )
         ).proveSimpleTransactionFromParams(
           validateParams.someInputFile.get,
@@ -50,7 +52,8 @@ trait TxModeModule extends TxParserAlgebraModule with TransactionAlgebraModule {
           transactionOps(
             validateParams.walletFile,
             validateParams.host,
-            validateParams.bifrostPort
+            validateParams.bifrostPort,
+            validateParams.secureConnection
           )
         ).inspectTransaction(validateParams.someInputFile.get)
       case BramblCliSubCmd.create =>
@@ -62,7 +65,8 @@ trait TxModeModule extends TxParserAlgebraModule with TransactionAlgebraModule {
           transactionOps(
             validateParams.walletFile,
             validateParams.host,
-            validateParams.bifrostPort
+            validateParams.bifrostPort,
+            validateParams.secureConnection
           )
         )
           .createComplexTransaction(

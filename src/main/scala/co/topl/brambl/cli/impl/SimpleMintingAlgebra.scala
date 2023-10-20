@@ -10,6 +10,7 @@ import co.topl.brambl.models.box.AssetMintingStatement
 import co.topl.brambl.wallet.WalletApi
 import com.google.protobuf.ByteString
 import io.circe.Json
+import co.topl.genus.services.Txo
 
 trait SimpleMintingAlgebra[F[_]] {
   def createSimpleGroupMintingTransactionFromParams(
@@ -77,7 +78,6 @@ object SimpleMintingAlgebra {
 
     val wa = walletApi
 
-    import co.topl.brambl.syntax._
     private def sharedOps(
         keyfile: String,
         password: String,
@@ -139,7 +139,18 @@ object SimpleMintingAlgebra {
       fromAddress <- transactionBuilderApi.lockAddress(
         predicateFundsToUnlock
       )
-      response <- utxoAlgebra.queryUtxo(fromAddress)
+      response <- utxoAlgebra
+        .queryUtxo(fromAddress)
+        .attempt
+        .flatMap {
+          _ match {
+            case Left(_) =>
+              Sync[F].raiseError(
+                CreateTxError("Problem contacting network")
+              ): F[Seq[Txo]]
+            case Right(txos) => Sync[F].pure(txos: Seq[Txo])
+          }
+        }
       lvlTxos = response.filter(
         _.transactionOutput.value.value.isLvl
       )
@@ -186,7 +197,18 @@ object SimpleMintingAlgebra {
       fromAddress <- transactionBuilderApi.lockAddress(
         predicateFundsToUnlock
       )
-      response <- utxoAlgebra.queryUtxo(fromAddress)
+      response <- utxoAlgebra
+        .queryUtxo(fromAddress)
+        .attempt
+        .flatMap {
+          _ match {
+            case Left(_) =>
+              Sync[F].raiseError(
+                CreateTxError("Problem contacting network")
+              ): F[Seq[Txo]]
+            case Right(txos) => Sync[F].pure(txos: Seq[Txo])
+          }
+        }
       lvlTxos = response.filter(
         _.transactionOutput.value.value.isLvl
       )
@@ -234,15 +256,26 @@ object SimpleMintingAlgebra {
       fromAddress <- transactionBuilderApi.lockAddress(
         predicateFundsToUnlock
       )
-      response <- utxoAlgebra.queryUtxo(fromAddress)
+      response <- utxoAlgebra
+        .queryUtxo(fromAddress)
+        .attempt
+        .flatMap {
+          _ match {
+            case Left(_) =>
+              Sync[F].raiseError(
+                CreateTxError("Problem contacting network")
+              ): F[Seq[Txo]]
+            case Right(txos) => Sync[F].pure(txos: Seq[Txo])
+          }
+        }
       lvlTxos = response.filter(
         _.transactionOutput.value.value.isLvl
       )
-      nonLvlTxos = response.filter(
-        x => (
+      nonLvlTxos = response.filter(x =>
+        (
           !x.transactionOutput.value.value.isLvl &&
-          x.outputAddress != assetMintingStatement.groupTokenUtxo &&
-          x.outputAddress != assetMintingStatement.seriesTokenUtxo
+            x.outputAddress != assetMintingStatement.groupTokenUtxo &&
+            x.outputAddress != assetMintingStatement.seriesTokenUtxo
         )
       )
       groupTxo <- response

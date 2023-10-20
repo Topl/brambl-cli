@@ -158,9 +158,15 @@ object BramblCliParamsParserModule {
     )
     .required()
 
+  def secureArg =
+    opt[Boolean]('s', "secure")
+      .action((x, c) => c.copy(secureConnection = x))
+      .text("Enables the secure connection to the node. (optional)")
+
   val hostPort = Seq(
     hostArg,
-    portArg
+    portArg,
+    secureArg
   )
 
   val groupId = opt[Option[GroupId]]("group-id")
@@ -175,7 +181,8 @@ object BramblCliParamsParserModule {
     Seq(
       networkArg,
       hostArg,
-      portArg
+      portArg,
+      secureArg
     )
 
   val tokenType = opt[TokenType.Value]("token")
@@ -218,6 +225,18 @@ object BramblCliParamsParserModule {
   val coordinates = {
     import builder._
     Seq(
+      opt[Option[String]]("from-address")
+        .action((x, c) => c.copy(fromAddress = x))
+        .text("Address where we are sending the funds from")
+        .validate(someAddress =>
+          someAddress
+            .map(AddressCodecs.decodeAddress(_))
+            .map(_ match {
+              case Left(_)  => failure("Invalid from address")
+              case Right(_) => success
+            })
+            .getOrElse(success)
+        ),
       opt[String]("from-party")
         .action((x, c) => c.copy(fromParty = x))
         .text("Party where we are sending the funds from"),
@@ -385,6 +404,14 @@ object BramblCliParamsParserModule {
     .action((_, c) => c.copy(mode = BramblCliMode.wallet))
     .text("Wallet mode")
     .children(
+      cmd("balance")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.balance))
+        .text("Get balance of wallet")
+        .children(
+          (hostPortNetwork ++ coordinates ++ (Seq(
+            walletDbArg
+          ))): _*
+        ),
       cmd("sync")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.sync))
         .text("Sync wallet")
@@ -447,7 +474,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
         .text("Obtain current address")
         .children(
-          walletDbArg
+          (Seq(walletDbArg) ++ coordinates): _*
         ),
       cmd("export-vk")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.exportvk))
@@ -570,7 +597,11 @@ object BramblCliParamsParserModule {
                     c.mode == BramblCliMode.simpleminting &&
                     c.subcmd == BramblCliSubCmd.create
                   ) {
-                    if (c.tokenType == TokenType.asset) {
+                    if (c.fromAddress.isDefined) {
+                      failure(
+                        "From address is not supported for minting"
+                      )
+                    } else if (c.tokenType == TokenType.asset) {
                       if (c.amount < 0) { // not set
                         success
                       } else {
@@ -631,16 +662,29 @@ object BramblCliParamsParserModule {
                 if (
                   c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
                 )
-                  (c.toAddress, c.someToParty, c.someToContract) match {
-                    case (Some(_), None, None) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
-                    case (None, Some(_), Some(_)) =>
-                      checkTokenAndId(c.tokenType, c.someGroupId, c.someSeriesId)
-                    case _ =>
-                      failure(
-                        "Exactly toParty and toContract together or only toAddress must be specified"
-                      )
-                  }
+                  if (c.fromAddress.isDefined) {
+                    failure(
+                      "From address is not supported for simple transactions"
+                    )
+                  } else
+                    (c.toAddress, c.someToParty, c.someToContract) match {
+                      case (Some(_), None, None) =>
+                        checkTokenAndId(
+                          c.tokenType,
+                          c.someGroupId,
+                          c.someSeriesId
+                        )
+                      case (None, Some(_), Some(_)) =>
+                        checkTokenAndId(
+                          c.tokenType,
+                          c.someGroupId,
+                          c.someSeriesId
+                        )
+                      case _ =>
+                        failure(
+                          "Exactly toParty and toContract together or only toAddress must be specified"
+                        )
+                    }
                 else
                   success
               }
@@ -658,7 +702,7 @@ object BramblCliParamsParserModule {
         success
       case (TokenType.series, None, Some(_)) =>
         success
-        case (TokenType.asset, Some(_), Some(_)) =>
+      case (TokenType.asset, Some(_), Some(_)) =>
         success
       case (TokenType.lvl, None, None) =>
         success
