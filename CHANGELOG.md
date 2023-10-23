@@ -18,6 +18,8 @@ given pair of coordinates given `--from-party`, `--from-contract` and `--from-st
 - A new parameter `-s` or `--secure` to all commands that require a host address.
 This is necessary to use the TLS over the connection. This is particularly useful
 for the test net.
+- Add tutorial to create transactions.
+- Add tutorial to create asset tokens.
 
 ### Changed
 
