@@ -13,7 +13,6 @@ import java.io.FileInputStream
 class WalletRecoveryTest
     extends CatsEffectSuite
     with WalletConstants
-    with IntegrationTearDown
     with CommonTxOperations {
 
   val tmpDirectory = FunFixture[Path](
@@ -52,6 +51,9 @@ class WalletRecoveryTest
           createSimpleTransactionToAddress(
             "noparty",
             "genesis",
+            Some(1),
+            Some("noparty"),
+            Some("genesis"),
             Some(1),
             next_address.get,
             BASE_AMOUNT,
@@ -120,6 +122,9 @@ class WalletRecoveryTest
             "self",
             "default",
             None,
+            None,
+            None,
+            None,
             next_address.get,
             500,
             BASE_FEE,
@@ -157,10 +162,4 @@ class WalletRecoveryTest
     )
   }
 
-  test("Send Wallet Change back to HeightLock") {
-    assertIO(
-      tearDown(walletContext.copy(keyFile = WALLET_MAIN_KEY_RECOVERED)),
-      ExitCode.Success
-    )
-  }
 }

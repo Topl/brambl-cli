@@ -43,6 +43,8 @@ trait WalletModeModule
           if (validateParams.fromAddress.isEmpty) Some(validateParams.fromContract) else None,
           validateParams.someFromState
         )
+      case BramblCliSubCmd.invalid =>
+        IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.exportvk =>
         validateParams.someFromState
           .map(x =>

@@ -40,6 +40,9 @@ if the transaction has already been added to the blockchain.
 - Modify `wallet current-address` to require `--from-party`, `--from-contract` and `--from-state` parameters.
 Using this the user can get the address of any address on the wallet.
 
+- Modified `simple-transaction` command so that it now requires the user
+to provide the change parameters (`--change-party`, `--change-contract`, `--change-state`)
+when the from party is a `noparty`. 
 
 ## [v2.0.0-alpha4] - 2023-10-10
 ### Added

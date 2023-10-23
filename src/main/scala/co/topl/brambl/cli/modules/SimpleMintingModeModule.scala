@@ -16,7 +16,7 @@ trait SimpleMintingModeModule
     with AssetStatementParserModule
     with SimpleMintingAlgebraModule {
 
-  def simpleMingingSubcmds(
+  def simpleMintingSubcmds(
       validateParams: BramblCliParams
   ): IO[Either[String, String]] = {
     val simpleMintingController = new SimpleMintingController(
@@ -33,6 +33,8 @@ trait SimpleMintingModeModule
       )
     )
     validateParams.subcmd match {
+      case BramblCliSubCmd.invalid =>
+        IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.create =>
         validateParams.tokenType match {
           case TokenType.group =>

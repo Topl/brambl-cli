@@ -11,7 +11,7 @@ trait BaseConstants {
 
   val TMP_DIR = "./tmp"
 
-  val BASE_AMOUNT = 1000
+  val BASE_AMOUNT = 10000
 
   val BASE_FEE = 10
 

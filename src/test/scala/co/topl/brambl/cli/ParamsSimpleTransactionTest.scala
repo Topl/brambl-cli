@@ -158,6 +158,41 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 
+  test("Test noparty transactions require change") {
+    val args0 = List(
+      "simple-transaction",
+      "create",
+      "--from-party",
+      "noparty",
+      "--from-contract",
+      "genesis",
+      "--from-state",
+      "1",
+      "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
+      "-w",
+      "test",
+      "-o",
+      "newTransaction.pbuf",
+      "--port",
+      "9084",
+      "-h",
+      "localhost",
+      "-n",
+      "private",
+      "-a",
+      "100",
+      "--fee",
+      "10",
+      "--transfer-token",
+      "lvl",	
+      "--keyfile",
+      "src/test/resources/keyfile.json",
+      "--walletdb",
+      "src/test/resources/wallet.db"
+    )
+    assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
+  }
+
   test("Test from-party transactions require index") {
     val args0 = List(
       "simple-transaction",

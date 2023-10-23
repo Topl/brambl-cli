@@ -74,6 +74,9 @@ trait CommonTxOperations
       fromParty: String,
       fromContract: String,
       someFromState: Option[Int],
+      someChangeParty: Option[String],
+      someChangeContract: Option[String],
+      someChangeState: Option[Int],
       toParty: String,
       toContract: String,
       amount: Int,
@@ -125,6 +128,15 @@ trait CommonTxOperations
           ++ someSeriesId
             .map(s => List("--series-id", s.toString()))
             .getOrElse(List.empty)
+          ++ someChangeParty
+            .map(s => List("--change-party", s.toString()))
+            .getOrElse(List.empty)
+          ++ someChangeContract
+            .map(s => List("--change-contract", s.toString()))
+            .getOrElse(List.empty)
+          ++ someChangeState
+            .map(s => List("--change-state", s.toString()))
+            .getOrElse(List.empty)
       )
     )
 
@@ -154,6 +166,9 @@ trait CommonTxOperations
       fromParty: String,
       fromContract: String,
       someFromState: Option[Int],
+      someChangeParty: Option[String],
+      someChangeContract: Option[String],
+      someChangeState: Option[Int],
       aliceAddress: String,
       amount: Int,
       fee: Int,
@@ -201,6 +216,15 @@ trait CommonTxOperations
             .getOrElse(List.empty)
           ++ someSeriesId
             .map(s => List("--series-id", s.toString()))
+            .getOrElse(List.empty)
+          ++ someChangeParty
+            .map(s => List("--change-party", s.toString()))
+            .getOrElse(List.empty)
+          ++ someChangeContract
+            .map(s => List("--change-contract", s.toString()))
+            .getOrElse(List.empty)
+          ++ someChangeState
+            .map(s => List("--change-state", s.toString()))
             .getOrElse(List.empty)
       )
     }

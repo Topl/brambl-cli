@@ -14,6 +14,8 @@ trait PartiesModeModule extends WalletStateResource {
       walletResource(validateParams.walletFile)
     )
     validateParams.subcmd match {
+      case BramblCliSubCmd.invalid =>
+        IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.add =>
         new PartiesController(partyStorageAlgebra)
           .addParty(validateParams.partyName)

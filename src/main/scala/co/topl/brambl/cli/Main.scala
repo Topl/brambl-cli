@@ -42,7 +42,7 @@ object Main
             case BramblCliMode.simpletransaction =>
               simpleTransactionSubcmds(params)
             case BramblCliMode.simpleminting =>
-              simpleMingingSubcmds(params)
+              simpleMintingSubcmds(params)
             case BramblCliMode.genusquery =>
               genusQuerySubcmd(params)
             case BramblCliMode.bifrostquery =>
