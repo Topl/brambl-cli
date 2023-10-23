@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 # Creating Transactions
@@ -12,45 +12,6 @@ The process of creating a transaction is the following:
 - First, we need to create the actual transaction.
 - Then, we need to prove the transaction.
 - Finally, we need to send the transaction to the network.
-
-## Setup
-
-## Setup Wallet and Funds
-
-To create a transaction, you need to have a wallet with some funds. You can 
-create a wallet following the instructions in the
-[Initialize Wallet](/docs/current/how-tos/initialize-wallet) how to. For people
-to send you funds, you need to share your address with them. You can see how
-to get your current address using the 
-[Get the Current Address](/docs/current/how-tos/current-address). You can check you balance
-using the [Check Balance](/docs/current/how-tos/check-balance) how to.
-
-## Launch a Private Node or use a Public Testnet Node
-
-### Launch a Private Node
-
-To launch a private node you need to have Docker installed in your machine. Once
-Docker is installed, you can launch a node using the following command:
-
-```
-docker run --rm -p 9085:9085 -p 9084:9084 docker.io/toplprotocol/bifrost-node:$NODE_VERSION
-```
-
-The latest available version right now is `2.0.0-alpha9`.
-
-### Use a Public Testnet Node
-
-To use the public test net you need to call the different methods using the 
-`--host` and `--port` parameters. The host is `testnet.topl.tech` and the port
-is `443`. You also need to use the `--secure` or `-s` parameter to use TLS over the
-connection.
-
-For example, to check the balance of the address `ptetP7jshHTwEg9Fz9Xa1AmmzhYHDHo1zZRde7mnw3fddcXPjV14RPcgVgy7`
-on the testnet you need to run the following command:
-
-```bash
-brambl-cli wallet balance --from-address ptetP7jshHTwEg9Fz9Xa1AmmzhYHDHo1zZRde7mnw3fddcXPjV14RPcgVgy7 --walletdb $WALLET --host testnet.topl.tech --port 443 -s true
-```
 
 ## Create an LVL transaction
 
