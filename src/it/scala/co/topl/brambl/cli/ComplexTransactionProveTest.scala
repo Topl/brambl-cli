@@ -220,14 +220,14 @@ class ComplexTransactionProveTest
         _ <- IO.println("Address for Alice: " + sharedAddressForAlice)
         _ <- IO.println("Address for Bob: " + sharedAddressForBob)
         _ <- IO.println("Moving funds (200 LVLs) from shared account to alice")
-        ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress()
+        ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
         _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")
         _ <- assertIO(
           createSimpleTransactionToAddress(
             "alice_bob_0",
             "or_sign",
             None,
-            ALICE_TO_ADDRESS.toOption.get,
+            ALICE_TO_ADDRESS.get,
             200,
             BASE_FEE,
             BOB_SECOND_TX_RAW,
@@ -289,14 +289,14 @@ class ComplexTransactionProveTest
         _ <- IO.println(
           "Moving funds (100 LVLs) from shared and account to alice"
         )
-        ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress()
+        ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
         _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")
         _ <- assertIO(
           createSimpleTransactionToAddress(
             "alice_bob_0",
             "and_sign",
             None,
-            ALICE_TO_ADDRESS.toOption.get,
+            ALICE_TO_ADDRESS.get,
             100,
             BASE_FEE,
             BOB_THIRD_TX_RAW,

@@ -29,7 +29,7 @@ trait IntegrationTearDown
     s"$TMP_DIR/teardown_$label.pbuf"
 
   def tearDown(walletKeyConfig: WalletKeyConfig): IO[ExitCode] = {
-    val genus = genusQueryAlgebra(HOST, BIFROST_PORT)
+    val genus = genusQueryAlgebra(HOST, BIFROST_PORT, false)
     val walletState = walletStateAlgebra(walletKeyConfig.walletFile)
     for {
       changeAmount <- getChangeAmount(genus, walletState)

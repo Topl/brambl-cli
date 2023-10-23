@@ -42,7 +42,7 @@ trait CommonFunctions extends PolicyTemplates {
           .iterateUntil(_ == ExitCode.Success),
         60.seconds
       )
-      ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress()
+      ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
       _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")
       _ <- IO.println("Moving funds from genesis to alice")
       _ <- assertIO(
@@ -50,7 +50,7 @@ trait CommonFunctions extends PolicyTemplates {
           "noparty",
           "genesis",
           Some(1),
-          ALICE_TO_ADDRESS.toOption.get,
+          ALICE_TO_ADDRESS.get,
           BASE_AMOUNT,
           BASE_FEE,
           ALICE_FIRST_TX_RAW,

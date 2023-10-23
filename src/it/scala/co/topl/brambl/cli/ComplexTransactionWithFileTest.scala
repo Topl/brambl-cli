@@ -51,7 +51,7 @@ class ComplexTransactionWithFileTest
             .iterateUntil(_ == ExitCode.Success),
           60.seconds
         )
-        ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress()
+        ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
         genesisAddress <- walletController(ALICE_WALLET)
           .currentaddress("noparty", "genesis", Some(1))
         utxos <- genusQueryAlgebra
@@ -82,7 +82,7 @@ class ComplexTransactionWithFileTest
           ALICE_FIRST_COMPLEX_TX,
           genesisUtxoAddresses.toList,
           genesisAmount,
-          ALICE_TO_ADDRESS.toOption.get
+          ALICE_TO_ADDRESS.get
         )
         _ <- assertIO(
           createComplexTransactionToAddress(
