@@ -152,8 +152,7 @@ To create a simple minting transaction of asset tokens we run the following
 command:
 
 ```bash
-brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $AMS --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token asset
---commitment $COMMITMENT --ephemeralMetadata $EPHEMERAL_METADATA_FILE
+brambl-cli simple-minting create --from-party $PARTY --from-contract $CONTRACT  -h $HOST --port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $AMS --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token asset --commitment $COMMITMENT --ephemeralMetadata $EPHEMERAL_METADATA_FILE
 ```
 
 
@@ -169,5 +168,7 @@ You can check the balance of the address `$TO_ADDRESS` using the following comma
 ```bash
 brambl-cli wallet balance --from-address $TO_ADDRESS --walletdb $WALLET_DB --host $HOST --port $PORT
 ```
+
+You will see the asset, the group token and the series token.
 
 Do not forget to use the `--secure` parameter if you are using the testnet.
