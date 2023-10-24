@@ -222,39 +222,21 @@ object BramblCliParamsParserModule {
     )
     .required()
 
-  val coordinates = {
+  def changeCoordinates = {
     import builder._
     Seq(
-      opt[Option[String]]("from-address")
-        .action((x, c) => c.copy(fromAddress = x))
-        .text("Address where we are sending the funds from")
-        .validate(someAddress =>
-          someAddress
-            .map(AddressCodecs.decodeAddress(_))
-            .map(_ match {
-              case Left(_)  => failure("Invalid from address")
-              case Right(_) => success
-            })
-            .getOrElse(success)
-        ),
-      opt[String]("from-party")
-        .action((x, c) => c.copy(fromParty = x))
-        .text("Party where we are sending the funds from"),
-      opt[String]("from-contract")
-        .action((x, c) => c.copy(fromContract = x))
-        .text("Contract where we are sending the funds from"),
-      opt[Option[Int]]("from-state")
-        .action((x, c) => c.copy(someFromState = x))
-        .text("State from where we are sending the funds from"),
       opt[Option[String]]("change-party")
         .action((x, c) => c.copy(someChangeParty = x))
-        .text("Party where we are sending the change to"),
+        .text("Party where we are sending the change to")
+        .optional(),
       opt[Option[String]]("change-contract")
         .action((x, c) => c.copy(someChangeContract = x))
-        .text("Contract where we are sending the change to"),
+        .text("Contract where we are sending the change to")
+        .optional(),
       opt[Option[Int]]("change-state")
         .action((x, c) => c.copy(someChangeState = x))
-        .text("State where we are sending the change to"),
+        .text("State where we are sending the change to")
+        .optional(),
       checkConfig(c =>
         if (c.fromParty == "noparty") {
           if (c.someFromState.isEmpty) {
@@ -283,6 +265,33 @@ object BramblCliParamsParserModule {
           }
         }
       )
+    )
+  }
+
+  val coordinates = {
+    import builder._
+    Seq(
+      opt[Option[String]]("from-address")
+        .action((x, c) => c.copy(fromAddress = x))
+        .text("Address where we are sending the funds from")
+        .validate(someAddress =>
+          someAddress
+            .map(AddressCodecs.decodeAddress(_))
+            .map(_ match {
+              case Left(_)  => failure("Invalid from address")
+              case Right(_) => success
+            })
+            .getOrElse(success)
+        ),
+      opt[String]("from-party")
+        .action((x, c) => c.copy(fromParty = x))
+        .text("Party where we are sending the funds from"),
+      opt[String]("from-contract")
+        .action((x, c) => c.copy(fromContract = x))
+        .text("Contract where we are sending the funds from"),
+      opt[Option[Int]]("from-state")
+        .action((x, c) => c.copy(someFromState = x))
+        .text("State from where we are sending the funds from")
     )
   }
 
@@ -660,7 +669,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.create))
         .text("Create transaction")
         .children(
-          ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
+          ((coordinates ++ changeCoordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
             outputArg.required()
           )) ++
             Seq(
