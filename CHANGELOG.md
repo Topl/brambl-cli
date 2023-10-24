@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## [v2.0.0-alpha5] - 2023-mm-dd (this date should be changed on release)
+## [v2.0.0-alpha6] - 2023-mm-dd (this date should be changed on release)
+## [v2.0.0-alpha5] - 2023-10-24
 
 ### Added
 
@@ -39,10 +40,10 @@ subcommand now prints the transaction id. This makes is easier to check
 if the transaction has already been added to the blockchain. 
 - Modify `wallet current-address` to require `--from-party`, `--from-contract` and `--from-state` parameters.
 Using this the user can get the address of any address on the wallet.
-
 - Modified `simple-transaction` command so that it now requires the user
 to provide the change parameters (`--change-party`, `--change-contract`, `--change-state`)
 when the from party is a `noparty`. 
+- Update `BramblSc` to `2.0.0-alpha7`.
 
 ## [v2.0.0-alpha4] - 2023-10-10
 ### Added
