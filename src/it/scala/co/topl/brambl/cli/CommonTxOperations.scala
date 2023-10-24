@@ -652,7 +652,8 @@ trait CommonTxOperations
     .make[IO](
       channelResource(
         HOST,
-        BIFROST_PORT
+        BIFROST_PORT,
+        false
       )
     )
 

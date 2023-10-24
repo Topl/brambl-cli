@@ -44,7 +44,7 @@ class WalletRecoveryTest
             .iterateUntil(_ == ExitCode.Success),
           60.seconds
         )
-        next_address <- walletController(WALLET).currentaddress()
+        next_address <- walletController(WALLET).currentaddress("self", "default", None)
         _ <- IO.println(s"Next address is $next_address")
         _ <- IO.println("Moving funds from genesis")
         _ <- assertIO(
@@ -55,7 +55,7 @@ class WalletRecoveryTest
             Some("noparty"),
             Some("genesis"),
             Some(1),
-            next_address.toOption.get,
+            next_address.get,
             BASE_AMOUNT,
             BASE_FEE,
             WALLET_FIRST_TX_RAW,
@@ -114,7 +114,7 @@ class WalletRecoveryTest
           ),
           ExitCode.Success
         )
-        next_address <- walletController(WALLET).currentaddress()
+        next_address <- walletController(WALLET).currentaddress("self", "default", None)
         _ <- IO.println(s"Next address is $next_address")
         _ <- IO.println("Spend funds (500 LVLs) using new key")
         _ <- assertIO(
@@ -125,7 +125,7 @@ class WalletRecoveryTest
             None,
             None,
             None,
-            next_address.toOption.get,
+            next_address.get,
             500,
             BASE_FEE,
             WALLET_SECOND_TX_RAW,

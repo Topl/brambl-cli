@@ -28,7 +28,8 @@ trait SimpleMintingModeModule
         validateParams.network.networkId,
         NetworkConstants.MAIN_LEDGER_ID,
         validateParams.host,
-        validateParams.bifrostPort
+        validateParams.bifrostPort,
+        validateParams.secureConnection
       )
     )
     validateParams.subcmd match {

@@ -23,7 +23,8 @@ trait SimpleTransactionModeModule
           validateParams.walletFile,
           validateParams.network.networkId,
           validateParams.host,
-          validateParams.bifrostPort
+          validateParams.bifrostPort,
+          validateParams.secureConnection
         )
       ).createSimpleTransactionFromParams(
         validateParams.someKeyFile.get,

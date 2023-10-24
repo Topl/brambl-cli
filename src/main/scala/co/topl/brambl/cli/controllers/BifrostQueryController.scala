@@ -1,6 +1,6 @@
 package co.topl.brambl.cli.controllers
 
-import cats.Functor
+import cats.effect.kernel.Sync
 import co.topl.brambl.cli.views.BlockDisplayOps
 import co.topl.brambl.dataApi.BifrostQueryAlgebra
 import co.topl.brambl.models.TransactionId
@@ -8,7 +8,7 @@ import co.topl.brambl.utils.Encoding
 import co.topl.consensus.models.BlockId
 import com.google.protobuf.ByteString
 
-class BifrostQueryController[F[_]: Functor](
+class BifrostQueryController[F[_]: Sync](
     bifrostQueryAlgebra: BifrostQueryAlgebra[F]
 ) {
   def blockByHeight(
@@ -26,7 +26,13 @@ class BifrostQueryController[F[_]: Functor](
           case None =>
             Left("No blocks found at that height")
         }
-      }
+      }            .attempt
+            .map {
+              _ match {
+                case Left(_)     => Left("Problem contacting the network.")
+                case Right(txos) => txos
+              }
+            }
   }
 
   def blockById(
@@ -48,7 +54,13 @@ class BifrostQueryController[F[_]: Functor](
           case None =>
             Left("No blocks found at that block id")
         }
-      }
+      }            .attempt
+            .map {
+              _ match {
+                case Left(_)     => Left("Problem contacting the network.")
+                case Right(txos) => txos
+              }
+            }
   }
 
   def fetchTransaction(transactionId: String): F[Either[String, String]] = {
@@ -68,7 +80,13 @@ class BifrostQueryController[F[_]: Functor](
           case None =>
             Left(s"No transaction found with id ${transactionId}")
         }
-      }
+      }            .attempt
+            .map {
+              _ match {
+                case Left(_)     => Left("Problem contacting the network.")
+                case Right(txos) => txos
+              }
+            }
   }
 
 }

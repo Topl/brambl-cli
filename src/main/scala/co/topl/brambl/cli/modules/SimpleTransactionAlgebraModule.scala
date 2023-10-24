@@ -13,14 +13,16 @@ trait SimpleTransactionAlgebraModule
       walletFile: String,
       networkId: Int,
       host: String,
-      bifrostPort: Int
+      bifrostPort: Int,
+      secureConnection: Boolean
   ) = SimpleTransactionAlgebra
     .make[IO](
       walletApi,
       walletStateAlgebra(walletFile),
       genusQueryAlgebra(
         host,
-        bifrostPort
+        bifrostPort,
+        secureConnection
       ),
       transactionBuilderApi(
         networkId,

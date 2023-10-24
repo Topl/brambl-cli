@@ -67,6 +67,7 @@ const config = {
         },
         items: [
           {to: '/docs/current/intro', label: 'Getting Started', position: 'left'},
+          {to: '/docs/current/category/tutorials', label: 'Tutorials', position: 'left'},
           {to: '/docs/current/category/how-tos', label: 'How Tos', position: 'left'},
           {to: '/docs/current/category/cli-reference', label: 'CLI Reference', position: 'left'},
           {
@@ -85,6 +86,10 @@ const config = {
               {
                 label: 'Getting Started',
                 to: '/docs/current/intro',
+              },
+              {
+                label: 'Tutorials',
+                to: '/docs/current/category/tutorials',
               },
               {
                 label: 'How Tos',

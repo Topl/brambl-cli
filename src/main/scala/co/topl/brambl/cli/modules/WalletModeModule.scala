@@ -1,10 +1,10 @@
 package co.topl.brambl.cli.modules
 
 import cats.effect.IO
+import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.controllers.WalletController
 import co.topl.brambl.dataApi.GenusQueryAlgebra
-import co.topl.brambl.cli.BramblCliParams
 
 trait WalletModeModule
     extends WalletStateAlgebraModule
@@ -30,11 +30,19 @@ trait WalletModeModule
         .make[IO](
           channelResource(
             validateParams.host,
-            validateParams.bifrostPort
+            validateParams.bifrostPort,
+            validateParams.secureConnection
           )
         )
     )
     validateParams.subcmd match {
+      case BramblCliSubCmd.balance =>
+        walletController.getBalance(
+          validateParams.fromAddress,
+          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromParty) else None,
+          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromContract) else None,
+          validateParams.someFromState
+        )
       case BramblCliSubCmd.invalid =>
         IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.exportvk =>
@@ -78,7 +86,9 @@ trait WalletModeModule
           validateParams.partyName
         )
       case BramblCliSubCmd.currentaddress =>
-        walletController.currentaddress()
+        walletController.currentaddress(
+          validateParams
+        )
     }
   }
 }
