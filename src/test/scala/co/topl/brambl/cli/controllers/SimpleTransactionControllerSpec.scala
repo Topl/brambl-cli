@@ -99,7 +99,7 @@ class SimpleTransactionControllerSpec
       override def validateCurrentIndicesForFunds(
           fellowship: String,
           template: String,
-          someState: Option[Int]
+          someInteraction: Option[Int]
       ): F[ValidatedNel[String, Indices]] = {
         import cats.implicits._
         Indices(1, 2, 3).validNel.pure[F]

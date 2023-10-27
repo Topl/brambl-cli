@@ -42,13 +42,13 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
   override def getCurrentIndicesForFunds(
       fellowship: String,
       template: String,
-      someState: Option[Int]
+      someInteraction: Option[Int]
   ): F[Option[Indices]] = ???
 
   override def validateCurrentIndicesForFunds(
       fellowship: String,
       template: String,
-      someState: Option[Int]
+      someInteraction: Option[Int]
   ): F[ValidatedNel[String, Indices]] = ???
 
   override def getNextIndicesForFunds(

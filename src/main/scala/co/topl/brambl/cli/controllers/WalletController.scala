@@ -331,15 +331,15 @@ class WalletController[F[_]: Sync](
   def currentaddress(
       fellowship: String,
       template: String,
-      someState: Option[Int]
+      someInteraction: Option[Int]
   ): F[Option[String]] =
-    walletStateAlgebra.getAddress(fellowship, template, someState)
+    walletStateAlgebra.getAddress(fellowship, template, someInteraction)
 
   def getBalance(
       someAddress: Option[String],
       someFellowship: Option[String],
       someTemplate: Option[String],
-      someState: Option[Int]
+      someInteraction: Option[Int]
   ): F[Either[String, String]] = {
 
     import cats.implicits._
@@ -350,7 +350,7 @@ class WalletController[F[_]: Sync](
         walletStateAlgebra.getAddress(
           fellowship,
           template,
-          someState
+          someInteraction
         )
       case (_, _, _) =>
         Sync[F].raiseError(
