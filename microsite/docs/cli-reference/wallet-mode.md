@@ -12,7 +12,7 @@ Sync wallet
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --port <value>   Port Bifrost node. (mandatory)
-  --party-name <value>     Name of the party. (mandatory)
+  --fellowship-name <value>     Name of the fellowship. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
 Command: wallet init
@@ -43,13 +43,13 @@ Export verification key
   --walletdb <value>       Wallet DB file. (mandatory)
   -o, --output <value>     The output file.
   --walletdb <value>       Wallet DB file. (mandatory)
-  --party-name <value>     Name of the party. (mandatory)
+  --fellowship-name <value>     Name of the fellowship. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
   --state <value>          State from where we are sending the funds from
 Command: wallet import-vks
 Import verification key
   --walletdb <value>       Wallet DB file. (mandatory)
-  --party-name <value>     Name of the party. (mandatory)
+  --fellowship-name <value>     Name of the fellowship. (mandatory)
   --contract-name <value>  Name of the contract. (mandatory)
   --input-vks <value>      The keys to import. (mandatory)
   

@@ -129,7 +129,7 @@ object BramblCliParamsParserModule {
 
   val fellowshipNameArg = opt[String]("fellowship-name")
     .validate(x =>
-      if (x.trim().isEmpty) failure("Party name may not be empty")
+      if (x.trim().isEmpty) failure("Fellowship name may not be empty")
       else success
     )
     .action((x, c) => c.copy(fellowshipName = x))
@@ -226,8 +226,8 @@ object BramblCliParamsParserModule {
     import builder._
     Seq(
       opt[Option[String]]("change-fellowship")
-        .action((x, c) => c.copy(someChangeParty = x))
-        .text("Party where we are sending the change to")
+        .action((x, c) => c.copy(someChangeFellowship = x))
+        .text("Fellowship where we are sending the change to")
         .optional(),
       opt[Option[String]]("change-contract")
         .action((x, c) => c.copy(someChangeContract = x))
@@ -238,11 +238,11 @@ object BramblCliParamsParserModule {
         .text("State where we are sending the change to")
         .optional(),
       checkConfig(c =>
-        if (c.fromParty == "nofellowship") {
+        if (c.fromFellowship == "nofellowship") {
           if (c.someFromState.isEmpty) {
             failure("You must specify a from-state when using nofellowship")
           } else {
-            (c.someChangeParty, c.someChangeContract, c.someChangeState) match {
+            (c.someChangeFellowship, c.someChangeContract, c.someChangeState) match {
               case (Some(_), Some(_), Some(_)) =>
                 success
               case (_, _, _) =>
@@ -253,7 +253,7 @@ object BramblCliParamsParserModule {
             success
           }
         } else {
-          (c.someChangeParty, c.someChangeContract, c.someChangeState) match {
+          (c.someChangeFellowship, c.someChangeContract, c.someChangeState) match {
             case (Some(_), Some(_), Some(_)) =>
               success
             case (None, None, None) =>
@@ -284,8 +284,8 @@ object BramblCliParamsParserModule {
             .getOrElse(success)
         ),
       opt[String]("from-fellowship")
-        .action((x, c) => c.copy(fromParty = x))
-        .text("Party where we are sending the funds from"),
+        .action((x, c) => c.copy(fromFellowship = x))
+        .text("Fellowship where we are sending the funds from"),
       opt[String]("from-contract")
         .action((x, c) => c.copy(fromContract = x))
         .text("Contract where we are sending the funds from"),
@@ -340,19 +340,19 @@ object BramblCliParamsParserModule {
         )
     )
 
-  val partiesMode = cmd("parties")
-    .action((_, c) => c.copy(mode = BramblCliMode.parties))
-    .text("Entity mode")
+  val fellowshipsMode = cmd("fellowships")
+    .action((_, c) => c.copy(mode = BramblCliMode.fellowships))
+    .text("Fellowship mode")
     .children(
       cmd("list")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.list))
-        .text("List existing parties")
+        .text("List existing fellowships")
         .children(
           walletDbArg
         ),
       cmd("add")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
-        .text("Add a new parties")
+        .text("Add a new fellowships")
         .children(
           Seq(
             walletDbArg,
@@ -680,9 +680,9 @@ object BramblCliParamsParserModule {
                   "Address to send LVLs to. (mandatory if to-fellowship and to-contract are not provided)"
                 ),
               opt[Option[String]]("to-fellowship")
-                .action((x, c) => c.copy(someToParty = x))
+                .action((x, c) => c.copy(someToFellowship = x))
                 .text(
-                  "Party to send LVLs to. (mandatory if to is not provided)"
+                  "Fellowship to send LVLs to. (mandatory if to is not provided)"
                 ),
               opt[Option[String]]("to-contract")
                 .action((x, c) => c.copy(someToContract = x))
@@ -702,7 +702,7 @@ object BramblCliParamsParserModule {
                       "From address is not supported for simple transactions"
                     )
                   } else
-                    (c.toAddress, c.someToParty, c.someToContract) match {
+                    (c.toAddress, c.someToFellowship, c.someToContract) match {
                       case (Some(_), None, None) =>
                         checkTokenAndId(
                           c.tokenType,
@@ -717,7 +717,7 @@ object BramblCliParamsParserModule {
                         )
                       case _ =>
                         failure(
-                          "Exactly toParty and toContract together or only toAddress must be specified"
+                          "Exactly toFellowship and toContract together or only toAddress must be specified"
                         )
                     }
                 else
@@ -751,7 +751,7 @@ object BramblCliParamsParserModule {
   val paramParser = {
     OParser.sequence(
       contractsMode,
-      partiesMode,
+      fellowshipsMode,
       genusQueryMode,
       bifrostQueryMode,
       walletMode,

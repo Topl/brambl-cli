@@ -126,12 +126,12 @@ class ComplexTransactionWithFileTest
         _ <- assertIO(createWallet().run(bobContext), ExitCode.Success)
         _ <- IO.println("Add bob to alice's wallet")
         _ <- assertIO(
-          addPartyToWallet("alice_bob_0").run(aliceContext),
+          addFellowshipToWallet("alice_bob_0").run(aliceContext),
           ExitCode.Success
         )
         _ <- IO.println("Add alice to bob's wallet")
         _ <- assertIO(
-          addPartyToWallet("alice_bob_0").run(bobContext),
+          addFellowshipToWallet("alice_bob_0").run(bobContext),
           ExitCode.Success
         )
         _ <- IO.println("Add a contract to alice's wallet")

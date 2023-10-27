@@ -39,7 +39,7 @@ trait WalletModeModule
       case BramblCliSubCmd.balance =>
         walletController.getBalance(
           validateParams.fromAddress,
-          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromParty) else None,
+          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromFellowship) else None,
           if (validateParams.fromAddress.isEmpty) Some(validateParams.fromContract) else None,
           validateParams.someFromState
         )

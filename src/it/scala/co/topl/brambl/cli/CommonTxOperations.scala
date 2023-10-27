@@ -71,13 +71,13 @@ trait CommonTxOperations
   )
 
   def createSimpleTransactionToCartesianIdx(
-      fromParty: String,
+      fromFellowship: String,
       fromContract: String,
       someFromState: Option[Int],
-      someChangeParty: Option[String],
+      someChangeFellowship: Option[String],
       someChangeContract: Option[String],
       someChangeState: Option[Int],
-      toParty: String,
+      toFellowship: String,
       toContract: String,
       amount: Int,
       fee: Int,
@@ -92,11 +92,11 @@ trait CommonTxOperations
           "simple-transaction",
           "create",
           "--from-fellowship",
-          fromParty, // "alice_bob_0",
+          fromFellowship, // "alice_bob_0",
           "--from-contract",
           fromContract, // "or_sign",
           "--to-fellowship",
-          toParty,
+          toFellowship,
           "--to-contract",
           toContract,
           "-w",
@@ -128,7 +128,7 @@ trait CommonTxOperations
           ++ someSeriesId
             .map(s => List("--series-id", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeParty
+          ++ someChangeFellowship
             .map(s => List("--change-fellowship", s.toString()))
             .getOrElse(List.empty)
           ++ someChangeContract
@@ -163,10 +163,10 @@ trait CommonTxOperations
       )
     )
   def createSimpleTransactionToAddress(
-      fromParty: String,
+      fromFellowship: String,
       fromContract: String,
       someFromState: Option[Int],
-      someChangeParty: Option[String],
+      someChangeFellowship: Option[String],
       someChangeContract: Option[String],
       someChangeState: Option[Int],
       aliceAddress: String,
@@ -183,7 +183,7 @@ trait CommonTxOperations
           "simple-transaction",
           "create",
           "--from-fellowship",
-          fromParty, // "alice_bob_0",
+          fromFellowship, // "alice_bob_0",
           "--from-contract",
           fromContract, // "or_sign",
           "-t",
@@ -217,7 +217,7 @@ trait CommonTxOperations
           ++ someSeriesId
             .map(s => List("--series-id", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeParty
+          ++ someChangeFellowship
             .map(s => List("--change-fellowship", s.toString()))
             .getOrElse(List.empty)
           ++ someChangeContract
@@ -230,7 +230,7 @@ trait CommonTxOperations
     }
 
   def createSimpleGroupMintingTransaction(
-      fromParty: String,
+      fromFellowship: String,
       fromContract: String,
       someFromState: Option[Int],
       amount: Long,
@@ -244,7 +244,7 @@ trait CommonTxOperations
           "simple-minting",
           "create",
           "--from-fellowship",
-          fromParty,
+          fromFellowship,
           "--from-contract",
           fromContract,
           "-h",
@@ -275,7 +275,7 @@ trait CommonTxOperations
       )
     )
   def createSimpleSeriesMintingTransaction(
-      fromParty: String,
+      fromFellowship: String,
       fromContract: String,
       someFromState: Option[Int],
       amount: Long,
@@ -289,7 +289,7 @@ trait CommonTxOperations
           "simple-minting",
           "create",
           "--from-fellowship",
-          fromParty,
+          fromFellowship,
           "--from-contract",
           fromContract,
           "-h",
@@ -320,7 +320,7 @@ trait CommonTxOperations
       )
     )
   def createSimpleAssetMintingTransaction(
-      fromParty: String,
+      fromFellowship: String,
       fromContract: String,
       someFromState: Option[Int],
       fee: Long,
@@ -334,7 +334,7 @@ trait CommonTxOperations
           "simple-minting",
           "create",
           "--from-fellowship",
-          fromParty,
+          fromFellowship,
           "--from-contract",
           fromContract,
           "-h",
@@ -576,11 +576,11 @@ trait CommonTxOperations
       )
     )
 
-  def addPartyToWallet(fellowshipName: String) =
+  def addFellowshipToWallet(fellowshipName: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
-          "parties",
+          "fellowships",
           "add",
           "--fellowship-name",
           fellowshipName,

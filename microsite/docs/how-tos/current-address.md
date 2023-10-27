@@ -7,7 +7,7 @@ sidebar_position: 3
 To get the current address of the wallet run the following command:
 
 ```bash
-brambl-cli wallet current-address --walletdb $WALLET --from-party $PARTY --from-contract $CONTRACT --from-state $STATE
+brambl-cli wallet current-address --walletdb $WALLET --from-fellowship $FELLOWSHIP --from-contract $CONTRACT --from-state $STATE
 ```
 
 This will output the current address of the wallet at the given state.

@@ -47,7 +47,7 @@ class BaseWalletApi[F[_]] extends WalletApi[F] {
 
   override def deriveChildKeysPartial(
       keyPair: KeyPair,
-      xParty: Int,
+      xFellowship: Int,
       yContract: Int
   ): F[KeyPair] = ???
 

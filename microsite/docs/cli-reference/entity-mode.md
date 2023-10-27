@@ -5,17 +5,17 @@ sidebar_position: 1
 # Entity Mode
 
 ```
-Command: parties [list|add] [options]
+Command: fellowships [list|add] [options]
 Entity mode
-Command: parties list
-List existing parties
+Command: fellowships list
+List existing fellowships
   --walletdb <value>       Wallet DB file. (mandatory)
-Command: parties add
-Add a new parties
+Command: fellowships add
+Add a new fellowships
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
-  --party-name <value>     Name of the party. (mandatory)
+  --fellowship-name <value>     Name of the fellowship. (mandatory)
 
 ```

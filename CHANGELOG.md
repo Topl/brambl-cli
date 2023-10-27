@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support to transfer series tokens using the `simple-transaction` command.
 - Support to transfer asset tokens using the `simple-transaction` command.
 - Add `wallet balance` command to check the balance of an address or of a 
-given pair of coordinates given `--from-party`, `--from-contract` and `--from-state` parameters. 
+given pair of coordinates given `--from-fellowship`, `--from-contract` and `--from-state` parameters. 
 - A new parameter `-s` or `--secure` to all commands that require a host address.
 This is necessary to use the TLS over the connection. This is particularly useful
 for the test net.
@@ -37,11 +37,11 @@ an optional parameter `--group-id` to specify the group token to transfer.
 - Instead of printing the message "Transaction broadcasted", the `broadcast` 
 subcommand now prints the transaction id. This makes is easier to check
 if the transaction has already been added to the blockchain. 
-- Modify `wallet current-address` to require `--from-party`, `--from-contract` and `--from-state` parameters.
+- Modify `wallet current-address` to require `--from-fellowship`, `--from-contract` and `--from-state` parameters.
 Using this the user can get the address of any address on the wallet.
 - Modified `simple-transaction` command so that it now requires the user
-to provide the change parameters (`--change-party`, `--change-contract`, `--change-state`)
-when the from party is a `noparty`. 
+to provide the change parameters (`--change-fellowship`, `--change-contract`, `--change-state`)
+when the from fellowship is a `nofellowship`. 
 - Update `BramblSc` to `2.0.0-alpha7`.
 
 ## [v2.0.0-alpha4] - 2023-10-10

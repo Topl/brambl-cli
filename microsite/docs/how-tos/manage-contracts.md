@@ -4,7 +4,7 @@ sidebar_position: 10
 
 # Manage Contracts
 
-The contracts are the agreements between the parties they are described using
+The contracts are the agreements between the fellowships they are described using
 Quivr.
 
 

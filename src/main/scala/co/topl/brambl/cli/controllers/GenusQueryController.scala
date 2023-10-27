@@ -16,7 +16,7 @@ class GenusQueryController[F[_]: Sync](
 
   def queryUtxoFromParams(
       someFromAddress: Option[String],
-      fromParty: String,
+      fromFellowship: String,
       fromContract: String,
       someFromState: Option[Int],
       tokenType: TokenType.Value = TokenType.all
@@ -27,7 +27,7 @@ class GenusQueryController[F[_]: Sync](
       .map(x => Sync[F].point(Some(x)))
       .getOrElse(
         walletStateAlgebra
-          .getAddress(fromParty, fromContract, someFromState)
+          .getAddress(fromFellowship, fromContract, someFromState)
       )
       .flatMap {
         case Some(address) =>

@@ -30,17 +30,17 @@ trait SimpleTransactionModeModule
         validateParams.someKeyFile.get,
         validateParams.password,
         (
-          validateParams.fromParty,
+          validateParams.fromFellowship,
           validateParams.fromContract,
           validateParams.someFromState
         ),
         (
-          validateParams.someChangeParty,
+          validateParams.someChangeFellowship,
           validateParams.someChangeContract,
           validateParams.someChangeState
         ),
         validateParams.toAddress,
-        validateParams.someToParty,
+        validateParams.someToFellowship,
         validateParams.someToContract,
         validateParams.amount,
         validateParams.fee,

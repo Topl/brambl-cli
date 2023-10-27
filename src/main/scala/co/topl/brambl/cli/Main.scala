@@ -6,7 +6,7 @@ import cats.effect.IOApp
 import co.topl.brambl.cli.modules.BifrostQueryModeModule
 import co.topl.brambl.cli.modules.ContractModeModule
 import co.topl.brambl.cli.modules.GenusQueryModeModule
-import co.topl.brambl.cli.modules.PartiesModeModule
+import co.topl.brambl.cli.modules.FellowshipsModeModule
 import co.topl.brambl.cli.modules.SimpleTransactionModeModule
 import co.topl.brambl.cli.modules.TxModeModule
 import co.topl.brambl.cli.modules.WalletModeModule
@@ -18,7 +18,7 @@ object Main
     with GenusQueryModeModule
     with BifrostQueryModeModule
     with ContractModeModule
-    with PartiesModeModule
+    with FellowshipsModeModule
     with WalletModeModule
     with SimpleTransactionModeModule
     with TxModeModule
@@ -35,8 +35,8 @@ object Main
               txModeSubcmds(params)
             case BramblCliMode.contracts =>
               contractModeSubcmds(params)
-            case BramblCliMode.parties =>
-              partiesModeSubcmds(params)
+            case BramblCliMode.fellowships =>
+              fellowshipsModeSubcmds(params)
             case BramblCliMode.wallet =>
               walletModeSubcmds(params)
             case BramblCliMode.simpletransaction =>

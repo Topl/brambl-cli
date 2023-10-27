@@ -5,7 +5,7 @@ import co.topl.brambl.dataApi.{WalletEntity, WalletContract}
 object WalletModelDisplayOps {
 
   def displayWalletEntityHeader(): String =
-    s"""X Coordinate\tParty Name"""
+    s"""X Coordinate\tFellowship Name"""
 
   def displayWalletContractHeader(): String =
     s"""Y Coordinate\tContract Name\tLock Template"""

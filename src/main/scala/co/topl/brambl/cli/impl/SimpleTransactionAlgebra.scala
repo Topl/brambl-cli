@@ -22,14 +22,14 @@ trait SimpleTransactionAlgebra[F[_]] {
   def createSimpleTransactionFromParams(
       keyfile: String,
       password: String,
-      fromParty: String,
+      fromFellowship: String,
       fromContract: String,
       someFromState: Option[Int],
-      someChangeParty: Option[String],
+      someChangeFellowship: Option[String],
       someChangeContract: Option[String],
       someChangeState: Option[Int],
       someToAddress: Option[LockAddress],
-      someToParty: Option[String],
+      someToFellowship: Option[String],
       someToContract: Option[String],
       amount: Long,
       fee: Long,
@@ -52,7 +52,7 @@ object SimpleTransactionAlgebra {
 
       private def buildTransaction(
           txos: Seq[Txo],
-          someChangeParty: Option[String],
+          someChangeFellowship: Option[String],
           someChangeContract: Option[String],
           someChangeState: Option[Int],
           predicateFundsToUnlock: Lock.Predicate,
@@ -82,13 +82,13 @@ object SimpleTransactionAlgebra {
           ioTransaction <- Sync[F].fromEither(eitherIoTransaction)
           // Only save to wallet state if there is a change output in the transaction
           nextIndicesExist <- (
-            someChangeParty,
+            someChangeFellowship,
             someChangeContract,
             someChangeState
           ) match {
-            case (Some(changeParty), Some(changeContract), Some(changeState)) =>
+            case (Some(changeFellowship), Some(changeContract), Some(changeState)) =>
               walletStateApi.getCurrentIndicesForFunds(
-                changeParty,
+                changeFellowship,
                 changeContract,
                 Some(changeState)
               ).map(_.isDefined)
@@ -145,14 +145,14 @@ object SimpleTransactionAlgebra {
       override def createSimpleTransactionFromParams(
           keyfile: String,
           password: String,
-          fromParty: String,
+          fromFellowship: String,
           fromContract: String,
           someFromState: Option[Int],
-          someChangeParty: Option[String],
+          someChangeFellowship: Option[String],
           someChangeContract: Option[String],
           someChangeState: Option[Int],
           someToAddress: Option[LockAddress],
-          someToParty: Option[String],
+          someToFellowship: Option[String],
           someToContract: Option[String],
           amount: Long,
           fee: Long,
@@ -168,7 +168,7 @@ object SimpleTransactionAlgebra {
               password
             )
           someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
-            fromParty,
+            fromFellowship,
             fromContract,
             someFromState
           )
@@ -179,7 +179,7 @@ object SimpleTransactionAlgebra {
             .sequence
             .map(_.flatten.map(Lock().withPredicate(_)))
           someNextIndices <-
-            (someChangeParty, someChangeContract, someChangeState) match {
+            (someChangeFellowship, someChangeContract, someChangeState) match {
               case (Some(fellowship), Some(contract), Some(state)) =>
                 walletStateApi.getCurrentIndicesForFunds(
                   fellowship,
@@ -188,7 +188,7 @@ object SimpleTransactionAlgebra {
                 )
               case _ =>
                 walletStateApi.getNextIndicesForFunds(
-                  fromParty,
+                  fromFellowship,
                   fromContract
                 )
             }
@@ -196,7 +196,7 @@ object SimpleTransactionAlgebra {
           changeLock <- someNextIndices
             .map{idx =>
               walletStateApi
-                .getLock(fromParty, fromContract, idx.z)
+                .getLock(fromFellowship, fromContract, idx.z)
             }
             .sequence
             .map(_.flatten)
@@ -220,10 +220,10 @@ object SimpleTransactionAlgebra {
               !x.transactionOutput.value.value.isTopl &&
                 !x.transactionOutput.value.value.isUpdateProposal
             )
-          // either toAddress or both toContract and toParty must be defined
+          // either toAddress or both toContract and toFellowship must be defined
           toAddressOpt <- (
             someToAddress,
-            someToParty,
+            someToFellowship,
             someToContract
           ) match {
             case (Some(address), _, _) => Sync[F].point(Some(address))
@@ -245,7 +245,7 @@ object SimpleTransactionAlgebra {
                  case (Some(lockPredicateForChange), Some(toAddress)) =>
                    buildTransaction(
                      txos,
-                     someChangeParty,
+                     someChangeFellowship,
                      someChangeContract,
                      someChangeState,
                      predicateFundsToUnlock.get.getPredicate,

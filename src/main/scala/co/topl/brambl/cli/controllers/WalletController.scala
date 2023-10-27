@@ -244,7 +244,7 @@ class WalletController[F[_]: Sync](
       .getOrElse(
         walletStateAlgebra
           .getAddress(
-            params.fromParty,
+            params.fromFellowship,
             params.fromContract,
             params.someFromState
           )
@@ -337,13 +337,13 @@ class WalletController[F[_]: Sync](
 
   def getBalance(
       someAddress: Option[String],
-      someParty: Option[String],
+      someFellowship: Option[String],
       someContract: Option[String],
       someState: Option[Int]
   ): F[Either[String, String]] = {
 
     import cats.implicits._
-    val addressGetter = (someAddress, someParty, someContract) match {
+    val addressGetter = (someAddress, someFellowship, someContract) match {
       case (Some(address), None, None) =>
         Sync[F].point(Some(address))
       case (None, Some(fellowship), Some(contract)) =>

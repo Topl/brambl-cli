@@ -9,10 +9,10 @@ Command: simple-transaction [create]
 Simple transaction mode
 Command: simple-transaction create [options]
 Create transaction
-  --from-party <value>     Party where we are sending the funds from
+  --from-fellowship <value>     Fellowship where we are sending the funds from
   --from-contract <value>  Contract where we are sending the funds from
   --from-state <value>     State from where we are sending the funds from
-  --change-party <value>   Party where we are sending the change to
+  --change-fellowship <value>   Fellowship where we are sending the change to
   --change-contract <value>
                            Contract where we are sending the change to
   --change-state <value>   State where we are sending the change to
@@ -24,8 +24,8 @@ Create transaction
   --walletdb <value>       Wallet DB file. (mandatory)
   -o, --output <value>     The output file. (mandatory)
   --fee <value>            Fee paid for the transaction
-  -t, --to <value>         Address to send LVLs to. (mandatory if to-party and to-contract are not provided)
-  --to-party <value>       Party to send LVLs to. (mandatory if to is not provided)
+  -t, --to <value>         Address to send LVLs to. (mandatory if to-fellowship and to-contract are not provided)
+  --to-fellowship <value>       Fellowship to send LVLs to. (mandatory if to is not provided)
   --to-contract <value>    Contract to send LVLs to. (mandatory if to is not provided)
   -a, --amount <value>     Amount to send
   --transfer-token <value>
