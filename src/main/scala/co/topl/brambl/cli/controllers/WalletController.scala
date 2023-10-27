@@ -40,7 +40,7 @@ class WalletController[F[_]: Sync](
       inputVks: Seq[File],
       keyfile: String,
       password: String,
-      contractName: String,
+      templateName: String,
       fellowshipName: String
   ): F[Either[String, String]] = {
     import cats.implicits._
@@ -75,12 +75,12 @@ class WalletController[F[_]: Sync](
           ).sequence
         )
       lockTempl <- walletStateAlgebra
-        .getLockTemplate(contractName)
+        .getLockTemplate(templateName)
         .map(_.get) // it exists because of the validation
       // we need to get the corresponding vk
       indices <- walletStateAlgebra.getNextIndicesForFunds(
         fellowshipName,
-        contractName
+        templateName
       )
       keypair <- walletManagementUtils.loadKeys(keyfile, password)
       deriveChildKey <- walletApi.deriveChildKeys(keypair, indices.get)
@@ -111,7 +111,7 @@ class WalletController[F[_]: Sync](
       )
       _ <- walletStateAlgebra.addEntityVks(
         fellowshipName,
-        contractName,
+        templateName,
         deriveChildKeyString :: keyAndEncodedKeys.toList.map(_._2)
       )
       _ <- lockTempl.build(keyAndEncodedKeys.toList.map(_._1))
@@ -123,7 +123,7 @@ class WalletController[F[_]: Sync](
       password: String,
       outputFile: String,
       fellowshipName: String,
-      contractName: String,
+      templateName: String,
       state: Int
   ): F[Either[String, String]] = {
     import cats.implicits._
@@ -131,7 +131,7 @@ class WalletController[F[_]: Sync](
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
           fellowshipName,
-          contractName,
+          templateName,
           None
         )
       )
@@ -167,14 +167,14 @@ class WalletController[F[_]: Sync](
       password: String,
       outputFile: String,
       fellowshipName: String,
-      contractName: String
+      templateName: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
           fellowshipName,
-          contractName,
+          templateName,
           None
         )
       )
@@ -245,7 +245,7 @@ class WalletController[F[_]: Sync](
         walletStateAlgebra
           .getAddress(
             params.fromFellowship,
-            params.fromContract,
+            params.fromTemplate,
             params.someFromState
           )
       )
@@ -258,7 +258,7 @@ class WalletController[F[_]: Sync](
   def sync(
       networkId: Int,
       fellowship: String,
-      contract: String
+      template: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
@@ -268,13 +268,13 @@ class WalletController[F[_]: Sync](
       // current indices
       someIndices <- walletStateAlgebra.getCurrentIndicesForFunds(
         fellowship,
-        contract,
+        template,
         None
       )
       // current address
       someAddress <- walletStateAlgebra.getAddress(
         fellowship,
-        contract,
+        template,
         someIndices.map(_.z)
       )
       // txos that are spent at current address
@@ -295,7 +295,7 @@ class WalletController[F[_]: Sync](
       for {
         vks <- walletStateAlgebra.getEntityVks(
           fellowship,
-          contract
+          template
         )
         vksDerived <- vks.get
           .map(x =>
@@ -307,7 +307,7 @@ class WalletController[F[_]: Sync](
             )
           )
           .sequence
-        lock <- walletStateAlgebra.getLock(fellowship, contract, indices.z)
+        lock <- walletStateAlgebra.getLock(fellowship, template, indices.z)
         lockAddress = LockAddress(
           networkId,
           NetworkConstants.MAIN_LEDGER_ID,
@@ -330,26 +330,26 @@ class WalletController[F[_]: Sync](
 
   def currentaddress(
       fellowship: String,
-      contract: String,
+      template: String,
       someState: Option[Int]
   ): F[Option[String]] =
-    walletStateAlgebra.getAddress(fellowship, contract, someState)
+    walletStateAlgebra.getAddress(fellowship, template, someState)
 
   def getBalance(
       someAddress: Option[String],
       someFellowship: Option[String],
-      someContract: Option[String],
+      someTemplate: Option[String],
       someState: Option[Int]
   ): F[Either[String, String]] = {
 
     import cats.implicits._
-    val addressGetter = (someAddress, someFellowship, someContract) match {
+    val addressGetter = (someAddress, someFellowship, someTemplate) match {
       case (Some(address), None, None) =>
         Sync[F].point(Some(address))
-      case (None, Some(fellowship), Some(contract)) =>
+      case (None, Some(fellowship), Some(template)) =>
         walletStateAlgebra.getAddress(
           fellowship,
-          contract,
+          template,
           someState
         )
       case (_, _, _) =>

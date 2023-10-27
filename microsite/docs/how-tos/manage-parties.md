@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # Manage Fellowships
 
-The fellowships are the entities that are involved in the contracts. 
+The fellowships are the entities that are involved in the templates. 
 
 ## Add a new fellowship
 

@@ -32,7 +32,7 @@ class SimpleMintingControllerSpec
 
       override def getCurrentIndicesForFunds(
           fellowship: String,
-          contract: String,
+          template: String,
           state: Option[Int]
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
@@ -40,7 +40,7 @@ class SimpleMintingControllerSpec
 
       override def getNextIndicesForFunds(
           fellowship: String,
-          contract: String
+          template: String
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
       )
@@ -55,7 +55,7 @@ class SimpleMintingControllerSpec
 
       override def getLock(
           fellowship: String,
-          contract: String,
+          template: String,
           nextState: Int
       ): F[Option[Lock]] =
         Monad[F].pure(

@@ -38,17 +38,17 @@ class ComplexTransactionProveTest
           addFellowshipToWallet("alice_bob_0").run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.println("Add a contract to alice's wallet")
+        _ <- IO.println("Add a template to alice's wallet")
         _ <- assertIO(
-          addContractToWallet(
+          addTemplateToWallet(
             "or_sign",
             "threshold(1, sign(0) or sign(1))"
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.println("Add a contract to bob's wallet")
+        _ <- IO.println("Add a template to bob's wallet")
         _ <- assertIO(
-          addContractToWallet(
+          addTemplateToWallet(
             "or_sign",
             "threshold(1, sign(1) or sign(0))"
           ).run(bobContext),
@@ -126,17 +126,17 @@ class ComplexTransactionProveTest
     import scala.concurrent.duration._
     assertIO(
       for {
-        _ <- IO.println("Add a contract to alice's wallet")
+        _ <- IO.println("Add a template to alice's wallet")
         _ <- assertIO(
-          addContractToWallet(
+          addTemplateToWallet(
             "and_sign",
             "threshold(1, sign(0) and sign(1))"
           ).run(aliceContext),
           ExitCode.Success
         )
-        _ <- IO.println("Add a contract to bob's wallet")
+        _ <- IO.println("Add a template to bob's wallet")
         _ <- assertIO(
-          addContractToWallet(
+          addTemplateToWallet(
             "and_sign",
             "threshold(1, sign(1) and sign(0))"
           ).run(bobContext),

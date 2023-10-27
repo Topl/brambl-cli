@@ -31,17 +31,17 @@ trait SimpleTransactionModeModule
         validateParams.password,
         (
           validateParams.fromFellowship,
-          validateParams.fromContract,
+          validateParams.fromTemplate,
           validateParams.someFromState
         ),
         (
           validateParams.someChangeFellowship,
-          validateParams.someChangeContract,
+          validateParams.someChangeTemplate,
           validateParams.someChangeState
         ),
         validateParams.toAddress,
         validateParams.someToFellowship,
-        validateParams.someToContract,
+        validateParams.someToTemplate,
         validateParams.amount,
         validateParams.fee,
         validateParams.someOutputFile.get,

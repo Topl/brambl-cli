@@ -18,12 +18,12 @@ The process of creating a transaction is the following:
 To create a simple transaction you need to run the following command:
 
 ```bash
-brambl-cli simple-transaction create --from-fellowship $FELLOWSHIP --from-contract $CONTRACT --from-state $STATE -t $TO_ADDRESS -w $PASSWORD --port $PORT -o $TX_FILE -n $NETWORK -a $SEND_AMOUNT -h $HOST -i $MAIN_KEY --walletdb $WALLET --fee $FEE --transfer-token $TOKEN_TYPE
+brambl-cli simple-transaction create --from-fellowship $FELLOWSHIP --from-template $LOCK_TEMPLATE --from-state $STATE -t $TO_ADDRESS -w $PASSWORD --port $PORT -o $TX_FILE -n $NETWORK -a $SEND_AMOUNT -h $HOST -i $MAIN_KEY --walletdb $WALLET --fee $FEE --transfer-token $TOKEN_TYPE
 ```
 
-This will create a transaction that spends the state `$STATE` of the contract `$CONTRACT` of the fellowship `$FELLOWSHIP` and sends `$SEND_AMOUNT` polys to the address `$TO_ADDRESS`. The transaction will be stored in the file `$TX_FILE`.
+This will create a transaction that spends the state `$STATE` of the template `$LOCK_TEMPLATE` of the fellowship `$FELLOWSHIP` and sends `$SEND_AMOUNT` polys to the address `$TO_ADDRESS`. The transaction will be stored in the file `$TX_FILE`.
 
-The `--from-state` parameter is only required if the fellowship is `nofellowship`. If the fellowship is `self`, or any contract where there is at least one fellowship, then the `--from-state` parameter is not required.
+The `--from-state` parameter is only required if the fellowship is `noparty`. If the fellowship is `self`, or any template where there is at least one fellowship, then the `--from-state` parameter is not required.
 
 
 ## Prove the Transaction

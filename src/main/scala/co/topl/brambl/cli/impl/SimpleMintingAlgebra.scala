@@ -17,7 +17,7 @@ trait SimpleMintingAlgebra[F[_]] {
       keyFile: String,
       password: String,
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       amount: Long,
       fee: Long,
@@ -29,7 +29,7 @@ trait SimpleMintingAlgebra[F[_]] {
       keyFile: String,
       password: String,
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       amount: Long,
       fee: Long,
@@ -41,7 +41,7 @@ trait SimpleMintingAlgebra[F[_]] {
       keyfile: String,
       password: String,
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       fee: Long,
       outputFile: String,
@@ -82,7 +82,7 @@ object SimpleMintingAlgebra {
         keyfile: String,
         password: String,
         fromFellowship: String,
-        fromContract: String,
+        fromTemplate: String,
         someFromState: Option[Int]
     ) = for {
       keyPair <-
@@ -93,15 +93,15 @@ object SimpleMintingAlgebra {
           )
       someCurrentIndices <- getCurrentIndices(
         fromFellowship,
-        fromContract,
+        fromTemplate,
         someFromState
       )
       predicateFundsToUnlock <- getPredicateFundsToUnlock(someCurrentIndices)
-      someNextIndices <- getNextIndices(fromFellowship, fromContract)
+      someNextIndices <- getNextIndices(fromFellowship, fromTemplate)
       changeLock <- getChangeLockPredicate(
         someNextIndices,
         fromFellowship,
-        fromContract
+        fromTemplate
       )
     } yield (
       keyPair,
@@ -115,7 +115,7 @@ object SimpleMintingAlgebra {
         keyfile: String,
         password: String,
         fromFellowship: String,
-        fromContract: String,
+        fromTemplate: String,
         someFromState: Option[Int],
         amount: Long,
         fee: Long,
@@ -126,7 +126,7 @@ object SimpleMintingAlgebra {
         keyfile,
         password,
         fromFellowship,
-        fromContract,
+        fromTemplate,
         someFromState
       )
       (
@@ -173,7 +173,7 @@ object SimpleMintingAlgebra {
         keyfile: String,
         password: String,
         fromFellowship: String,
-        fromContract: String,
+        fromTemplate: String,
         someFromState: Option[Int],
         amount: Long,
         fee: Long,
@@ -184,7 +184,7 @@ object SimpleMintingAlgebra {
         keyfile,
         password,
         fromFellowship,
-        fromContract,
+        fromTemplate,
         someFromState
       )
       (
@@ -231,7 +231,7 @@ object SimpleMintingAlgebra {
         keyfile: String,
         password: String,
         fromFellowship: String,
-        fromContract: String,
+        fromTemplate: String,
         someFromState: Option[Int],
         fee: Long,
         outputFile: String,
@@ -243,7 +243,7 @@ object SimpleMintingAlgebra {
         keyfile,
         password,
         fromFellowship,
-        fromContract,
+        fromTemplate,
         someFromState
       )
       (

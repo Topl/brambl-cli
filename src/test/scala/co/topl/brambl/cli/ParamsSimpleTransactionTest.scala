@@ -124,13 +124,13 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
-  test("Test nofellowship transactions require index") {
+  test("Test noparty transactions require index") {
     val args0 = List(
       "simple-transaction",
       "create",
       "--from-fellowship",
-      "nofellowship",
-      "--from-contract",
+      "noparty",
+      "--from-template",
       "genesis",
       "-t",
       "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
@@ -158,13 +158,13 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 
-  test("Test nofellowship transactions require change") {
+  test("Test noparty transactions require change") {
     val args0 = List(
       "simple-transaction",
       "create",
       "--from-fellowship",
-      "nofellowship",
-      "--from-contract",
+      "noparty",
+      "--from-template",
       "genesis",
       "--from-state",
       "1",
@@ -198,8 +198,8 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "simple-transaction",
       "create",
       "--from-fellowship",
-      "nofellowship",
-      "--from-contract",
+      "noparty",
+      "--from-template",
       "genesis",
       "--from-state",
       "0",
@@ -229,13 +229,13 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
-  test("Test valid transaction create using toFellowship and toContract") {
+  test("Test valid transaction create using toFellowship and toTemplate") {
     val args0 = List(
       "simple-transaction",
       "create",
       "--to-fellowship",
       "self",
-      "--to-contract",
+      "--to-template",
       "default",
       "-w",
       "test",
@@ -262,7 +262,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
   }
 
   test(
-    "Test invalid transaction create with all toAddress, toFellowship and toContract"
+    "Test invalid transaction create with all toAddress, toFellowship and toTemplate"
   ) {
     val args0 = List(
       "simple-transaction",
@@ -271,7 +271,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
       "--to-fellowship",
       "self",
-      "--to-contract",
+      "--to-template",
       "default",
       "-w",
       "test",
@@ -293,7 +293,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
   test(
-    "Test invalid transaction create with no toAddress, toFellowship or toContract"
+    "Test invalid transaction create with no toAddress, toFellowship or toTemplate"
   ) {
     val args0 = List(
       "simple-transaction",
@@ -319,12 +319,12 @@ class ParamsSimpleTransactionTest extends FunSuite {
 
   }
   test(
-    "Test invalid transaction create with only one of toFellowship or toContract"
+    "Test invalid transaction create with only one of toFellowship or toTemplate"
   ) {
     val args0 = List(
       "simple-transaction",
       "create",
-      "--to-contract",
+      "--to-template",
       "default",
       "-w",
       "test",

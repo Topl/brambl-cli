@@ -20,7 +20,7 @@ trait CommonTxOperations
     with BaseConstants {
 
   def syncWallet(
-      contractName: String,
+      templateName: String,
       fellowshipName: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -28,8 +28,8 @@ trait CommonTxOperations
         List(
           "wallet",
           "sync",
-          "--contract-name",
-          contractName,
+          "--template-name",
+          templateName,
           "--fellowship-name",
           fellowshipName,
           "--walletdb",
@@ -72,13 +72,13 @@ trait CommonTxOperations
 
   def createSimpleTransactionToCartesianIdx(
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       someChangeFellowship: Option[String],
-      someChangeContract: Option[String],
+      someChangeTemplate: Option[String],
       someChangeState: Option[Int],
       toFellowship: String,
-      toContract: String,
+      toTemplate: String,
       amount: Int,
       fee: Int,
       outputFile: String,
@@ -93,12 +93,12 @@ trait CommonTxOperations
           "create",
           "--from-fellowship",
           fromFellowship, // "alice_bob_0",
-          "--from-contract",
-          fromContract, // "or_sign",
+          "--from-template",
+          fromTemplate, // "or_sign",
           "--to-fellowship",
           toFellowship,
-          "--to-contract",
-          toContract,
+          "--to-template",
+          toTemplate,
           "-w",
           c.password,
           "--port",
@@ -131,8 +131,8 @@ trait CommonTxOperations
           ++ someChangeFellowship
             .map(s => List("--change-fellowship", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeContract
-            .map(s => List("--change-contract", s.toString()))
+          ++ someChangeTemplate
+            .map(s => List("--change-template", s.toString()))
             .getOrElse(List.empty)
           ++ someChangeState
             .map(s => List("--change-state", s.toString()))
@@ -164,10 +164,10 @@ trait CommonTxOperations
     )
   def createSimpleTransactionToAddress(
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       someChangeFellowship: Option[String],
-      someChangeContract: Option[String],
+      someChangeTemplate: Option[String],
       someChangeState: Option[Int],
       aliceAddress: String,
       amount: Int,
@@ -184,8 +184,8 @@ trait CommonTxOperations
           "create",
           "--from-fellowship",
           fromFellowship, // "alice_bob_0",
-          "--from-contract",
-          fromContract, // "or_sign",
+          "--from-template",
+          fromTemplate, // "or_sign",
           "-t",
           aliceAddress,
           "-w",
@@ -220,8 +220,8 @@ trait CommonTxOperations
           ++ someChangeFellowship
             .map(s => List("--change-fellowship", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeContract
-            .map(s => List("--change-contract", s.toString()))
+          ++ someChangeTemplate
+            .map(s => List("--change-template", s.toString()))
             .getOrElse(List.empty)
           ++ someChangeState
             .map(s => List("--change-state", s.toString()))
@@ -231,7 +231,7 @@ trait CommonTxOperations
 
   def createSimpleGroupMintingTransaction(
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       amount: Long,
       fee: Long,
@@ -245,8 +245,8 @@ trait CommonTxOperations
           "create",
           "--from-fellowship",
           fromFellowship,
-          "--from-contract",
-          fromContract,
+          "--from-template",
+          fromTemplate,
           "-h",
           HOST,
           "--port",
@@ -276,7 +276,7 @@ trait CommonTxOperations
     )
   def createSimpleSeriesMintingTransaction(
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       amount: Long,
       fee: Long,
@@ -290,8 +290,8 @@ trait CommonTxOperations
           "create",
           "--from-fellowship",
           fromFellowship,
-          "--from-contract",
-          fromContract,
+          "--from-template",
+          fromTemplate,
           "-h",
           HOST,
           "--port",
@@ -321,7 +321,7 @@ trait CommonTxOperations
     )
   def createSimpleAssetMintingTransaction(
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int],
       fee: Long,
       assetMintingStatement: String,
@@ -335,8 +335,8 @@ trait CommonTxOperations
           "create",
           "--from-fellowship",
           fromFellowship,
-          "--from-contract",
-          fromContract,
+          "--from-template",
+          fromTemplate,
           "-h",
           HOST,
           "--port",
@@ -369,7 +369,7 @@ trait CommonTxOperations
 
   def queryAccount(
       fellowshipName: String,
-      contractName: String,
+      templateName: String,
       someFromState: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -379,8 +379,8 @@ trait CommonTxOperations
           "utxo-by-address",
           "--from-fellowship",
           fellowshipName,
-          "--from-contract",
-          contractName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -396,7 +396,7 @@ trait CommonTxOperations
     )
   def queryAccountAllTokens(
       fellowshipName: String,
-      contractName: String,
+      templateName: String,
       someFromState: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -406,8 +406,8 @@ trait CommonTxOperations
           "utxo-by-address",
           "--from-fellowship",
           fellowshipName,
-          "--from-contract",
-          contractName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -423,7 +423,7 @@ trait CommonTxOperations
     )
   def queryAccountGroupTokens(
       fellowshipName: String,
-      contractName: String,
+      templateName: String,
       someFromState: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -433,8 +433,8 @@ trait CommonTxOperations
           "utxo-by-address",
           "--from-fellowship",
           fellowshipName,
-          "--from-contract",
-          contractName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -450,7 +450,7 @@ trait CommonTxOperations
     )
   def queryAccountSeriesTokens(
       fellowshipName: String,
-      contractName: String,
+      templateName: String,
       someFromState: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -460,8 +460,8 @@ trait CommonTxOperations
           "utxo-by-address",
           "--from-fellowship",
           fellowshipName,
-          "--from-contract",
-          contractName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -477,7 +477,7 @@ trait CommonTxOperations
     )
   def queryAccountAssetTokens(
       fellowshipName: String,
-      contractName: String,
+      templateName: String,
       someFromState: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -487,8 +487,8 @@ trait CommonTxOperations
           "utxo-by-address",
           "--from-fellowship",
           fellowshipName,
-          "--from-contract",
-          contractName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -503,7 +503,7 @@ trait CommonTxOperations
       )
     )
 
-  def exportVk(fellowshipName: String, contractName: String, vkFile: String) =
+  def exportVk(fellowshipName: String, templateName: String, vkFile: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
@@ -517,8 +517,8 @@ trait CommonTxOperations
           c.walletFile,
           "--fellowship-name",
           fellowshipName,
-          "--contract-name",
-          contractName,
+          "--template-name",
+          templateName,
           "--keyfile",
           c.keyFile
         )
@@ -527,7 +527,7 @@ trait CommonTxOperations
 
   def exportFinalVk(
       fellowshipName: String,
-      contractName: String,
+      templateName: String,
       state: Int,
       vkFile: String
   ) =
@@ -544,8 +544,8 @@ trait CommonTxOperations
           c.walletFile,
           "--fellowship-name",
           fellowshipName,
-          "--contract-name",
-          contractName,
+          "--template-name",
+          templateName,
           "--state",
           state.toString(),
           "--keyfile",
@@ -554,7 +554,7 @@ trait CommonTxOperations
       )
     )
 
-  def importVk(fellowshipName: String, contractName: String, vkFile: String) =
+  def importVk(fellowshipName: String, templateName: String, vkFile: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
@@ -564,8 +564,8 @@ trait CommonTxOperations
           vkFile,
           "--fellowship-name",
           fellowshipName,
-          "--contract-name",
-          contractName,
+          "--template-name",
+          templateName,
           "--walletdb",
           c.walletFile,
           "--keyfile",
@@ -590,21 +590,21 @@ trait CommonTxOperations
       )
     )
 
-  def addContractToWallet(
-      contractName: String,
-      contractTemplate: String
+  def addTemplateToWallet(
+      templateName: String,
+      templateTemplate: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
-          "contracts",
+          "templates",
           "add",
           "--walletdb",
           c.walletFile,
-          "--contract-name",
-          contractName,
-          "--contract-template",
-          contractTemplate
+          "--template-name",
+          templateName,
+          "--lock-template",
+          templateTemplate
         )
       )
     )

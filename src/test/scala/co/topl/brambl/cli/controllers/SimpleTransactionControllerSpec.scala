@@ -34,7 +34,7 @@ class SimpleTransactionControllerSpec
 
       override def getAddress(
           fellowship: String,
-          contract: String,
+          template: String,
           state: Option[Int]
       ): F[Option[String]] = {
         Monad[F].pure(
@@ -55,7 +55,7 @@ class SimpleTransactionControllerSpec
 
       override def getCurrentIndicesForFunds(
           fellowship: String,
-          contract: String,
+          template: String,
           state: Option[Int]
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
@@ -63,7 +63,7 @@ class SimpleTransactionControllerSpec
 
       override def getNextIndicesForFunds(
           fellowship: String,
-          contract: String
+          template: String
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
       )
@@ -78,7 +78,7 @@ class SimpleTransactionControllerSpec
 
       override def getLock(
           fellowship: String,
-          contract: String,
+          template: String,
           nextState: Int
       ): F[Option[Lock]] =
         Monad[F].pure(
@@ -98,7 +98,7 @@ class SimpleTransactionControllerSpec
 
       override def validateCurrentIndicesForFunds(
           fellowship: String,
-          contract: String,
+          template: String,
           someState: Option[Int]
       ): F[ValidatedNel[String, Indices]] = {
         import cats.implicits._
@@ -154,7 +154,7 @@ class SimpleTransactionControllerSpec
         "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
-        (Some("nofellowship"), Some("genesis"), None),
+        (Some("noparty"), Some("genesis"), None),
         None,
         Some("self"),
         Some("default"),

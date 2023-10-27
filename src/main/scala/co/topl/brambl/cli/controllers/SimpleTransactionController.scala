@@ -27,7 +27,7 @@ class SimpleTransactionController[F[_]: Sync](
       changeCoordinates: (Option[String], Option[String], Option[Int]),
       someToAddress: Option[LockAddress],
       someToFellowship: Option[String],
-      someToContract: Option[String],
+      someToTemplate: Option[String],
       amount: Long,
       fee: Long,
       outputFile: String,
@@ -36,13 +36,13 @@ class SimpleTransactionController[F[_]: Sync](
       seriesId: Option[SeriesId]
   ): F[Either[String, String]] = {
     import cats.implicits._
-    val (fromFellowship, fromContract, someFromState) = fromCoordinates
-    val (someChangeFellowship, someChangeContract, someChangeState) =
+    val (fromFellowship, fromTemplate, someFromState) = fromCoordinates
+    val (someChangeFellowship, someChangeTemplate, someChangeState) =
       changeCoordinates
     walletStateAlgebra
       .validateCurrentIndicesForFunds(
         fromFellowship,
-        fromContract,
+        fromTemplate,
         someFromState
       ) flatMap {
       case Validated.Invalid(errors) =>
@@ -66,14 +66,14 @@ class SimpleTransactionController[F[_]: Sync](
               keyfile,
               password,
               fromFellowship,
-              fromContract,
+              fromTemplate,
               someFromState,
               someChangeFellowship,
-              someChangeContract,
+              someChangeTemplate,
               someChangeState,
               someToAddress,
               someToFellowship,
-              someToContract,
+              someToTemplate,
               amount,
               fee,
               outputFile,

@@ -31,7 +31,7 @@ trait GenusQueryModeModule
       ).queryUtxoFromParams(
         validateParams.fromAddress,
         validateParams.fromFellowship,
-        validateParams.fromContract,
+        validateParams.fromTemplate,
         validateParams.someFromState,
         validateParams.tokenType
       )

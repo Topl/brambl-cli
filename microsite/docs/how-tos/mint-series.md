@@ -8,10 +8,10 @@ To create a simple minting transaction of series constructor tokens we run the
 following command:
 
 ```bash
-brambl-cli simple-minting create --from-fellowship $FELLOWSHIP --from-contract $CONTRACT  -h $HOST --port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $SERIES_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token series
+brambl-cli simple-minting create --from-fellowship $FELLOWSHIP --from-template $LOCK_TEMPLATE  -h $HOST --port $PORT -n private --keyfile $KEYFILE -w $PASSWORD -o $MINTING_TX -i $SERIES_POLICY  -a $AMOUN_TOKENS_TO_MINT --fee $FEE_AMOUNT --walletdb $WALLET_DB --mint-token series
 ```
 
-This will create a minting transaction for the fellowship `$FELLOWSHIP` and contract `$CONTRACT` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The series policy file is `$SERIES_POLICY`. The amount of tokens to mint is `$AMOUN_TOKENS_TO_MINT`. The fee amount is `$FEE_AMOUNT`.
+This will create a minting transaction for the fellowship `$FELLOWSHIP` and template `$LOCK_TEMPLATE` and store the result in the file `$MINTING_TX`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. The series policy file is `$SERIES_POLICY`. The amount of tokens to mint is `$AMOUN_TOKENS_TO_MINT`. The fee amount is `$FEE_AMOUNT`.
 
 ## Example of series policy file format
 

@@ -41,19 +41,19 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
   override def getCurrentIndicesForFunds(
       fellowship: String,
-      contract: String,
+      template: String,
       someState: Option[Int]
   ): F[Option[Indices]] = ???
 
   override def validateCurrentIndicesForFunds(
       fellowship: String,
-      contract: String,
+      template: String,
       someState: Option[Int]
   ): F[ValidatedNel[String, Indices]] = ???
 
   override def getNextIndicesForFunds(
       fellowship: String,
-      contract: String
+      template: String
   ): F[Option[Indices]] = ???
 
   override def getLockByIndex(indices: Indices): F[Option[Lock.Predicate]] =
@@ -61,32 +61,32 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
   override def addEntityVks(
       fellowship: String,
-      contract: String,
+      template: String,
       entities: List[String]
   ): F[Unit] = ???
 
   override def getEntityVks(
       fellowship: String,
-      contract: String
+      template: String
   ): F[Option[List[String]]] = ???
 
   override def addNewLockTemplate(
-      contract: String,
+      template: String,
       lockTemplate: LockTemplate[F]
   ): F[Unit] = ???
 
-  override def getLockTemplate(contract: String): F[Option[LockTemplate[F]]] =
+  override def getLockTemplate(template: String): F[Option[LockTemplate[F]]] =
     ???
 
   override def getLock(
       fellowship: String,
-      contract: String,
+      template: String,
       nextState: Int
   ): F[Option[Lock]] = ???
 
   override def getAddress(
       fellowship: String,
-      contract: String,
+      template: String,
       state: Option[Int]
   ): F[Option[String]] = ???
 }

@@ -7,10 +7,10 @@ sidebar_position: 17
 You can check the balance of an address using the following command:
 
 ```bash
-brambl-cli wallet balance --from-fellowship $FELLOWSHIP --from-contract $CONTRACT --walletdb $WALLET --host $HOST --port $PORT
+brambl-cli wallet balance --from-fellowship $FELLOWSHIP --from-template $LOCK_TEMPLATE --walletdb $WALLET --host $HOST --port $PORT
 ```
 
-This will show you the balance of the address `$FELLOWSHIP` and `$CONTRACT` in the wallet `$WALLET` in the node `$HOST:$PORT`. The `--from-state` can optionally be used to choose the state. The output will look something like this:
+This will show you the balance of the address `$FELLOWSHIP` and `$LOCK_TEMPLATE` in the wallet `$WALLET` in the node `$HOST:$PORT`. The `--from-state` can optionally be used to choose the state. The output will look something like this:
 
 ```
 Asset(0a205542a9a464ba60a155c28d55e9d084ce0b75eb8bd3a2ed5a27ee548e25f86616, 

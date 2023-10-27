@@ -15,11 +15,11 @@ trait WalletApiHelpers[F[_]] {
 
   def getCurrentIndices(
       fromFellowship: String,
-      fromContract: String,
+      fromTemplate: String,
       someFromState: Option[Int]
   ) = wsa.getCurrentIndicesForFunds(
     fromFellowship,
-    fromContract,
+    fromTemplate,
     someFromState
   )
 
@@ -31,25 +31,25 @@ trait WalletApiHelpers[F[_]] {
 
   def getNextIndices(
       fromFellowship: String,
-      fromContract: String
+      fromTemplate: String
   ) =
     wsa.getNextIndicesForFunds(
-      if (fromFellowship == "nofellowship") "self" else fromFellowship,
-      if (fromFellowship == "nofellowship") "default"
-      else fromContract
+      if (fromFellowship == "noparty") "self" else fromFellowship,
+      if (fromFellowship == "noparty") "default"
+      else fromTemplate
     )
 
   def getChangeLockPredicate(
       someNextIndices: Option[Indices],
       fromFellowship: String,
-      fromContract: String
+      fromTemplate: String
   ) =
     someNextIndices
       .map(idx =>
         wsa.getLock(
-          if (fromFellowship == "nofellowship") "self" else fromFellowship,
-          if (fromFellowship == "nofellowship") "default"
-          else fromContract,
+          if (fromFellowship == "noparty") "self" else fromFellowship,
+          if (fromFellowship == "noparty") "default"
+          else fromTemplate,
           idx.z
         )
       )

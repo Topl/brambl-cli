@@ -17,7 +17,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
     override def getAddress(
         fellowship: String,
-        contract: String,
+        template: String,
         state: Option[Int]
     ): F[Option[String]] = Monad[F].pure(None)
   }
@@ -26,7 +26,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
       override def getAddress(
           fellowship: String,
-          contract: String,
+          template: String,
           state: Option[Int]
       ): F[Option[String]] = Monad[F].pure(
         Some("ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr")
@@ -50,7 +50,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
     val genusQueryController =
       new GenusQueryController[IO](walletStateAlgebra, genusQueryAlgebra)
     val result =
-      genusQueryController.queryUtxoFromParams(None, "fellowship", "contract", None)
+      genusQueryController.queryUtxoFromParams(None, "fellowship", "template", None)
     assertIO(result, Left("Address not found"))
   }
 
@@ -62,7 +62,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
     val genusQueryController =
       new GenusQueryController[IO](walletStateAlgebra, genusQueryAlgebra)
     val result =
-      genusQueryController.queryUtxoFromParams(None, "fellowship", "contract", None)
+      genusQueryController.queryUtxoFromParams(None, "fellowship", "template", None)
     assertIO(
       result,
       Right(BlockDisplayOps.display(txo01))

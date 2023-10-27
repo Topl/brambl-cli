@@ -12,7 +12,7 @@ object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
   val invalid, wallet, genusquery, bifrostquery, simpletransaction,
-      simpleminting, fellowships, contracts, tx =
+      simpleminting, fellowships, templates, tx =
     Value
 }
 
@@ -75,7 +75,7 @@ final case class BramblCliParams(
     tokenType: TokenType.Value = TokenType.all,
     network: NetworkIdentifiers = InvalidNet,
     fellowshipName: String = "",
-    contractName: String = "",
+    templateName: String = "",
     lockTemplate: String = "",
     inputVks: Seq[File] = Seq(),
     host: String = "",
@@ -83,18 +83,18 @@ final case class BramblCliParams(
     walletFile: String = "",
     password: String = "",
     fromFellowship: String = "",
-    fromContract: String = "",
+    fromTemplate: String = "",
     fromAddress: Option[String] = None,
     height: Long = -1,
     blockId: String = "",
     transactionId: String = "",
     someFromState: Option[Int] = None,
     someChangeFellowship: Option[String] = None,
-    someChangeContract: Option[String] = None,
+    someChangeTemplate: Option[String] = None,
     someChangeState: Option[Int] = None,
     toAddress: Option[LockAddress] = None,
     someToFellowship: Option[String] = None,
-    someToContract: Option[String] = None,
+    someToTemplate: Option[String] = None,
     amount: Long = -1,
     fee: Long = -1,
     somePassphrase: Option[String] = None,
