@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## [v2.0.0-alpha6] - 2023-mm-dd (this date should be changed on release)
+
+### Changed
+
+- Change terminology. Now we use `fellowship` instead of `party` and `template` instead of `contract`,
+and `interaction` instead of `state`. Both the code and the documentation were updated.
+The CLI parameters also reflect this change.
+
 ## [v2.0.0-alpha5] - 2023-10-24
 
 ### Added
