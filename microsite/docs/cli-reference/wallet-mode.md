@@ -45,7 +45,7 @@ Export verification key
   --walletdb <value>       Wallet DB file. (mandatory)
   --fellowship-name <value>     Name of the fellowship. (mandatory)
   --template-name <value>  Name of the template. (mandatory)
-  --state <value>          State from where we are sending the funds from
+  --interaction <value>          Interaction from where we are sending the funds from
 Command: wallet import-vks
 Import verification key
   --walletdb <value>       Wallet DB file. (mandatory)

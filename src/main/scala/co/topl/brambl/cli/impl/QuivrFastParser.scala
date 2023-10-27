@@ -112,10 +112,10 @@ object TemplateAST {
             ).invalidNel
           )
         else {
-          State(state =>
-            if (state.contains(idx))
+          State(interaction =>
+            if (interaction.contains(idx))
               (
-                state,
+                interaction,
                 InvalidQuivrTemplate(
                   location,
                   "Index cannot be used more than once"
@@ -123,7 +123,7 @@ object TemplateAST {
               )
             else
               (
-                state + idx,
+                interaction + idx,
                 PropositionTemplate
                   .SignatureTemplate[F]("ExtendedEd25519", idx)
                   .validNel
@@ -353,9 +353,9 @@ object QuivrFastParser {
       import cats.implicits._
       parse(input, thresholdPredicate(_)) match {
         case Parsed.Success(value, _) =>
-          val (state, res) =
+          val (interaction, res) =
             TemplateAST.compilePredicate[F](value).run(Set()).value
-          if (state.toSeq.sorted != (0 until state.size).toSeq)
+          if (interaction.toSeq.sorted != (0 until interaction.size).toSeq)
             (
               res,
               InvalidQuivrTemplate(

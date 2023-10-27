@@ -73,10 +73,10 @@ trait CommonTxOperations
   def createSimpleTransactionToCartesianIdx(
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       someChangeFellowship: Option[String],
       someChangeTemplate: Option[String],
-      someChangeState: Option[Int],
+      someChangeInteraction: Option[Int],
       toFellowship: String,
       toTemplate: String,
       amount: Int,
@@ -119,8 +119,8 @@ trait CommonTxOperations
           c.walletFile,
           "--transfer-token",
           token.toString()
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
           ++ someGroupId
             .map(s => List("--group-id", s.toString()))
@@ -134,8 +134,8 @@ trait CommonTxOperations
           ++ someChangeTemplate
             .map(s => List("--change-template", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeState
-            .map(s => List("--change-state", s.toString()))
+          ++ someChangeInteraction
+            .map(s => List("--change-interaction", s.toString()))
             .getOrElse(List.empty)
       )
     )
@@ -165,10 +165,10 @@ trait CommonTxOperations
   def createSimpleTransactionToAddress(
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       someChangeFellowship: Option[String],
       someChangeTemplate: Option[String],
-      someChangeState: Option[Int],
+      someChangeInteraction: Option[Int],
       aliceAddress: String,
       amount: Int,
       fee: Int,
@@ -208,8 +208,8 @@ trait CommonTxOperations
           c.walletFile,
           "--transfer-token",
           token.toString()
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
           ++ someGroupId
             .map(s => List("--group-id", s.toString()))
@@ -223,8 +223,8 @@ trait CommonTxOperations
           ++ someChangeTemplate
             .map(s => List("--change-template", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeState
-            .map(s => List("--change-state", s.toString()))
+          ++ someChangeInteraction
+            .map(s => List("--change-interaction", s.toString()))
             .getOrElse(List.empty)
       )
     }
@@ -232,7 +232,7 @@ trait CommonTxOperations
   def createSimpleGroupMintingTransaction(
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       groupPolicy: String,
@@ -269,15 +269,15 @@ trait CommonTxOperations
           c.walletFile,
           "--mint-token",
           "group"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def createSimpleSeriesMintingTransaction(
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       seriesPolicy: String,
@@ -314,15 +314,15 @@ trait CommonTxOperations
           c.walletFile,
           "--mint-token",
           "series"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def createSimpleAssetMintingTransaction(
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       fee: Long,
       assetMintingStatement: String,
       outputFile: String,
@@ -361,8 +361,8 @@ trait CommonTxOperations
           "3e8fd1ed52e0c8107f3265da13a42b323a492d334b6da23b0f1ef279b988a225",
           "--ephemeralMetadata",
           ephemeralMetadata
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
@@ -370,7 +370,7 @@ trait CommonTxOperations
   def queryAccount(
       fellowshipName: String,
       templateName: String,
-      someFromState: Option[Int] = None
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -389,15 +389,15 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "lvl"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountAllTokens(
       fellowshipName: String,
       templateName: String,
-      someFromState: Option[Int] = None
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -416,15 +416,15 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "all"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountGroupTokens(
       fellowshipName: String,
       templateName: String,
-      someFromState: Option[Int] = None
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -443,15 +443,15 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "group"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountSeriesTokens(
       fellowshipName: String,
       templateName: String,
-      someFromState: Option[Int] = None
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -470,15 +470,15 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "series"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountAssetTokens(
       fellowshipName: String,
       templateName: String,
-      someFromState: Option[Int] = None
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -497,8 +497,8 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "asset"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
@@ -528,7 +528,7 @@ trait CommonTxOperations
   def exportFinalVk(
       fellowshipName: String,
       templateName: String,
-      state: Int,
+      interaction: Int,
       vkFile: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -546,8 +546,8 @@ trait CommonTxOperations
           fellowshipName,
           "--template-name",
           templateName,
-          "--state",
-          state.toString(),
+          "--interaction",
+          interaction.toString(),
           "--keyfile",
           c.keyFile
         )

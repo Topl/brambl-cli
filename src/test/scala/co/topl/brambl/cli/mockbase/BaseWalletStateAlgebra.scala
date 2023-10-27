@@ -87,6 +87,6 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
   override def getAddress(
       fellowship: String,
       template: String,
-      state: Option[Int]
+      interaction: Option[Int]
   ): F[Option[String]] = ???
 }

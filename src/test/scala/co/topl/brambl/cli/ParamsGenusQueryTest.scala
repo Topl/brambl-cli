@@ -15,7 +15,7 @@ class ParamsGenusQueryTest extends FunSuite {
       "noparty",
       "--from-template",
       "genesis",
-      "--from-state",
+      "--from-interaction",
       "0",
       "--port",
       "9084",

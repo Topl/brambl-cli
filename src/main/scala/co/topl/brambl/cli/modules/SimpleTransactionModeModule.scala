@@ -32,12 +32,12 @@ trait SimpleTransactionModeModule
         (
           validateParams.fromFellowship,
           validateParams.fromTemplate,
-          validateParams.someFromState
+          validateParams.someFromInteraction
         ),
         (
           validateParams.someChangeFellowship,
           validateParams.someChangeTemplate,
-          validateParams.someChangeState
+          validateParams.someChangeInteraction
         ),
         validateParams.toAddress,
         validateParams.someToFellowship,

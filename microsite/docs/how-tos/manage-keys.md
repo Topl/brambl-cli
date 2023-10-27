@@ -18,8 +18,8 @@ brambl-cli wallet export-vk -w $PASSWORD -o $OUTPUT_FILE --walletdb $WALLET --fe
 
 This will export the base verification key for the fellowship `$FELLOWSHIP_NAME` and template `$LOCK_TEMPLATE_NAME` to the file `$OUTPUT_FILE`. The keyfile `$KEYFILE` is used to derive the exported key.
 
-This command is also used to export a final verification key. To do this, use the `--state` option to specify the 
-state from which to export the key.
+This command is also used to export a final verification key. To do this, use the `--interaction` option to specify the 
+interaction from which to export the key.
 
 ## Import a base verification key
 

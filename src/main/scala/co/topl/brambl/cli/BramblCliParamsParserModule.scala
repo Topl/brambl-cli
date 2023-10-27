@@ -233,34 +233,34 @@ object BramblCliParamsParserModule {
         .action((x, c) => c.copy(someChangeTemplate = x))
         .text("Template where we are sending the change to")
         .optional(),
-      opt[Option[Int]]("change-state")
-        .action((x, c) => c.copy(someChangeState = x))
-        .text("State where we are sending the change to")
+      opt[Option[Int]]("change-interaction")
+        .action((x, c) => c.copy(someChangeInteraction = x))
+        .text("Interaction where we are sending the change to")
         .optional(),
       checkConfig(c =>
         if (c.fromFellowship == "noparty") {
-          if (c.someFromState.isEmpty) {
-            failure("You must specify a from-state when using noparty")
+          if (c.someFromInteraction.isEmpty) {
+            failure("You must specify a from-interaction when using noparty")
           } else {
-            (c.someChangeFellowship, c.someChangeTemplate, c.someChangeState) match {
+            (c.someChangeFellowship, c.someChangeTemplate, c.someChangeInteraction) match {
               case (Some(_), Some(_), Some(_)) =>
                 success
               case (_, _, _) =>
                 failure(
-                  "You must specify a change-fellowship, change-template and change-state when using noparty"
+                  "You must specify a change-fellowship, change-template and change-interaction when using noparty"
                 )
             }
             success
           }
         } else {
-          (c.someChangeFellowship, c.someChangeTemplate, c.someChangeState) match {
+          (c.someChangeFellowship, c.someChangeTemplate, c.someChangeInteraction) match {
             case (Some(_), Some(_), Some(_)) =>
               success
             case (None, None, None) =>
               success
             case (_, _, _) =>
               failure(
-                "You must specify a change-fellowship, change-template and change-state or not specify any of them"
+                "You must specify a change-fellowship, change-template and change-interaction or not specify any of them"
               )
           }
         }
@@ -289,9 +289,9 @@ object BramblCliParamsParserModule {
       opt[String]("from-template")
         .action((x, c) => c.copy(fromTemplate = x))
         .text("Template where we are sending the funds from"),
-      opt[Option[Int]]("from-state")
-        .action((x, c) => c.copy(someFromState = x))
-        .text("State from where we are sending the funds from")
+      opt[Option[Int]]("from-interaction")
+        .action((x, c) => c.copy(someFromInteraction = x))
+        .text("Interaction from where we are sending the funds from")
     )
   }
 
@@ -520,9 +520,9 @@ object BramblCliParamsParserModule {
             walletDbArg,
             fellowshipNameArg,
             templateNameArg,
-            opt[Option[Int]]("state")
-              .action((x, c) => c.copy(someFromState = x))
-              .text("State from where we are sending the funds from")
+            opt[Option[Int]]("interaction")
+              .action((x, c) => c.copy(someFromInteraction = x))
+              .text("Interaction from where we are sending the funds from")
           )): _*
         ),
       cmd("import-vks")

@@ -16,11 +16,11 @@ trait WalletApiHelpers[F[_]] {
   def getCurrentIndices(
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int]
+      someFromInteraction: Option[Int]
   ) = wsa.getCurrentIndicesForFunds(
     fromFellowship,
     fromTemplate,
-    someFromState
+    someFromInteraction
   )
 
   def getPredicateFundsToUnlock(someIndices: Option[Indices]) =

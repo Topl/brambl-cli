@@ -11,11 +11,11 @@ Command: simple-transaction create [options]
 Create transaction
   --from-fellowship <value>     Fellowship where we are sending the funds from
   --from-template <value>  Template where we are sending the funds from
-  --from-state <value>     State from where we are sending the funds from
+  --from-interaction <value>     Interaction from where we are sending the funds from
   --change-fellowship <value>   Fellowship where we are sending the change to
   --change-template <value>
                            Template where we are sending the change to
-  --change-state <value>   State where we are sending the change to
+  --change-interaction <value>   Interaction where we are sending the change to
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --port <value>           Port Bifrost node. (mandatory)

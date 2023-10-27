@@ -35,7 +35,7 @@ class SimpleTransactionControllerSpec
       override def getAddress(
           fellowship: String,
           template: String,
-          state: Option[Int]
+          interaction: Option[Int]
       ): F[Option[String]] = {
         Monad[F].pure(
           Some(
@@ -56,7 +56,7 @@ class SimpleTransactionControllerSpec
       override def getCurrentIndicesForFunds(
           fellowship: String,
           template: String,
-          state: Option[Int]
+          interaction: Option[Int]
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
       )

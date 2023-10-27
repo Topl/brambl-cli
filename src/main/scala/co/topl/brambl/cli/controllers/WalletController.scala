@@ -124,7 +124,7 @@ class WalletController[F[_]: Sync](
       outputFile: String,
       fellowshipName: String,
       templateName: String,
-      state: Int
+      interaction: Int
   ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
@@ -142,7 +142,7 @@ class WalletController[F[_]: Sync](
       )
       deriveChildKey <- OptionT(
         walletApi
-          .deriveChildKeys(keypair, indices.copy(z = state))
+          .deriveChildKeys(keypair, indices.copy(z = interaction))
           .map(
             Option(_)
           )
@@ -246,7 +246,7 @@ class WalletController[F[_]: Sync](
           .getAddress(
             params.fromFellowship,
             params.fromTemplate,
-            params.someFromState
+            params.someFromInteraction
           )
       )
       .map(_ match {
@@ -290,7 +290,7 @@ class WalletController[F[_]: Sync](
     } yield
     // we have indices AND txos at current address are spent
     if (someIndices.isDefined && !txos.isEmpty) {
-      // we need to update the wallet state with the next indices
+      // we need to update the wallet interaction with the next indices
       val indices = someIndices.map(idx => Indices(idx.x, idx.y, idx.z + 1)).get
       for {
         vks <- walletStateAlgebra.getEntityVks(

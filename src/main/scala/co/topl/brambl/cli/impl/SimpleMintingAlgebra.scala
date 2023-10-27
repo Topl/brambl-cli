@@ -18,7 +18,7 @@ trait SimpleMintingAlgebra[F[_]] {
       password: String,
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       outputFile: String,
@@ -30,7 +30,7 @@ trait SimpleMintingAlgebra[F[_]] {
       password: String,
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       outputFile: String,
@@ -42,7 +42,7 @@ trait SimpleMintingAlgebra[F[_]] {
       password: String,
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       fee: Long,
       outputFile: String,
       ephemeralMetadata: Option[Json],
@@ -83,7 +83,7 @@ object SimpleMintingAlgebra {
         password: String,
         fromFellowship: String,
         fromTemplate: String,
-        someFromState: Option[Int]
+        someFromInteraction: Option[Int]
     ) = for {
       keyPair <-
         walletManagementUtils
@@ -94,7 +94,7 @@ object SimpleMintingAlgebra {
       someCurrentIndices <- getCurrentIndices(
         fromFellowship,
         fromTemplate,
-        someFromState
+        someFromInteraction
       )
       predicateFundsToUnlock <- getPredicateFundsToUnlock(someCurrentIndices)
       someNextIndices <- getNextIndices(fromFellowship, fromTemplate)
@@ -116,7 +116,7 @@ object SimpleMintingAlgebra {
         password: String,
         fromFellowship: String,
         fromTemplate: String,
-        someFromState: Option[Int],
+        someFromInteraction: Option[Int],
         amount: Long,
         fee: Long,
         outputFile: String,
@@ -127,7 +127,7 @@ object SimpleMintingAlgebra {
         password,
         fromFellowship,
         fromTemplate,
-        someFromState
+        someFromInteraction
       )
       (
         keyPair,
@@ -174,7 +174,7 @@ object SimpleMintingAlgebra {
         password: String,
         fromFellowship: String,
         fromTemplate: String,
-        someFromState: Option[Int],
+        someFromInteraction: Option[Int],
         amount: Long,
         fee: Long,
         outputFile: String,
@@ -185,7 +185,7 @@ object SimpleMintingAlgebra {
         password,
         fromFellowship,
         fromTemplate,
-        someFromState
+        someFromInteraction
       )
       (
         keyPair,
@@ -232,7 +232,7 @@ object SimpleMintingAlgebra {
         password: String,
         fromFellowship: String,
         fromTemplate: String,
-        someFromState: Option[Int],
+        someFromInteraction: Option[Int],
         fee: Long,
         outputFile: String,
         ephemeralMetadata: Option[Json],
@@ -244,7 +244,7 @@ object SimpleMintingAlgebra {
         password,
         fromFellowship,
         fromTemplate,
-        someFromState
+        someFromInteraction
       )
       (
         keyPair,

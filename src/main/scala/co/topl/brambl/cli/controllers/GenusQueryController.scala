@@ -18,7 +18,7 @@ class GenusQueryController[F[_]: Sync](
       someFromAddress: Option[String],
       fromFellowship: String,
       fromTemplate: String,
-      someFromState: Option[Int],
+      someFromInteraction: Option[Int],
       tokenType: TokenType.Value = TokenType.all
   ): F[Either[String, String]] = {
 
@@ -27,7 +27,7 @@ class GenusQueryController[F[_]: Sync](
       .map(x => Sync[F].point(Some(x)))
       .getOrElse(
         walletStateAlgebra
-          .getAddress(fromFellowship, fromTemplate, someFromState)
+          .getAddress(fromFellowship, fromTemplate, someFromInteraction)
       )
       .flatMap {
         case Some(address) =>

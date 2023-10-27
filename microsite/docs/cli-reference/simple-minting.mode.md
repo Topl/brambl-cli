@@ -11,7 +11,7 @@ Command: simple-minting create [options]
 Create minting transaction
   --from-fellowship <value>     Fellowship where we are sending the funds from
   --from-template <value>  Template where we are sending the funds from
-  --from-state <value>     State from where we are sending the funds from
+  --from-interaction <value>     Interaction from where we are sending the funds from
   -n, --network <value>    Network name: Possible values: mainnet, testnet, private. (mandatory)
   -h, --host <value>       The host of the node. (mandatory)
   --port <value>   Port Bifrost node. (mandatory)

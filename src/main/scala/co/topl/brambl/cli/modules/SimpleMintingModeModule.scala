@@ -45,7 +45,7 @@ trait SimpleMintingModeModule
                 validateParams.password,
                 validateParams.fromFellowship,
                 validateParams.fromTemplate,
-                validateParams.someFromState,
+                validateParams.someFromInteraction,
                 validateParams.amount,
                 validateParams.fee,
                 validateParams.someOutputFile.get
@@ -58,7 +58,7 @@ trait SimpleMintingModeModule
                 validateParams.password,
                 validateParams.fromFellowship,
                 validateParams.fromTemplate,
-                validateParams.someFromState,
+                validateParams.someFromInteraction,
                 validateParams.amount,
                 validateParams.fee,
                 validateParams.someOutputFile.get
@@ -71,7 +71,7 @@ trait SimpleMintingModeModule
                 validateParams.password,
                 validateParams.fromFellowship,
                 validateParams.fromTemplate,
-                validateParams.someFromState,
+                validateParams.someFromInteraction,
                 validateParams.fee,
                 validateParams.ephemeralMetadata,
                 validateParams.someCommitment,

@@ -33,7 +33,7 @@ class SimpleMintingControllerSpec
       override def getCurrentIndicesForFunds(
           fellowship: String,
           template: String,
-          state: Option[Int]
+          interaction: Option[Int]
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
       )

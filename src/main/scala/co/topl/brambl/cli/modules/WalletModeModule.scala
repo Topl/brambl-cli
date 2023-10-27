@@ -41,12 +41,12 @@ trait WalletModeModule
           validateParams.fromAddress,
           if (validateParams.fromAddress.isEmpty) Some(validateParams.fromFellowship) else None,
           if (validateParams.fromAddress.isEmpty) Some(validateParams.fromTemplate) else None,
-          validateParams.someFromState
+          validateParams.someFromInteraction
         )
       case BramblCliSubCmd.invalid =>
         IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.exportvk =>
-        validateParams.someFromState
+        validateParams.someFromInteraction
           .map(x =>
             walletController.exportFinalVk(
               validateParams.someKeyFile.get,

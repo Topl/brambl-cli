@@ -32,7 +32,7 @@ trait GenusQueryModeModule
         validateParams.fromAddress,
         validateParams.fromFellowship,
         validateParams.fromTemplate,
-        validateParams.someFromState,
+        validateParams.someFromInteraction,
         validateParams.tokenType
       )
   }

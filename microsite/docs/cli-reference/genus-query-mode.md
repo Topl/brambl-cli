@@ -11,7 +11,7 @@ Command: genus-query utxo-by-address
 Query utxo
   --from-fellowship <value>     Fellowship where we are sending the funds from
   --from-template <value>  Template where we are sending the funds from
-  --from-state <value>     State from where we are sending the funds from
+  --from-interaction <value>     Interaction from where we are sending the funds from
   -h, --host <value>       The host of the node. (mandatory)
   --port <value>   Port Bifrost node. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
