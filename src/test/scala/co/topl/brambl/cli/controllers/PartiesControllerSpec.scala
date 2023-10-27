@@ -23,7 +23,7 @@ class PartiesControllerSpec extends FunSuite {
     )
   }
 
-  test("List party allows listing parties") {
+  test("List fellowship allows listing parties") {
     val controller = new PartiesController[Id](
       new PartyStorageAlgebra[Id] {
         override def addParty(
@@ -32,8 +32,8 @@ class PartiesControllerSpec extends FunSuite {
 
         override def findParties(): Id[List[WalletEntity]] =
           List(
-            WalletEntity(1, "party1"),
-            WalletEntity(2, "party2")
+            WalletEntity(1, "fellowship1"),
+            WalletEntity(2, "fellowship2")
           )
       }
     )
@@ -41,8 +41,8 @@ class PartiesControllerSpec extends FunSuite {
       controller.listParties(),
       Right(
         "X Coordinate\tParty Name\n" +
-          "1\tparty1\n" +
-          "2\tparty2".stripMargin
+          "1\tfellowship1\n" +
+          "2\tfellowship2".stripMargin
       )
     )
   }

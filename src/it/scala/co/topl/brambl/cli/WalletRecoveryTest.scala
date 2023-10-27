@@ -37,7 +37,7 @@ class WalletRecoveryTest
         _ <- IO.asyncForIO.timeout(
           (for {
             _ <- IO.println("Querying genesis to start")
-            queryRes <- queryAccount("noparty", "genesis", Some(1))
+            queryRes <- queryAccount("nofellowship", "genesis", Some(1))
               .run(walletContext)
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
@@ -49,10 +49,10 @@ class WalletRecoveryTest
         _ <- IO.println("Moving funds from genesis")
         _ <- assertIO(
           createSimpleTransactionToAddress(
-            "noparty",
+            "nofellowship",
             "genesis",
             Some(1),
-            Some("noparty"),
+            Some("nofellowship"),
             Some("genesis"),
             Some(1),
             next_address.get,

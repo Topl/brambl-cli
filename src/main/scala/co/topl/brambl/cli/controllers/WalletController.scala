@@ -41,7 +41,7 @@ class WalletController[F[_]: Sync](
       keyfile: String,
       password: String,
       contractName: String,
-      partyName: String
+      fellowshipName: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
@@ -79,7 +79,7 @@ class WalletController[F[_]: Sync](
         .map(_.get) // it exists because of the validation
       // we need to get the corresponding vk
       indices <- walletStateAlgebra.getNextIndicesForFunds(
-        partyName,
+        fellowshipName,
         contractName
       )
       keypair <- walletManagementUtils.loadKeys(keyfile, password)
@@ -110,7 +110,7 @@ class WalletController[F[_]: Sync](
         indices.get
       )
       _ <- walletStateAlgebra.addEntityVks(
-        partyName,
+        fellowshipName,
         contractName,
         deriveChildKeyString :: keyAndEncodedKeys.toList.map(_._2)
       )
@@ -122,7 +122,7 @@ class WalletController[F[_]: Sync](
       keyFile: String,
       password: String,
       outputFile: String,
-      partyName: String,
+      fellowshipName: String,
       contractName: String,
       state: Int
   ): F[Either[String, String]] = {
@@ -130,7 +130,7 @@ class WalletController[F[_]: Sync](
     (for {
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
-          partyName,
+          fellowshipName,
           contractName,
           None
         )
@@ -166,14 +166,14 @@ class WalletController[F[_]: Sync](
       keyFile: String,
       password: String,
       outputFile: String,
-      partyName: String,
+      fellowshipName: String,
       contractName: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
-          partyName,
+          fellowshipName,
           contractName,
           None
         )
@@ -257,7 +257,7 @@ class WalletController[F[_]: Sync](
 
   def sync(
       networkId: Int,
-      party: String,
+      fellowship: String,
       contract: String
   ): F[Either[String, String]] = {
     import cats.implicits._
@@ -267,13 +267,13 @@ class WalletController[F[_]: Sync](
     (for {
       // current indices
       someIndices <- walletStateAlgebra.getCurrentIndicesForFunds(
-        party,
+        fellowship,
         contract,
         None
       )
       // current address
       someAddress <- walletStateAlgebra.getAddress(
-        party,
+        fellowship,
         contract,
         someIndices.map(_.z)
       )
@@ -294,7 +294,7 @@ class WalletController[F[_]: Sync](
       val indices = someIndices.map(idx => Indices(idx.x, idx.y, idx.z + 1)).get
       for {
         vks <- walletStateAlgebra.getEntityVks(
-          party,
+          fellowship,
           contract
         )
         vksDerived <- vks.get
@@ -307,7 +307,7 @@ class WalletController[F[_]: Sync](
             )
           )
           .sequence
-        lock <- walletStateAlgebra.getLock(party, contract, indices.z)
+        lock <- walletStateAlgebra.getLock(fellowship, contract, indices.z)
         lockAddress = LockAddress(
           networkId,
           NetworkConstants.MAIN_LEDGER_ID,
@@ -329,11 +329,11 @@ class WalletController[F[_]: Sync](
   }
 
   def currentaddress(
-      party: String,
+      fellowship: String,
       contract: String,
       someState: Option[Int]
   ): F[Option[String]] =
-    walletStateAlgebra.getAddress(party, contract, someState)
+    walletStateAlgebra.getAddress(fellowship, contract, someState)
 
   def getBalance(
       someAddress: Option[String],
@@ -346,9 +346,9 @@ class WalletController[F[_]: Sync](
     val addressGetter = (someAddress, someParty, someContract) match {
       case (Some(address), None, None) =>
         Sync[F].point(Some(address))
-      case (None, Some(party), Some(contract)) =>
+      case (None, Some(fellowship), Some(contract)) =>
         walletStateAlgebra.getAddress(
-          party,
+          fellowship,
           contract,
           someState
         )

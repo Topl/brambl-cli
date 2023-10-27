@@ -127,13 +127,13 @@ object BramblCliParamsParserModule {
     )
     .text("Password for the encrypted key. (mandatory)")
 
-  val partyNameArg = opt[String]("party-name")
+  val fellowshipNameArg = opt[String]("fellowship-name")
     .validate(x =>
       if (x.trim().isEmpty) failure("Party name may not be empty")
       else success
     )
-    .action((x, c) => c.copy(partyName = x))
-    .text("Name of the party. (mandatory)")
+    .action((x, c) => c.copy(fellowshipName = x))
+    .text("Name of the fellowship. (mandatory)")
 
   def validateWalletDbFile(walletDbFile: String): Either[String, Unit] =
     if (walletDbFile.trim().isEmpty) failure("Wallet file may not be empty")
@@ -225,7 +225,7 @@ object BramblCliParamsParserModule {
   def changeCoordinates = {
     import builder._
     Seq(
-      opt[Option[String]]("change-party")
+      opt[Option[String]]("change-fellowship")
         .action((x, c) => c.copy(someChangeParty = x))
         .text("Party where we are sending the change to")
         .optional(),
@@ -238,16 +238,16 @@ object BramblCliParamsParserModule {
         .text("State where we are sending the change to")
         .optional(),
       checkConfig(c =>
-        if (c.fromParty == "noparty") {
+        if (c.fromParty == "nofellowship") {
           if (c.someFromState.isEmpty) {
-            failure("You must specify a from-state when using noparty")
+            failure("You must specify a from-state when using nofellowship")
           } else {
             (c.someChangeParty, c.someChangeContract, c.someChangeState) match {
               case (Some(_), Some(_), Some(_)) =>
                 success
               case (_, _, _) =>
                 failure(
-                  "You must specify a change-party, change-contract and change-state when using noparty"
+                  "You must specify a change-fellowship, change-contract and change-state when using nofellowship"
                 )
             }
             success
@@ -260,7 +260,7 @@ object BramblCliParamsParserModule {
               success
             case (_, _, _) =>
               failure(
-                "You must specify a change-party, change-contract and change-state or not specify any of them"
+                "You must specify a change-fellowship, change-contract and change-state or not specify any of them"
               )
           }
         }
@@ -283,7 +283,7 @@ object BramblCliParamsParserModule {
             })
             .getOrElse(success)
         ),
-      opt[String]("from-party")
+      opt[String]("from-fellowship")
         .action((x, c) => c.copy(fromParty = x))
         .text("Party where we are sending the funds from"),
       opt[String]("from-contract")
@@ -356,7 +356,7 @@ object BramblCliParamsParserModule {
         .children(
           Seq(
             walletDbArg,
-            partyNameArg
+            fellowshipNameArg
           ): _*
         )
     )
@@ -452,7 +452,7 @@ object BramblCliParamsParserModule {
         .text("Sync wallet")
         .children(
           (hostPortNetwork ++ keyfileAndPassword ++ (Seq(
-            partyNameArg,
+            fellowshipNameArg,
             contractNameArg,
             walletDbArg
           ))): _*
@@ -518,7 +518,7 @@ object BramblCliParamsParserModule {
           (keyfileAndPassword ++ Seq(
             outputArg,
             walletDbArg,
-            partyNameArg,
+            fellowshipNameArg,
             contractNameArg,
             opt[Option[Int]]("state")
               .action((x, c) => c.copy(someFromState = x))
@@ -530,7 +530,7 @@ object BramblCliParamsParserModule {
         .text("Import verification key")
         .children(
           (keyfileAndPassword ++ Seq(
-            partyNameArg,
+            fellowshipNameArg,
             contractNameArg,
             opt[Seq[File]]("input-vks")
               .action((x, c) => c.copy(inputVks = x))
@@ -677,9 +677,9 @@ object BramblCliParamsParserModule {
               opt[Option[LockAddress]]('t', "to")
                 .action((x, c) => c.copy(toAddress = x))
                 .text(
-                  "Address to send LVLs to. (mandatory if to-party and to-contract are not provided)"
+                  "Address to send LVLs to. (mandatory if to-fellowship and to-contract are not provided)"
                 ),
-              opt[Option[String]]("to-party")
+              opt[Option[String]]("to-fellowship")
                 .action((x, c) => c.copy(someToParty = x))
                 .text(
                   "Party to send LVLs to. (mandatory if to is not provided)"

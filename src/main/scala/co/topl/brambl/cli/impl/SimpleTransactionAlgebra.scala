@@ -180,9 +180,9 @@ object SimpleTransactionAlgebra {
             .map(_.flatten.map(Lock().withPredicate(_)))
           someNextIndices <-
             (someChangeParty, someChangeContract, someChangeState) match {
-              case (Some(party), Some(contract), Some(state)) =>
+              case (Some(fellowship), Some(contract), Some(state)) =>
                 walletStateApi.getCurrentIndicesForFunds(
-                  party,
+                  fellowship,
                   contract,
                   Some(state)
                 )
@@ -227,9 +227,9 @@ object SimpleTransactionAlgebra {
             someToContract
           ) match {
             case (Some(address), _, _) => Sync[F].point(Some(address))
-            case (None, Some(party), Some(contract)) =>
+            case (None, Some(fellowship), Some(contract)) =>
               walletStateApi
-                .getAddress(party, contract, None)
+                .getAddress(fellowship, contract, None)
                 .map(
                   _.flatMap(addrStr =>
                     AddressCodecs.decodeAddress(addrStr).toOption

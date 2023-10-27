@@ -31,7 +31,7 @@ class SimpleMintingControllerSpec
     new BaseWalletStateAlgebra[F] {
 
       override def getCurrentIndicesForFunds(
-          party: String,
+          fellowship: String,
           contract: String,
           state: Option[Int]
       ): F[Option[Indices]] = Monad[F].pure(
@@ -39,7 +39,7 @@ class SimpleMintingControllerSpec
       )
 
       override def getNextIndicesForFunds(
-          party: String,
+          fellowship: String,
           contract: String
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
@@ -54,7 +54,7 @@ class SimpleMintingControllerSpec
       ): F[Unit] = Monad[F].pure(())
 
       override def getLock(
-          party: String,
+          fellowship: String,
           contract: String,
           nextState: Int
       ): F[Option[Lock]] =

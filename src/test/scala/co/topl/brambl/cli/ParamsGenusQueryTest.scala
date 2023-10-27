@@ -7,12 +7,12 @@ class ParamsGenusQueryTest extends FunSuite {
 
   import BramblCliParamsParserModule._
 
-  test("Test from-party transactions require index (UTXO query)") {
+  test("Test from-fellowship transactions require index (UTXO query)") {
     val args0 = List(
       "genus-query",
       "utxo-by-address",
-      "--from-party",
-      "noparty",
+      "--from-fellowship",
+      "nofellowship",
       "--from-contract",
       "genesis",
       "--from-state",

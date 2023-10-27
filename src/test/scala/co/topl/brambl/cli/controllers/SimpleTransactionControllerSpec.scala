@@ -33,7 +33,7 @@ class SimpleTransactionControllerSpec
     new BaseWalletStateAlgebra[F] {
 
       override def getAddress(
-          party: String,
+          fellowship: String,
           contract: String,
           state: Option[Int]
       ): F[Option[String]] = {
@@ -54,7 +54,7 @@ class SimpleTransactionControllerSpec
       }
 
       override def getCurrentIndicesForFunds(
-          party: String,
+          fellowship: String,
           contract: String,
           state: Option[Int]
       ): F[Option[Indices]] = Monad[F].pure(
@@ -62,7 +62,7 @@ class SimpleTransactionControllerSpec
       )
 
       override def getNextIndicesForFunds(
-          party: String,
+          fellowship: String,
           contract: String
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
@@ -77,7 +77,7 @@ class SimpleTransactionControllerSpec
       ): F[Unit] = Monad[F].pure(())
 
       override def getLock(
-          party: String,
+          fellowship: String,
           contract: String,
           nextState: Int
       ): F[Option[Lock]] =
@@ -97,7 +97,7 @@ class SimpleTransactionControllerSpec
         )
 
       override def validateCurrentIndicesForFunds(
-          party: String,
+          fellowship: String,
           contract: String,
           someState: Option[Int]
       ): F[ValidatedNel[String, Indices]] = {
@@ -154,7 +154,7 @@ class SimpleTransactionControllerSpec
         "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
-        (Some("noparty"), Some("genesis"), None),
+        (Some("nofellowship"), Some("genesis"), None),
         None,
         Some("self"),
         Some("default"),

@@ -124,12 +124,12 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
 
-  test("Test noparty transactions require index") {
+  test("Test nofellowship transactions require index") {
     val args0 = List(
       "simple-transaction",
       "create",
-      "--from-party",
-      "noparty",
+      "--from-fellowship",
+      "nofellowship",
       "--from-contract",
       "genesis",
       "-t",
@@ -158,12 +158,12 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 
-  test("Test noparty transactions require change") {
+  test("Test nofellowship transactions require change") {
     val args0 = List(
       "simple-transaction",
       "create",
-      "--from-party",
-      "noparty",
+      "--from-fellowship",
+      "nofellowship",
       "--from-contract",
       "genesis",
       "--from-state",
@@ -193,12 +193,12 @@ class ParamsSimpleTransactionTest extends FunSuite {
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
 
-  test("Test from-party transactions require index") {
+  test("Test from-fellowship transactions require index") {
     val args0 = List(
       "simple-transaction",
       "create",
-      "--from-party",
-      "noparty",
+      "--from-fellowship",
+      "nofellowship",
       "--from-contract",
       "genesis",
       "--from-state",
@@ -233,7 +233,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
     val args0 = List(
       "simple-transaction",
       "create",
-      "--to-party",
+      "--to-fellowship",
       "self",
       "--to-contract",
       "default",
@@ -269,7 +269,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "create",
       "-t",
       "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
-      "--to-party",
+      "--to-fellowship",
       "self",
       "--to-contract",
       "default",

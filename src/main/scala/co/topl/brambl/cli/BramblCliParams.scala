@@ -74,7 +74,7 @@ final case class BramblCliParams(
     subcmd: BramblCliSubCmd.Value = BramblCliSubCmd.invalid,
     tokenType: TokenType.Value = TokenType.all,
     network: NetworkIdentifiers = InvalidNet,
-    partyName: String = "",
+    fellowshipName: String = "",
     contractName: String = "",
     lockTemplate: String = "",
     inputVks: Seq[File] = Seq(),

@@ -5,22 +5,22 @@ import co.topl.brambl.dataApi.{PartyStorageAlgebra, WalletEntity}
 
 
 class PartiesController[F[_]: Applicative](
-    partyStorageAlgebra: PartyStorageAlgebra[F]
+    fellowshipStorageAlgebra: PartyStorageAlgebra[F]
 ) {
 
   def addParty(name: String): F[Either[String, String]] = {
     import cats.implicits._
     for {
-      added <- partyStorageAlgebra.addParty(WalletEntity(0, name))
+      added <- fellowshipStorageAlgebra.addParty(WalletEntity(0, name))
     } yield
       if (added == 1) Right(s"Party $name added successfully")
-      else Left("Failed to add party")
+      else Left("Failed to add fellowship")
   }
 
   def listParties(): F[Either[String, String]] = {
     import co.topl.brambl.cli.views.WalletModelDisplayOps._
     import cats.implicits._
-    partyStorageAlgebra
+    fellowshipStorageAlgebra
       .findParties()
       .map(parties =>
         Right(

@@ -40,19 +40,19 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
   ): F[Unit] = ???
 
   override def getCurrentIndicesForFunds(
-      party: String,
+      fellowship: String,
       contract: String,
       someState: Option[Int]
   ): F[Option[Indices]] = ???
 
   override def validateCurrentIndicesForFunds(
-      party: String,
+      fellowship: String,
       contract: String,
       someState: Option[Int]
   ): F[ValidatedNel[String, Indices]] = ???
 
   override def getNextIndicesForFunds(
-      party: String,
+      fellowship: String,
       contract: String
   ): F[Option[Indices]] = ???
 
@@ -60,13 +60,13 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
     ???
 
   override def addEntityVks(
-      party: String,
+      fellowship: String,
       contract: String,
       entities: List[String]
   ): F[Unit] = ???
 
   override def getEntityVks(
-      party: String,
+      fellowship: String,
       contract: String
   ): F[Option[List[String]]] = ???
 
@@ -79,13 +79,13 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
     ???
 
   override def getLock(
-      party: String,
+      fellowship: String,
       contract: String,
       nextState: Int
   ): F[Option[Lock]] = ???
 
   override def getAddress(
-      party: String,
+      fellowship: String,
       contract: String,
       state: Option[Int]
   ): F[Option[String]] = ???

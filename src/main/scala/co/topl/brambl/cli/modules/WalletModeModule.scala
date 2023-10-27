@@ -52,7 +52,7 @@ trait WalletModeModule
               validateParams.someKeyFile.get,
               validateParams.password,
               validateParams.someOutputFile.get,
-              validateParams.partyName,
+              validateParams.fellowshipName,
               validateParams.contractName,
               x
             )
@@ -62,7 +62,7 @@ trait WalletModeModule
               validateParams.someKeyFile.get,
               validateParams.password,
               validateParams.someOutputFile.get,
-              validateParams.partyName,
+              validateParams.fellowshipName,
               validateParams.contractName
             )
           )
@@ -73,7 +73,7 @@ trait WalletModeModule
           validateParams.someKeyFile.get,
           validateParams.password,
           validateParams.contractName,
-          validateParams.partyName
+          validateParams.fellowshipName
         )
       case BramblCliSubCmd.init =>
         walletController.createWalletFromParams(validateParams)
@@ -83,7 +83,7 @@ trait WalletModeModule
         walletController.sync(
           validateParams.network.networkId,
           validateParams.contractName,
-          validateParams.partyName
+          validateParams.fellowshipName
         )
       case BramblCliSubCmd.currentaddress =>
         walletController.currentaddress(

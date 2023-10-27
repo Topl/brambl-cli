@@ -10,17 +10,17 @@ trait PartiesModeModule extends WalletStateResource {
   def partiesModeSubcmds(
       validateParams: BramblCliParams
   ): IO[Either[String, String]] = {
-    val partyStorageAlgebra = PartyStorageApi.make[IO](
+    val fellowshipStorageAlgebra = PartyStorageApi.make[IO](
       walletResource(validateParams.walletFile)
     )
     validateParams.subcmd match {
       case BramblCliSubCmd.invalid =>
         IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.add =>
-        new PartiesController(partyStorageAlgebra)
-          .addParty(validateParams.partyName)
+        new PartiesController(fellowshipStorageAlgebra)
+          .addParty(validateParams.fellowshipName)
       case BramblCliSubCmd.list =>
-        new PartiesController(partyStorageAlgebra)
+        new PartiesController(fellowshipStorageAlgebra)
           .listParties()
     }
   }

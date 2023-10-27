@@ -35,7 +35,7 @@ trait CommonFunctions extends PolicyTemplates {
       _ <- IO.asyncForIO.timeout(
         (for {
           _ <- IO.println("Querying genesis to start")
-          queryRes <- queryAccount("noparty", "genesis", Some(1))
+          queryRes <- queryAccount("nofellowship", "genesis", Some(1))
             .run(aliceContext)
           _ <- IO.sleep(5.seconds)
         } yield queryRes)
@@ -47,10 +47,10 @@ trait CommonFunctions extends PolicyTemplates {
       _ <- IO.println("Moving funds from genesis to alice")
       _ <- assertIO(
         createSimpleTransactionToAddress(
-          "noparty",
+          "nofellowship",
           "genesis",
           Some(1),
-          Some("noparty"),
+          Some("nofellowship"),
           Some("genesis"),
           Some(1),
           ALICE_TO_ADDRESS.get,
