@@ -7,11 +7,11 @@ import co.topl.brambl.dataApi.{ContractStorageAlgebra, WalletContract}
 import co.topl.brambl.cli.impl.QuivrFastParser
 import co.topl.brambl.codecs.LockTemplateCodecs
 
-class ContractsController[F[_]: Sync](
-    contractStorageAlgebra: ContractStorageAlgebra[F]
+class TemplatesController[F[_]: Sync](
+    templateStorageAlgebra: ContractStorageAlgebra[F]
 ) {
 
-  def addContract(
+  def addTemplate(
       name: String,
       lockTemplate: String
   ): F[Either[String, String]] = {
@@ -29,12 +29,12 @@ class ContractsController[F[_]: Sync](
                   lockTemplate
                 )
               )
-            added <- contractStorageAlgebra.addContract(
+            added <- templateStorageAlgebra.addContract(
               WalletContract(0, name, lockTemplateAsJson.noSpaces)
             )
           } yield
-            if (added == 1) Right("Contract added successfully")
-            else Left("Failed to add contract")
+            if (added == 1) Right("Template added successfully")
+            else Left("Failed to add template")
         case Validated.Invalid(e) =>
           import cats.implicits._
 
@@ -45,15 +45,15 @@ class ContractsController[F[_]: Sync](
     } yield res
   }
 
-  def listContracts(): F[Either[String, String]] = {
+  def listTemplates(): F[Either[String, String]] = {
     import co.topl.brambl.cli.views.WalletModelDisplayOps._
     import cats.implicits._
 
-    contractStorageAlgebra
+    templateStorageAlgebra
       .findContracts()
-      .map(contracts =>
+      .map(templates =>
         Right(
-          displayWalletContractHeader() + "\n" + contracts
+          displayWalletTemplateHeader() + "\n" + templates
             .map(display)
             .mkString("\n")
         )

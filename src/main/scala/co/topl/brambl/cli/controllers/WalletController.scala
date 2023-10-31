@@ -40,8 +40,8 @@ class WalletController[F[_]: Sync](
       inputVks: Seq[File],
       keyfile: String,
       password: String,
-      contractName: String,
-      partyName: String
+      templateName: String,
+      fellowshipName: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
@@ -75,12 +75,12 @@ class WalletController[F[_]: Sync](
           ).sequence
         )
       lockTempl <- walletStateAlgebra
-        .getLockTemplate(contractName)
+        .getLockTemplate(templateName)
         .map(_.get) // it exists because of the validation
       // we need to get the corresponding vk
       indices <- walletStateAlgebra.getNextIndicesForFunds(
-        partyName,
-        contractName
+        fellowshipName,
+        templateName
       )
       keypair <- walletManagementUtils.loadKeys(keyfile, password)
       deriveChildKey <- walletApi.deriveChildKeys(keypair, indices.get)
@@ -110,8 +110,8 @@ class WalletController[F[_]: Sync](
         indices.get
       )
       _ <- walletStateAlgebra.addEntityVks(
-        partyName,
-        contractName,
+        fellowshipName,
+        templateName,
         deriveChildKeyString :: keyAndEncodedKeys.toList.map(_._2)
       )
       _ <- lockTempl.build(keyAndEncodedKeys.toList.map(_._1))
@@ -122,16 +122,16 @@ class WalletController[F[_]: Sync](
       keyFile: String,
       password: String,
       outputFile: String,
-      partyName: String,
-      contractName: String,
-      state: Int
+      fellowshipName: String,
+      templateName: String,
+      interaction: Int
   ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
-          partyName,
-          contractName,
+          fellowshipName,
+          templateName,
           None
         )
       )
@@ -142,7 +142,7 @@ class WalletController[F[_]: Sync](
       )
       deriveChildKey <- OptionT(
         walletApi
-          .deriveChildKeys(keypair, indices.copy(z = state))
+          .deriveChildKeys(keypair, indices.copy(z = interaction))
           .map(
             Option(_)
           )
@@ -166,15 +166,15 @@ class WalletController[F[_]: Sync](
       keyFile: String,
       password: String,
       outputFile: String,
-      partyName: String,
-      contractName: String
+      fellowshipName: String,
+      templateName: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     (for {
       indices <- OptionT(
         walletStateAlgebra.getCurrentIndicesForFunds(
-          partyName,
-          contractName,
+          fellowshipName,
+          templateName,
           None
         )
       )
@@ -244,9 +244,9 @@ class WalletController[F[_]: Sync](
       .getOrElse(
         walletStateAlgebra
           .getAddress(
-            params.fromParty,
-            params.fromContract,
-            params.someFromState
+            params.fromFellowship,
+            params.fromTemplate,
+            params.someFromInteraction
           )
       )
       .map(_ match {
@@ -257,8 +257,8 @@ class WalletController[F[_]: Sync](
 
   def sync(
       networkId: Int,
-      party: String,
-      contract: String
+      fellowship: String,
+      template: String
   ): F[Either[String, String]] = {
     import cats.implicits._
     import TransactionBuilderApi.implicits._
@@ -267,14 +267,14 @@ class WalletController[F[_]: Sync](
     (for {
       // current indices
       someIndices <- walletStateAlgebra.getCurrentIndicesForFunds(
-        party,
-        contract,
+        fellowship,
+        template,
         None
       )
       // current address
       someAddress <- walletStateAlgebra.getAddress(
-        party,
-        contract,
+        fellowship,
+        template,
         someIndices.map(_.z)
       )
       // txos that are spent at current address
@@ -290,12 +290,12 @@ class WalletController[F[_]: Sync](
     } yield
     // we have indices AND txos at current address are spent
     if (someIndices.isDefined && !txos.isEmpty) {
-      // we need to update the wallet state with the next indices
+      // we need to update the wallet interaction with the next indices
       val indices = someIndices.map(idx => Indices(idx.x, idx.y, idx.z + 1)).get
       for {
         vks <- walletStateAlgebra.getEntityVks(
-          party,
-          contract
+          fellowship,
+          template
         )
         vksDerived <- vks.get
           .map(x =>
@@ -307,7 +307,7 @@ class WalletController[F[_]: Sync](
             )
           )
           .sequence
-        lock <- walletStateAlgebra.getLock(party, contract, indices.z)
+        lock <- walletStateAlgebra.getLock(fellowship, template, indices.z)
         lockAddress = LockAddress(
           networkId,
           NetworkConstants.MAIN_LEDGER_ID,
@@ -329,28 +329,28 @@ class WalletController[F[_]: Sync](
   }
 
   def currentaddress(
-      party: String,
-      contract: String,
-      someState: Option[Int]
+      fellowship: String,
+      template: String,
+      someInteraction: Option[Int]
   ): F[Option[String]] =
-    walletStateAlgebra.getAddress(party, contract, someState)
+    walletStateAlgebra.getAddress(fellowship, template, someInteraction)
 
   def getBalance(
       someAddress: Option[String],
-      someParty: Option[String],
-      someContract: Option[String],
-      someState: Option[Int]
+      someFellowship: Option[String],
+      someTemplate: Option[String],
+      someInteraction: Option[Int]
   ): F[Either[String, String]] = {
 
     import cats.implicits._
-    val addressGetter = (someAddress, someParty, someContract) match {
+    val addressGetter = (someAddress, someFellowship, someTemplate) match {
       case (Some(address), None, None) =>
         Sync[F].point(Some(address))
-      case (None, Some(party), Some(contract)) =>
+      case (None, Some(fellowship), Some(template)) =>
         walletStateAlgebra.getAddress(
-          party,
-          contract,
-          someState
+          fellowship,
+          template,
+          someInteraction
         )
       case (_, _, _) =>
         Sync[F].raiseError(

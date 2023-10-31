@@ -2,22 +2,22 @@
 sidebar_position: 9
 ---
 
-# Manage Parties
+# Manage Fellowships
 
-The parties are the entities that are involved in the contracts. 
+The fellowships are the entities that are involved in the templates. 
 
-## Add a new party
+## Add a new fellowship
 
-To add a new party to the wallet run the following command:
+To add a new fellowship to the wallet run the following command:
 
 ```bash
-brambl-cli parties add --party-name $PARTY_NAME --walletdb $WALLET
+brambl-cli fellowships add --fellowship-name $FELLOWSHIP_NAME --walletdb $WALLET
 ```
 
-## List all parties
+## List all fellowships
 
-To list all parties in the wallet run the following command:
+To list all fellowships in the wallet run the following command:
 
 ```bash
-brambl-cli parties list --walletdb $WALLET
+brambl-cli fellowships list --walletdb $WALLET
 ```

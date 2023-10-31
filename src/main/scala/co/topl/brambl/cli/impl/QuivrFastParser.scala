@@ -14,8 +14,8 @@ sealed trait ParseError {
   val error: String
 }
 
-case class InvalidQuivrContract(location: Int, error: String) extends ParseError
-case class ContractParser(location: Int, error: String) extends ParseError
+case class InvalidQuivrTemplate(location: Int, error: String) extends ParseError
+case class TemplateParser(location: Int, error: String) extends ParseError
 
 sealed trait TemplateAST {
   val location: Int
@@ -66,14 +66,14 @@ object TemplateAST {
       case ThresholdPredicate(threshold, innerPropositions) =>
         if (threshold > innerPropositions.length)
           State.pure(
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               0,
               "Threshold cannot be greater than the number of inner propositions"
             ).invalidNel
           )
         else if (threshold < 1)
           State.pure(
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               0,
               "Threshold cannot be less than 1"
             ).invalidNel
@@ -99,31 +99,31 @@ object TemplateAST {
       case Sign(location, idx) =>
         if (idx < 0)
           State.pure(
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Index cannot be less than 0"
             ).invalidNel
           )
         else if (idx > 255)
           State.pure(
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Index cannot be greater than 255"
             ).invalidNel
           )
         else {
-          State(state =>
-            if (state.contains(idx))
+          State(interaction =>
+            if (interaction.contains(idx))
               (
-                state,
-                InvalidQuivrContract(
+                interaction,
+                InvalidQuivrTemplate(
                   location,
                   "Index cannot be used more than once"
                 ).invalidNel
               )
             else
               (
-                state + idx,
+                interaction + idx,
                 PropositionTemplate
                   .SignatureTemplate[F]("ExtendedEd25519", idx)
                   .validNel
@@ -134,12 +134,12 @@ object TemplateAST {
         innerPropositions.map(x => compile[F](x)).sequence.map {
           innerPropositions =>
             if (threshold > innerPropositions.length)
-              InvalidQuivrContract(
+              InvalidQuivrTemplate(
                 location,
                 "Threshold cannot be greater than the number of inner propositions"
               ).invalidNel
             else if (threshold < 1)
-              InvalidQuivrContract(
+              InvalidQuivrTemplate(
                 location,
                 "Threshold cannot be less than 1"
               ).invalidNel
@@ -167,7 +167,7 @@ object TemplateAST {
             .map(data =>
               Encoding.decodeFromBase58(data) match {
                 case Left(_) =>
-                  InvalidQuivrContract(
+                  InvalidQuivrTemplate(
                     location,
                     "Invalid base58 encoding"
                   ).invalidNel
@@ -191,17 +191,17 @@ object TemplateAST {
       case Height(location, min, max) =>
         State.pure(
           if (min < 0)
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Min height cannot be less than 0"
             ).invalidNel
           else if (max < 0)
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Max height cannot be less than 0"
             ).invalidNel
           else if (min > max)
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Min height cannot be greater than max height"
             ).invalidNel
@@ -213,17 +213,17 @@ object TemplateAST {
       case Tick(location, min, max) =>
         State.pure(
           if (min < 0)
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Min tick cannot be less than 0"
             ).invalidNel
           else if (max < 0)
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Max tick cannot be less than 0"
             ).invalidNel
           else if (min > max)
-            InvalidQuivrContract(
+            InvalidQuivrTemplate(
               location,
               "Min tick cannot be greater than max tick"
             ).invalidNel
@@ -236,7 +236,7 @@ object TemplateAST {
         State.pure(
           Encoding.decodeFromBase58(digest) match {
             case Left(_) =>
-              InvalidQuivrContract(
+              InvalidQuivrTemplate(
                 location,
                 "Invalid base58 encoding"
               ).invalidNel
@@ -353,12 +353,12 @@ object QuivrFastParser {
       import cats.implicits._
       parse(input, thresholdPredicate(_)) match {
         case Parsed.Success(value, _) =>
-          val (state, res) =
+          val (interaction, res) =
             TemplateAST.compilePredicate[F](value).run(Set()).value
-          if (state.toSeq.sorted != (0 until state.size).toSeq)
+          if (interaction.toSeq.sorted != (0 until interaction.size).toSeq)
             (
               res,
-              InvalidQuivrContract(
+              InvalidQuivrTemplate(
                 0,
                 "Index cannot be skipped"
               ).invalidNel[LockTemplate[F]]
@@ -366,7 +366,7 @@ object QuivrFastParser {
           else
             res
         case Parsed.Failure(_, location, _) =>
-          ContractParser(location, "Error parsing").invalidNel
+          TemplateParser(location, "Error parsing").invalidNel
       }
     }
 

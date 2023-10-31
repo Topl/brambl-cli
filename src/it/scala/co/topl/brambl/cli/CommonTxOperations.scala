@@ -20,18 +20,18 @@ trait CommonTxOperations
     with BaseConstants {
 
   def syncWallet(
-      contractName: String,
-      partyName: String
+      templateName: String,
+      fellowshipName: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
           "wallet",
           "sync",
-          "--contract-name",
-          contractName,
-          "--party-name",
-          partyName,
+          "--template-name",
+          templateName,
+          "--fellowship-name",
+          fellowshipName,
           "--walletdb",
           c.walletFile,
           "-n",
@@ -71,14 +71,14 @@ trait CommonTxOperations
   )
 
   def createSimpleTransactionToCartesianIdx(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
-      someChangeParty: Option[String],
-      someChangeContract: Option[String],
-      someChangeState: Option[Int],
-      toParty: String,
-      toContract: String,
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
+      someChangeFellowship: Option[String],
+      someChangeTemplate: Option[String],
+      someChangeInteraction: Option[Int],
+      toFellowship: String,
+      toTemplate: String,
       amount: Int,
       fee: Int,
       outputFile: String,
@@ -91,14 +91,14 @@ trait CommonTxOperations
         List(
           "simple-transaction",
           "create",
-          "--from-party",
-          fromParty, // "alice_bob_0",
-          "--from-contract",
-          fromContract, // "or_sign",
-          "--to-party",
-          toParty,
-          "--to-contract",
-          toContract,
+          "--from-fellowship",
+          fromFellowship, // "alice_bob_0",
+          "--from-template",
+          fromTemplate, // "or_sign",
+          "--to-fellowship",
+          toFellowship,
+          "--to-template",
+          toTemplate,
           "-w",
           c.password,
           "--port",
@@ -119,8 +119,8 @@ trait CommonTxOperations
           c.walletFile,
           "--transfer-token",
           token.toString()
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
           ++ someGroupId
             .map(s => List("--group-id", s.toString()))
@@ -128,14 +128,14 @@ trait CommonTxOperations
           ++ someSeriesId
             .map(s => List("--series-id", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeParty
-            .map(s => List("--change-party", s.toString()))
+          ++ someChangeFellowship
+            .map(s => List("--change-fellowship", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeContract
-            .map(s => List("--change-contract", s.toString()))
+          ++ someChangeTemplate
+            .map(s => List("--change-template", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeState
-            .map(s => List("--change-state", s.toString()))
+          ++ someChangeInteraction
+            .map(s => List("--change-interaction", s.toString()))
             .getOrElse(List.empty)
       )
     )
@@ -163,12 +163,12 @@ trait CommonTxOperations
       )
     )
   def createSimpleTransactionToAddress(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
-      someChangeParty: Option[String],
-      someChangeContract: Option[String],
-      someChangeState: Option[Int],
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
+      someChangeFellowship: Option[String],
+      someChangeTemplate: Option[String],
+      someChangeInteraction: Option[Int],
       aliceAddress: String,
       amount: Int,
       fee: Int,
@@ -182,10 +182,10 @@ trait CommonTxOperations
         List(
           "simple-transaction",
           "create",
-          "--from-party",
-          fromParty, // "alice_bob_0",
-          "--from-contract",
-          fromContract, // "or_sign",
+          "--from-fellowship",
+          fromFellowship, // "alice_bob_0",
+          "--from-template",
+          fromTemplate, // "or_sign",
           "-t",
           aliceAddress,
           "-w",
@@ -208,8 +208,8 @@ trait CommonTxOperations
           c.walletFile,
           "--transfer-token",
           token.toString()
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
           ++ someGroupId
             .map(s => List("--group-id", s.toString()))
@@ -217,22 +217,22 @@ trait CommonTxOperations
           ++ someSeriesId
             .map(s => List("--series-id", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeParty
-            .map(s => List("--change-party", s.toString()))
+          ++ someChangeFellowship
+            .map(s => List("--change-fellowship", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeContract
-            .map(s => List("--change-contract", s.toString()))
+          ++ someChangeTemplate
+            .map(s => List("--change-template", s.toString()))
             .getOrElse(List.empty)
-          ++ someChangeState
-            .map(s => List("--change-state", s.toString()))
+          ++ someChangeInteraction
+            .map(s => List("--change-interaction", s.toString()))
             .getOrElse(List.empty)
       )
     }
 
   def createSimpleGroupMintingTransaction(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       groupPolicy: String,
@@ -243,10 +243,10 @@ trait CommonTxOperations
         List(
           "simple-minting",
           "create",
-          "--from-party",
-          fromParty,
-          "--from-contract",
-          fromContract,
+          "--from-fellowship",
+          fromFellowship,
+          "--from-template",
+          fromTemplate,
           "-h",
           HOST,
           "--port",
@@ -269,15 +269,15 @@ trait CommonTxOperations
           c.walletFile,
           "--mint-token",
           "group"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def createSimpleSeriesMintingTransaction(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       seriesPolicy: String,
@@ -288,10 +288,10 @@ trait CommonTxOperations
         List(
           "simple-minting",
           "create",
-          "--from-party",
-          fromParty,
-          "--from-contract",
-          fromContract,
+          "--from-fellowship",
+          fromFellowship,
+          "--from-template",
+          fromTemplate,
           "-h",
           HOST,
           "--port",
@@ -314,15 +314,15 @@ trait CommonTxOperations
           c.walletFile,
           "--mint-token",
           "series"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def createSimpleAssetMintingTransaction(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
       fee: Long,
       assetMintingStatement: String,
       outputFile: String,
@@ -333,10 +333,10 @@ trait CommonTxOperations
         List(
           "simple-minting",
           "create",
-          "--from-party",
-          fromParty,
-          "--from-contract",
-          fromContract,
+          "--from-fellowship",
+          fromFellowship,
+          "--from-template",
+          fromTemplate,
           "-h",
           HOST,
           "--port",
@@ -361,26 +361,26 @@ trait CommonTxOperations
           "3e8fd1ed52e0c8107f3265da13a42b323a492d334b6da23b0f1ef279b988a225",
           "--ephemeralMetadata",
           ephemeralMetadata
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
 
   def queryAccount(
-      partyName: String,
-      contractName: String,
-      someFromState: Option[Int] = None
+      fellowshipName: String,
+      templateName: String,
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
           "genus-query",
           "utxo-by-address",
-          "--from-party",
-          partyName,
-          "--from-contract",
-          contractName,
+          "--from-fellowship",
+          fellowshipName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -389,25 +389,25 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "lvl"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountAllTokens(
-      partyName: String,
-      contractName: String,
-      someFromState: Option[Int] = None
+      fellowshipName: String,
+      templateName: String,
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
           "genus-query",
           "utxo-by-address",
-          "--from-party",
-          partyName,
-          "--from-contract",
-          contractName,
+          "--from-fellowship",
+          fellowshipName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -416,25 +416,25 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "all"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountGroupTokens(
-      partyName: String,
-      contractName: String,
-      someFromState: Option[Int] = None
+      fellowshipName: String,
+      templateName: String,
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
           "genus-query",
           "utxo-by-address",
-          "--from-party",
-          partyName,
-          "--from-contract",
-          contractName,
+          "--from-fellowship",
+          fellowshipName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -443,25 +443,25 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "group"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountSeriesTokens(
-      partyName: String,
-      contractName: String,
-      someFromState: Option[Int] = None
+      fellowshipName: String,
+      templateName: String,
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
           "genus-query",
           "utxo-by-address",
-          "--from-party",
-          partyName,
-          "--from-contract",
-          contractName,
+          "--from-fellowship",
+          fellowshipName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -470,25 +470,25 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "series"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
   def queryAccountAssetTokens(
-      partyName: String,
-      contractName: String,
-      someFromState: Option[Int] = None
+      fellowshipName: String,
+      templateName: String,
+      someFromInteraction: Option[Int] = None
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
           "genus-query",
           "utxo-by-address",
-          "--from-party",
-          partyName,
-          "--from-contract",
-          contractName,
+          "--from-fellowship",
+          fellowshipName,
+          "--from-template",
+          templateName,
           "-h",
           HOST,
           "--port",
@@ -497,13 +497,13 @@ trait CommonTxOperations
           c.walletFile,
           "--token",
           "asset"
-        ) ++ someFromState
-          .map(s => List("--from-state", s.toString()))
+        ) ++ someFromInteraction
+          .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
       )
     )
 
-  def exportVk(partyName: String, contractName: String, vkFile: String) =
+  def exportVk(fellowshipName: String, templateName: String, vkFile: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
@@ -515,10 +515,10 @@ trait CommonTxOperations
           vkFile,
           "--walletdb",
           c.walletFile,
-          "--party-name",
-          partyName,
-          "--contract-name",
-          contractName,
+          "--fellowship-name",
+          fellowshipName,
+          "--template-name",
+          templateName,
           "--keyfile",
           c.keyFile
         )
@@ -526,9 +526,9 @@ trait CommonTxOperations
     )
 
   def exportFinalVk(
-      partyName: String,
-      contractName: String,
-      state: Int,
+      fellowshipName: String,
+      templateName: String,
+      interaction: Int,
       vkFile: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
@@ -542,19 +542,19 @@ trait CommonTxOperations
           vkFile,
           "--walletdb",
           c.walletFile,
-          "--party-name",
-          partyName,
-          "--contract-name",
-          contractName,
-          "--state",
-          state.toString(),
+          "--fellowship-name",
+          fellowshipName,
+          "--template-name",
+          templateName,
+          "--interaction",
+          interaction.toString(),
           "--keyfile",
           c.keyFile
         )
       )
     )
 
-  def importVk(partyName: String, contractName: String, vkFile: String) =
+  def importVk(fellowshipName: String, templateName: String, vkFile: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
@@ -562,10 +562,10 @@ trait CommonTxOperations
           "import-vks",
           "--input-vks",
           vkFile,
-          "--party-name",
-          partyName,
-          "--contract-name",
-          contractName,
+          "--fellowship-name",
+          fellowshipName,
+          "--template-name",
+          templateName,
           "--walletdb",
           c.walletFile,
           "--keyfile",
@@ -576,35 +576,35 @@ trait CommonTxOperations
       )
     )
 
-  def addPartyToWallet(partyName: String) =
+  def addFellowshipToWallet(fellowshipName: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
-          "parties",
+          "fellowships",
           "add",
-          "--party-name",
-          partyName,
+          "--fellowship-name",
+          fellowshipName,
           "--walletdb",
           c.walletFile
         )
       )
     )
 
-  def addContractToWallet(
-      contractName: String,
-      contractTemplate: String
+  def addTemplateToWallet(
+      templateName: String,
+      templateTemplate: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
         List(
-          "contracts",
+          "templates",
           "add",
           "--walletdb",
           c.walletFile,
-          "--contract-name",
-          contractName,
-          "--contract-template",
-          contractTemplate
+          "--template-name",
+          templateName,
+          "--lock-template",
+          templateTemplate
         )
       )
     )

@@ -4,259 +4,259 @@ import cats.effect.IO
 import co.topl.brambl.dataApi.{ContractStorageAlgebra, WalletContract}
 import munit.CatsEffectSuite
 
-class ContractsControllerSpec extends CatsEffectSuite {
+class TemplatesControllerSpec extends CatsEffectSuite {
 
-  test("Add signature contract") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add signature template") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, sign(0))"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, sign(0))"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"}],"type":"predicate"}"""
       )
   }
-  test("Add and contract") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add and template") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, sign(0) and sign(1))"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, sign(0) and sign(1))"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""
       )
   }
 
-  test("Add or contract") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add or template") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, sign(0) or sign(1))"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, sign(0) or sign(1))"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"or"}],"type":"predicate"}"""
       )
 
   }
-  test("Add lock contract empty") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add lock template empty") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, locked())"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, locked())"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"type":"locked"}],"type":"predicate"}"""
       )
   }
 
-  test("Add lock contract with data") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add lock template with data") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, locked(72k1xXWG59fYdzSNoA))"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, locked(72k1xXWG59fYdzSNoA))"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"data":"72k1xXWG59fYdzSNoA","type":"locked"}],"type":"predicate"}"""
       )
   }
 
-  test("Add height contract") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add height template") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, height(1, 1000))"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, height(1, 1000))"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"chain":"header","min":1,"max":1000,"type":"height"}],"type":"predicate"}"""
       )
   }
-  test("Add tick contract") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add tick template") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, tick(1, 1000))"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, tick(1, 1000))"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"min":1,"max":1000,"type":"tick"}],"type":"predicate"}"""
       )
   }
 
-  test("Add digest contract") {
-    var addedContract = ""
-    val simpleController = new ContractsController[IO](
+  test("Add digest template") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
-        ): IO[Int] = IO { addedContract = walletContract.lockTemplate } *> IO(1)
+            walletTemplate: WalletContract
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
           IO(List.empty)
       }
     )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, digest(6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8))"""
       )
       .assertEquals(
-        Right("Contract added successfully")
+        Right("Template added successfully")
       )
     simpleController
-      .addContract(
-        "myNewContract",
+      .addTemplate(
+        "myNewTemplate",
         """threshold(1, digest(6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8))"""
       )
-      .map(_ => addedContract)
+      .map(_ => addedTemplate)
       .assertEquals(
         """{"threshold":1,"innerTemplates":[{"routine":"Blake2b256","digest":"6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8","type":"digest"}],"type":"predicate"}"""
       )
   }
 
-  test("List contracts") {
-    val simpleController = new ContractsController[IO](
+  test("List templates") {
+    val simpleController = new TemplatesController[IO](
       new ContractStorageAlgebra[IO] {
         override def addContract(
-            walletContract: WalletContract
+            walletTemplate: WalletContract
         ): IO[Int] = IO(1)
 
         override def findContracts(): IO[List[WalletContract]] =
@@ -282,10 +282,10 @@ class ContractsControllerSpec extends CatsEffectSuite {
       }
     )
     simpleController
-      .listContracts()
+      .listTemplates()
       .assertEquals(
         Right(
-          "Y Coordinate\tContract Name\tLock Template\n" +
+          "Y Coordinate\tTemplate Name\tLock Template\n" +
             "1\tsign\t" + """{"threshold":1,"innerTemplates":[{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"}],"type":"predicate"}""" + "\n" +
             "2\tor\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"or"}],"type":"predicate"}""" + "\n" +
             "3\tand\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""

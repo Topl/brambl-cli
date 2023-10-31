@@ -14,7 +14,7 @@ This will create a transaction from the file `$INPUT_FILE` and store the result 
 
 ## Example of format
 
-A file to move the input from a height lock contract to a new address would look like this:
+A file to move the input from a height lock template to a new address would look like this:
 
 ```yaml
 network: private
@@ -31,7 +31,7 @@ outputs:
     value: 10000000
 ```
 
-A file to move the input from a single signature lock contract to multiple addresses would look like this:
+A file to move the input from a single signature lock template to multiple addresses would look like this:
 
 ```yaml
 network: private

@@ -46,9 +46,9 @@ class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
       val controller = new WalletController[IO](
         new BaseWalletStateAlgebra[IO] {
           override def getCurrentIndicesForFunds(
-              party: String,
-              contract: String,
-              someState: Option[Int]
+              fellowship: String,
+              template: String,
+              someInteraction: Option[Int]
           ): IO[Option[Indices]] = IO.pure(Some(Indices(1, 2, 3)))
         }, // : dataApi.WalletStateAlgebra[F],
         new BaseWalletManagementUtils[IO] {

@@ -26,8 +26,8 @@ class SimpleTransactionController[F[_]: Sync](
       fromCoordinates: (String, String, Option[Int]),
       changeCoordinates: (Option[String], Option[String], Option[Int]),
       someToAddress: Option[LockAddress],
-      someToParty: Option[String],
-      someToContract: Option[String],
+      someToFellowship: Option[String],
+      someToTemplate: Option[String],
       amount: Long,
       fee: Long,
       outputFile: String,
@@ -36,14 +36,14 @@ class SimpleTransactionController[F[_]: Sync](
       seriesId: Option[SeriesId]
   ): F[Either[String, String]] = {
     import cats.implicits._
-    val (fromParty, fromContract, someFromState) = fromCoordinates
-    val (someChangeParty, someChangeContract, someChangeState) =
+    val (fromFellowship, fromTemplate, someFromInteraction) = fromCoordinates
+    val (someChangeFellowship, someChangeTemplate, someChangeInteraction) =
       changeCoordinates
     walletStateAlgebra
       .validateCurrentIndicesForFunds(
-        fromParty,
-        fromContract,
-        someFromState
+        fromFellowship,
+        fromTemplate,
+        someFromInteraction
       ) flatMap {
       case Validated.Invalid(errors) =>
         Monad[F].point(Left("Invalid params\n" + errors.toList.mkString(", ")))
@@ -65,15 +65,15 @@ class SimpleTransactionController[F[_]: Sync](
             .createSimpleTransactionFromParams(
               keyfile,
               password,
-              fromParty,
-              fromContract,
-              someFromState,
-              someChangeParty,
-              someChangeContract,
-              someChangeState,
+              fromFellowship,
+              fromTemplate,
+              someFromInteraction,
+              someChangeFellowship,
+              someChangeTemplate,
+              someChangeInteraction,
               someToAddress,
-              someToParty,
-              someToContract,
+              someToFellowship,
+              someToTemplate,
               amount,
               fee,
               outputFile,

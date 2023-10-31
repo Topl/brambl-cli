@@ -105,13 +105,13 @@ object BramblCliParamsParserModule {
     .validate(validateWalletDbFile(_))
     .text("Wallet DB file. (mandatory)")
 
-  val contractNameArg = opt[String]("contract-name")
+  val templateNameArg = opt[String]("template-name")
     .validate(x =>
-      if (x.trim().isEmpty) failure("Contract name may not be empty")
+      if (x.trim().isEmpty) failure("Template name may not be empty")
       else success
     )
-    .action((x, c) => c.copy(contractName = x))
-    .text("Name of the contract. (mandatory)")
+    .action((x, c) => c.copy(templateName = x))
+    .text("Name of the template. (mandatory)")
 
   val networkArg = opt[NetworkIdentifiers]('n', "network")
     .action((x, c) => c.copy(network = x))
@@ -127,13 +127,13 @@ object BramblCliParamsParserModule {
     )
     .text("Password for the encrypted key. (mandatory)")
 
-  val partyNameArg = opt[String]("party-name")
+  val fellowshipNameArg = opt[String]("fellowship-name")
     .validate(x =>
-      if (x.trim().isEmpty) failure("Party name may not be empty")
+      if (x.trim().isEmpty) failure("Fellowship name may not be empty")
       else success
     )
-    .action((x, c) => c.copy(partyName = x))
-    .text("Name of the party. (mandatory)")
+    .action((x, c) => c.copy(fellowshipName = x))
+    .text("Name of the fellowship. (mandatory)")
 
   def validateWalletDbFile(walletDbFile: String): Either[String, Unit] =
     if (walletDbFile.trim().isEmpty) failure("Wallet file may not be empty")
@@ -225,42 +225,42 @@ object BramblCliParamsParserModule {
   def changeCoordinates = {
     import builder._
     Seq(
-      opt[Option[String]]("change-party")
-        .action((x, c) => c.copy(someChangeParty = x))
-        .text("Party where we are sending the change to")
+      opt[Option[String]]("change-fellowship")
+        .action((x, c) => c.copy(someChangeFellowship = x))
+        .text("Fellowship where we are sending the change to")
         .optional(),
-      opt[Option[String]]("change-contract")
-        .action((x, c) => c.copy(someChangeContract = x))
-        .text("Contract where we are sending the change to")
+      opt[Option[String]]("change-template")
+        .action((x, c) => c.copy(someChangeTemplate = x))
+        .text("Template where we are sending the change to")
         .optional(),
-      opt[Option[Int]]("change-state")
-        .action((x, c) => c.copy(someChangeState = x))
-        .text("State where we are sending the change to")
+      opt[Option[Int]]("change-interaction")
+        .action((x, c) => c.copy(someChangeInteraction = x))
+        .text("Interaction where we are sending the change to")
         .optional(),
       checkConfig(c =>
-        if (c.fromParty == "noparty") {
-          if (c.someFromState.isEmpty) {
-            failure("You must specify a from-state when using noparty")
+        if (c.fromFellowship == "noparty") {
+          if (c.someFromInteraction.isEmpty) {
+            failure("You must specify a from-interaction when using noparty")
           } else {
-            (c.someChangeParty, c.someChangeContract, c.someChangeState) match {
+            (c.someChangeFellowship, c.someChangeTemplate, c.someChangeInteraction) match {
               case (Some(_), Some(_), Some(_)) =>
                 success
               case (_, _, _) =>
                 failure(
-                  "You must specify a change-party, change-contract and change-state when using noparty"
+                  "You must specify a change-fellowship, change-template and change-interaction when using noparty"
                 )
             }
             success
           }
         } else {
-          (c.someChangeParty, c.someChangeContract, c.someChangeState) match {
+          (c.someChangeFellowship, c.someChangeTemplate, c.someChangeInteraction) match {
             case (Some(_), Some(_), Some(_)) =>
               success
             case (None, None, None) =>
               success
             case (_, _, _) =>
               failure(
-                "You must specify a change-party, change-contract and change-state or not specify any of them"
+                "You must specify a change-fellowship, change-template and change-interaction or not specify any of them"
               )
           }
         }
@@ -283,15 +283,15 @@ object BramblCliParamsParserModule {
             })
             .getOrElse(success)
         ),
-      opt[String]("from-party")
-        .action((x, c) => c.copy(fromParty = x))
-        .text("Party where we are sending the funds from"),
-      opt[String]("from-contract")
-        .action((x, c) => c.copy(fromContract = x))
-        .text("Contract where we are sending the funds from"),
-      opt[Option[Int]]("from-state")
-        .action((x, c) => c.copy(someFromState = x))
-        .text("State from where we are sending the funds from")
+      opt[String]("from-fellowship")
+        .action((x, c) => c.copy(fromFellowship = x))
+        .text("Fellowship where we are sending the funds from"),
+      opt[String]("from-template")
+        .action((x, c) => c.copy(fromTemplate = x))
+        .text("Template where we are sending the funds from"),
+      opt[Option[Int]]("from-interaction")
+        .action((x, c) => c.copy(someFromInteraction = x))
+        .text("Interaction from where we are sending the funds from")
     )
   }
 
@@ -313,50 +313,50 @@ object BramblCliParamsParserModule {
     )
   }
 
-  val contractsMode = cmd("contracts")
-    .action((_, c) => c.copy(mode = BramblCliMode.contracts))
-    .text("Contract mode")
+  val templatesMode = cmd("templates")
+    .action((_, c) => c.copy(mode = BramblCliMode.templates))
+    .text("Template mode")
     .children(
       cmd("list")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.list))
-        .text("List existing contracts")
+        .text("List existing templates")
         .children(
           walletDbArg
         ),
       cmd("add")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
-        .text("Add a new contracts")
+        .text("Add a new templates")
         .children(
           walletDbArg,
-          contractNameArg,
-          opt[String]("contract-template")
+          templateNameArg,
+          opt[String]("lock-template")
             .validate(x =>
               if (x.trim().isEmpty)
-                failure("Contract template may not be empty")
+                failure("Template template may not be empty")
               else success
             )
             .action((x, c) => c.copy(lockTemplate = x))
-            .text("Contract template. (mandatory)")
+            .text("Template template. (mandatory)")
         )
     )
 
-  val partiesMode = cmd("parties")
-    .action((_, c) => c.copy(mode = BramblCliMode.parties))
-    .text("Entity mode")
+  val fellowshipsMode = cmd("fellowships")
+    .action((_, c) => c.copy(mode = BramblCliMode.fellowships))
+    .text("Fellowship mode")
     .children(
       cmd("list")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.list))
-        .text("List existing parties")
+        .text("List existing fellowships")
         .children(
           walletDbArg
         ),
       cmd("add")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.add))
-        .text("Add a new parties")
+        .text("Add a new fellowships")
         .children(
           Seq(
             walletDbArg,
-            partyNameArg
+            fellowshipNameArg
           ): _*
         )
     )
@@ -452,8 +452,8 @@ object BramblCliParamsParserModule {
         .text("Sync wallet")
         .children(
           (hostPortNetwork ++ keyfileAndPassword ++ (Seq(
-            partyNameArg,
-            contractNameArg,
+            fellowshipNameArg,
+            templateNameArg,
             walletDbArg
           ))): _*
         ),
@@ -518,11 +518,11 @@ object BramblCliParamsParserModule {
           (keyfileAndPassword ++ Seq(
             outputArg,
             walletDbArg,
-            partyNameArg,
-            contractNameArg,
-            opt[Option[Int]]("state")
-              .action((x, c) => c.copy(someFromState = x))
-              .text("State from where we are sending the funds from")
+            fellowshipNameArg,
+            templateNameArg,
+            opt[Option[Int]]("interaction")
+              .action((x, c) => c.copy(someFromInteraction = x))
+              .text("Interaction from where we are sending the funds from")
           )): _*
         ),
       cmd("import-vks")
@@ -530,8 +530,8 @@ object BramblCliParamsParserModule {
         .text("Import verification key")
         .children(
           (keyfileAndPassword ++ Seq(
-            partyNameArg,
-            contractNameArg,
+            fellowshipNameArg,
+            templateNameArg,
             opt[Seq[File]]("input-vks")
               .action((x, c) => c.copy(inputVks = x))
               .text("The keys to import. (mandatory)")
@@ -677,17 +677,17 @@ object BramblCliParamsParserModule {
               opt[Option[LockAddress]]('t', "to")
                 .action((x, c) => c.copy(toAddress = x))
                 .text(
-                  "Address to send LVLs to. (mandatory if to-party and to-contract are not provided)"
+                  "Address to send LVLs to. (mandatory if to-fellowship and to-template are not provided)"
                 ),
-              opt[Option[String]]("to-party")
-                .action((x, c) => c.copy(someToParty = x))
+              opt[Option[String]]("to-fellowship")
+                .action((x, c) => c.copy(someToFellowship = x))
                 .text(
-                  "Party to send LVLs to. (mandatory if to is not provided)"
+                  "Fellowship to send LVLs to. (mandatory if to is not provided)"
                 ),
-              opt[Option[String]]("to-contract")
-                .action((x, c) => c.copy(someToContract = x))
+              opt[Option[String]]("to-template")
+                .action((x, c) => c.copy(someToTemplate = x))
                 .text(
-                  "Contract to send LVLs to. (mandatory if to is not provided)"
+                  "Template to send LVLs to. (mandatory if to is not provided)"
                 ),
               amountArg,
               transferTokenType,
@@ -702,7 +702,7 @@ object BramblCliParamsParserModule {
                       "From address is not supported for simple transactions"
                     )
                   } else
-                    (c.toAddress, c.someToParty, c.someToContract) match {
+                    (c.toAddress, c.someToFellowship, c.someToTemplate) match {
                       case (Some(_), None, None) =>
                         checkTokenAndId(
                           c.tokenType,
@@ -717,7 +717,7 @@ object BramblCliParamsParserModule {
                         )
                       case _ =>
                         failure(
-                          "Exactly toParty and toContract together or only toAddress must be specified"
+                          "Exactly toFellowship and toTemplate together or only toAddress must be specified"
                         )
                     }
                 else
@@ -750,8 +750,8 @@ object BramblCliParamsParserModule {
 
   val paramParser = {
     OParser.sequence(
-      contractsMode,
-      partiesMode,
+      templatesMode,
+      fellowshipsMode,
       genusQueryMode,
       bifrostQueryMode,
       walletMode,

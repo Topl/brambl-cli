@@ -2,24 +2,24 @@
 sidebar_position: 10
 ---
 
-# Manage Contracts
+# Manage Templates
 
-The contracts are the agreements between the parties they are described using
+The templates are the agreements between the fellowships they are described using
 Quivr.
 
 
-## Add a new contract
+## Add a new template
 
-To add a new contract to the wallet run the following command:
+To add a new template to the wallet run the following command:
 
 ```bash
-brambl-cli contracts add --walletdb $WALLET --contract-name $CONTRACT_NAME --contract-template $CONTRACT_TEMPLATE
+brambl-cli templates add --walletdb $WALLET --template-name $LOCK_TEMPLATE_NAME --lock-template $LOCK_TEMPLATE
 ```
 
-## List all contracts
+## List all templates
 
-To list all contracts in the wallet run the following command:
+To list all templates in the wallet run the following command:
 
 ```bash
-brambl-cli contracts list --walletdb $WALLET
+brambl-cli templates list --walletdb $WALLET
 ```

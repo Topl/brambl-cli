@@ -16,9 +16,9 @@ trait SimpleMintingAlgebra[F[_]] {
   def createSimpleGroupMintingTransactionFromParams(
       keyFile: String,
       password: String,
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       outputFile: String,
@@ -28,9 +28,9 @@ trait SimpleMintingAlgebra[F[_]] {
   def createSimpleSeriesMintingTransactionFromParams(
       keyFile: String,
       password: String,
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
       amount: Long,
       fee: Long,
       outputFile: String,
@@ -40,9 +40,9 @@ trait SimpleMintingAlgebra[F[_]] {
   def createSimpleAssetMintingTransactionFromParams(
       keyfile: String,
       password: String,
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int],
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int],
       fee: Long,
       outputFile: String,
       ephemeralMetadata: Option[Json],
@@ -81,9 +81,9 @@ object SimpleMintingAlgebra {
     private def sharedOps(
         keyfile: String,
         password: String,
-        fromParty: String,
-        fromContract: String,
-        someFromState: Option[Int]
+        fromFellowship: String,
+        fromTemplate: String,
+        someFromInteraction: Option[Int]
     ) = for {
       keyPair <-
         walletManagementUtils
@@ -92,16 +92,16 @@ object SimpleMintingAlgebra {
             password
           )
       someCurrentIndices <- getCurrentIndices(
-        fromParty,
-        fromContract,
-        someFromState
+        fromFellowship,
+        fromTemplate,
+        someFromInteraction
       )
       predicateFundsToUnlock <- getPredicateFundsToUnlock(someCurrentIndices)
-      someNextIndices <- getNextIndices(fromParty, fromContract)
+      someNextIndices <- getNextIndices(fromFellowship, fromTemplate)
       changeLock <- getChangeLockPredicate(
         someNextIndices,
-        fromParty,
-        fromContract
+        fromFellowship,
+        fromTemplate
       )
     } yield (
       keyPair,
@@ -114,9 +114,9 @@ object SimpleMintingAlgebra {
     override def createSimpleGroupMintingTransactionFromParams(
         keyfile: String,
         password: String,
-        fromParty: String,
-        fromContract: String,
-        someFromState: Option[Int],
+        fromFellowship: String,
+        fromTemplate: String,
+        someFromInteraction: Option[Int],
         amount: Long,
         fee: Long,
         outputFile: String,
@@ -125,9 +125,9 @@ object SimpleMintingAlgebra {
       tuple <- sharedOps(
         keyfile,
         password,
-        fromParty,
-        fromContract,
-        someFromState
+        fromFellowship,
+        fromTemplate,
+        someFromInteraction
       )
       (
         keyPair,
@@ -172,9 +172,9 @@ object SimpleMintingAlgebra {
     override def createSimpleSeriesMintingTransactionFromParams(
         keyfile: String,
         password: String,
-        fromParty: String,
-        fromContract: String,
-        someFromState: Option[Int],
+        fromFellowship: String,
+        fromTemplate: String,
+        someFromInteraction: Option[Int],
         amount: Long,
         fee: Long,
         outputFile: String,
@@ -183,9 +183,9 @@ object SimpleMintingAlgebra {
       tuple <- sharedOps(
         keyfile,
         password,
-        fromParty,
-        fromContract,
-        someFromState
+        fromFellowship,
+        fromTemplate,
+        someFromInteraction
       )
       (
         keyPair,
@@ -230,9 +230,9 @@ object SimpleMintingAlgebra {
     def createSimpleAssetMintingTransactionFromParams(
         keyfile: String,
         password: String,
-        fromParty: String,
-        fromContract: String,
-        someFromState: Option[Int],
+        fromFellowship: String,
+        fromTemplate: String,
+        someFromInteraction: Option[Int],
         fee: Long,
         outputFile: String,
         ephemeralMetadata: Option[Json],
@@ -242,9 +242,9 @@ object SimpleMintingAlgebra {
       tuple <- sharedOps(
         keyfile,
         password,
-        fromParty,
-        fromContract,
-        someFromState
+        fromFellowship,
+        fromTemplate,
+        someFromInteraction
       )
       (
         keyPair,

@@ -14,13 +14,13 @@ trait WalletApiHelpers[F[_]] {
   implicit val m: Monad[F]
 
   def getCurrentIndices(
-      fromParty: String,
-      fromContract: String,
-      someFromState: Option[Int]
+      fromFellowship: String,
+      fromTemplate: String,
+      someFromInteraction: Option[Int]
   ) = wsa.getCurrentIndicesForFunds(
-    fromParty,
-    fromContract,
-    someFromState
+    fromFellowship,
+    fromTemplate,
+    someFromInteraction
   )
 
   def getPredicateFundsToUnlock(someIndices: Option[Indices]) =
@@ -30,26 +30,26 @@ trait WalletApiHelpers[F[_]] {
       .map(_.flatten.map(Lock().withPredicate(_)))
 
   def getNextIndices(
-      fromParty: String,
-      fromContract: String
+      fromFellowship: String,
+      fromTemplate: String
   ) =
     wsa.getNextIndicesForFunds(
-      if (fromParty == "noparty") "self" else fromParty,
-      if (fromParty == "noparty") "default"
-      else fromContract
+      if (fromFellowship == "noparty") "self" else fromFellowship,
+      if (fromFellowship == "noparty") "default"
+      else fromTemplate
     )
 
   def getChangeLockPredicate(
       someNextIndices: Option[Indices],
-      fromParty: String,
-      fromContract: String
+      fromFellowship: String,
+      fromTemplate: String
   ) =
     someNextIndices
       .map(idx =>
         wsa.getLock(
-          if (fromParty == "noparty") "self" else fromParty,
-          if (fromParty == "noparty") "default"
-          else fromContract,
+          if (fromFellowship == "noparty") "self" else fromFellowship,
+          if (fromFellowship == "noparty") "default"
+          else fromTemplate,
           idx.z
         )
       )

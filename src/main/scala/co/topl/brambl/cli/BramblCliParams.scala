@@ -12,7 +12,7 @@ object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
   val invalid, wallet, genusquery, bifrostquery, simpletransaction,
-      simpleminting, parties, contracts, tx =
+      simpleminting, fellowships, templates, tx =
     Value
 }
 
@@ -74,27 +74,27 @@ final case class BramblCliParams(
     subcmd: BramblCliSubCmd.Value = BramblCliSubCmd.invalid,
     tokenType: TokenType.Value = TokenType.all,
     network: NetworkIdentifiers = InvalidNet,
-    partyName: String = "",
-    contractName: String = "",
+    fellowshipName: String = "",
+    templateName: String = "",
     lockTemplate: String = "",
     inputVks: Seq[File] = Seq(),
     host: String = "",
     bifrostPort: Int = 0,
     walletFile: String = "",
     password: String = "",
-    fromParty: String = "",
-    fromContract: String = "",
+    fromFellowship: String = "",
+    fromTemplate: String = "",
     fromAddress: Option[String] = None,
     height: Long = -1,
     blockId: String = "",
     transactionId: String = "",
-    someFromState: Option[Int] = None,
-    someChangeParty: Option[String] = None,
-    someChangeContract: Option[String] = None,
-    someChangeState: Option[Int] = None,
+    someFromInteraction: Option[Int] = None,
+    someChangeFellowship: Option[String] = None,
+    someChangeTemplate: Option[String] = None,
+    someChangeInteraction: Option[Int] = None,
     toAddress: Option[LockAddress] = None,
-    someToParty: Option[String] = None,
-    someToContract: Option[String] = None,
+    someToFellowship: Option[String] = None,
+    someToTemplate: Option[String] = None,
     amount: Long = -1,
     fee: Long = -1,
     somePassphrase: Option[String] = None,

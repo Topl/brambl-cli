@@ -39,21 +39,21 @@ trait WalletModeModule
       case BramblCliSubCmd.balance =>
         walletController.getBalance(
           validateParams.fromAddress,
-          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromParty) else None,
-          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromContract) else None,
-          validateParams.someFromState
+          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromFellowship) else None,
+          if (validateParams.fromAddress.isEmpty) Some(validateParams.fromTemplate) else None,
+          validateParams.someFromInteraction
         )
       case BramblCliSubCmd.invalid =>
         IO.pure(Left("A subcommand needs to be specified"))
       case BramblCliSubCmd.exportvk =>
-        validateParams.someFromState
+        validateParams.someFromInteraction
           .map(x =>
             walletController.exportFinalVk(
               validateParams.someKeyFile.get,
               validateParams.password,
               validateParams.someOutputFile.get,
-              validateParams.partyName,
-              validateParams.contractName,
+              validateParams.fellowshipName,
+              validateParams.templateName,
               x
             )
           )
@@ -62,8 +62,8 @@ trait WalletModeModule
               validateParams.someKeyFile.get,
               validateParams.password,
               validateParams.someOutputFile.get,
-              validateParams.partyName,
-              validateParams.contractName
+              validateParams.fellowshipName,
+              validateParams.templateName
             )
           )
       case BramblCliSubCmd.importvks =>
@@ -72,8 +72,8 @@ trait WalletModeModule
           validateParams.inputVks,
           validateParams.someKeyFile.get,
           validateParams.password,
-          validateParams.contractName,
-          validateParams.partyName
+          validateParams.templateName,
+          validateParams.fellowshipName
         )
       case BramblCliSubCmd.init =>
         walletController.createWalletFromParams(validateParams)
@@ -82,8 +82,8 @@ trait WalletModeModule
       case BramblCliSubCmd.sync =>
         walletController.sync(
           validateParams.network.networkId,
-          validateParams.contractName,
-          validateParams.partyName
+          validateParams.templateName,
+          validateParams.fellowshipName
         )
       case BramblCliSubCmd.currentaddress =>
         walletController.currentaddress(

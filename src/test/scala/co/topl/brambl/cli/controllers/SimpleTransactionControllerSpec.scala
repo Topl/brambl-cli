@@ -33,9 +33,9 @@ class SimpleTransactionControllerSpec
     new BaseWalletStateAlgebra[F] {
 
       override def getAddress(
-          party: String,
-          contract: String,
-          state: Option[Int]
+          fellowship: String,
+          template: String,
+          interaction: Option[Int]
       ): F[Option[String]] = {
         Monad[F].pure(
           Some(
@@ -54,16 +54,16 @@ class SimpleTransactionControllerSpec
       }
 
       override def getCurrentIndicesForFunds(
-          party: String,
-          contract: String,
-          state: Option[Int]
+          fellowship: String,
+          template: String,
+          interaction: Option[Int]
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
       )
 
       override def getNextIndicesForFunds(
-          party: String,
-          contract: String
+          fellowship: String,
+          template: String
       ): F[Option[Indices]] = Monad[F].pure(
         Some(Indices(1, 1, 1))
       )
@@ -77,8 +77,8 @@ class SimpleTransactionControllerSpec
       ): F[Unit] = Monad[F].pure(())
 
       override def getLock(
-          party: String,
-          contract: String,
+          fellowship: String,
+          template: String,
           nextState: Int
       ): F[Option[Lock]] =
         Monad[F].pure(
@@ -97,9 +97,9 @@ class SimpleTransactionControllerSpec
         )
 
       override def validateCurrentIndicesForFunds(
-          party: String,
-          contract: String,
-          someState: Option[Int]
+          fellowship: String,
+          template: String,
+          someInteraction: Option[Int]
       ): F[ValidatedNel[String, Indices]] = {
         import cats.implicits._
         Indices(1, 2, 3).validNel.pure[F]

@@ -55,7 +55,7 @@ trait SeriesMintingOps[G[_]] extends CommonTxOps {
           fee
         )
       ioTransaction <- Sync[G].fromEither(eitherIoTransaction)
-      // Only save to wallet state if there is a change output in the transaction
+      // Only save to wallet interaction if there is a change output in the transaction
       _ <-
         if (ioTransaction.outputs.length >= 2) for {
           vk <- someNextIndices
