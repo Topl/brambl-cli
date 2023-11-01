@@ -221,14 +221,16 @@ class WalletController[F[_]: Sync](
   }
 
   def setCurrentInteraction(
-      params: BramblCliParams
+      fromFellowship: String,
+      fromTemplate: String,
+      fromInteraction: Int
   ): F[Either[String, String]] = {
     import cats.implicits._
     walletStateAlgebra
       .setCurrentIndices(
-        params.fromFellowship,
-        params.fromTemplate,
-        params.someFromInteraction.get
+        fromFellowship,
+        fromTemplate,
+        fromInteraction
       )
       .map(_ match {
         case Some(_) => Right("Current interaction set")

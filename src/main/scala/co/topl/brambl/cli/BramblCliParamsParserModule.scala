@@ -305,6 +305,7 @@ object BramblCliParamsParserModule {
         .action((x, c) => c.copy(someFromInteraction = x))
         .validate(
           _.map(x =>
+            
             if (x >= 1) success
             else failure("Interaction needs to be greater or equal to 1")
           ).getOrElse(success)
