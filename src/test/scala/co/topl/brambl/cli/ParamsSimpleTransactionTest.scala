@@ -202,7 +202,7 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--from-template",
       "genesis",
       "--from-interaction",
-      "0",
+      "1",
       "-t",
       "ptetP7jshHVrEKqDRdKAZtuybPZoMWTKKM2ngaJ7L5iZnxP5BprDB3hGJEFr",
       "-w",
