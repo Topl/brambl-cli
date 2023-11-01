@@ -79,11 +79,13 @@ trait WalletModeModule
         walletController.createWalletFromParams(validateParams)
       case BramblCliSubCmd.recoverkeys =>
         walletController.recoverKeysFromParams(validateParams)
+      case BramblCliSubCmd.setinteraction =>
+        walletController.setCurrentInteraction(validateParams)
       case BramblCliSubCmd.sync =>
         walletController.sync(
           validateParams.network.networkId,
-          validateParams.templateName,
-          validateParams.fellowshipName
+          validateParams.fellowshipName,
+          validateParams.templateName
         )
       case BramblCliSubCmd.currentaddress =>
         walletController.currentaddress(

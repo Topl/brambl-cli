@@ -34,8 +34,8 @@ trait WalletApiHelpers[F[_]] {
       fromTemplate: String
   ) =
     wsa.getNextIndicesForFunds(
-      if (fromFellowship == "noparty") "self" else fromFellowship,
-      if (fromFellowship == "noparty") "default"
+      if (fromFellowship == "nofellowship") "self" else fromFellowship,
+      if (fromFellowship == "nofellowship") "default"
       else fromTemplate
     )
 
@@ -47,8 +47,8 @@ trait WalletApiHelpers[F[_]] {
     someNextIndices
       .map(idx =>
         wsa.getLock(
-          if (fromFellowship == "noparty") "self" else fromFellowship,
-          if (fromFellowship == "noparty") "default"
+          if (fromFellowship == "nofellowship") "self" else fromFellowship,
+          if (fromFellowship == "nofellowship") "default"
           else fromTemplate,
           idx.z
         )

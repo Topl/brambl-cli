@@ -154,7 +154,7 @@ class SimpleTransactionControllerSpec
         "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
-        (Some("noparty"), Some("genesis"), None),
+        (Some("nofellowship"), Some("genesis"), None),
         None,
         Some("self"),
         Some("default"),

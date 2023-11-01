@@ -12,7 +12,7 @@ class ParamsGenusQueryTest extends FunSuite {
       "genus-query",
       "utxo-by-address",
       "--from-fellowship",
-      "noparty",
+      "nofellowship",
       "--from-template",
       "genesis",
       "--from-interaction",

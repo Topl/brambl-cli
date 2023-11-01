@@ -14,11 +14,11 @@ brambl-cli simple-transaction create --from-fellowship $FELLOWSHIP --from-templa
 
 This will create a transaction that spends the interaction `$INTERACTION_NR` of the template `$LOCK_TEMPLATE` of the fellowship `$FELLOWSHIP` and sends `$SEND_AMOUNT` polys to the address `$TO_ADDRESS`. The transaction will be stored in the file `$TX_FILE`.
 
-The `--from-interaction` parameter is only required if the fellowship is `noparty`. If the fellowship is `self`, or any template where there is at least one fellowship, then the `--from-interaction` parameter is not required.
+The `--from-interaction` parameter is only required if the fellowship is `nofellowship`. If the fellowship is `self`, or any template where there is at least one fellowship, then the `--from-interaction` parameter is not required.
 
 We can pass the parameters `--change-fellowship`, `--change-template`, and `--change-interaction`
 if we want to send the change to a different fellowship, template and interaction. If these parameters are not provided, the change will be sent to the same fellowship, template and the next interaction
-of the template/fellowship pair. The transfers starting from the `noparty` fellowship require the change parameters to be provided.
+of the template/fellowship pair. The transfers starting from the `nofellowship` fellowship require the change parameters to be provided.
 
 Alternatively, instead of providing an output address, the fellowship and template of the output can be used instead. To do this, run the following command:
 

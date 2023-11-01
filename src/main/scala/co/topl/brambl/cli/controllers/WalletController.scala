@@ -221,6 +221,21 @@ class WalletController[F[_]: Sync](
       .map(_ => Right("Wallet created"))
   }
 
+  def setCurrentInteraction(
+      params: BramblCliParams
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    walletStateAlgebra
+      .setCurrentIndices(
+        params.fromFellowship,
+        params.fromTemplate,
+        params.someFromInteraction.get
+      )
+      .map(_ match {
+        case Some(_) => Right("Current interaction set")
+        case None    => Left("Error setting current interaction")
+      })
+  }
   def recoverKeysFromParams(
       params: BramblCliParams
   ): F[Either[String, String]] = {
@@ -325,7 +340,8 @@ class WalletController[F[_]: Sync](
       } yield txos
     } else {
       Sync[F].delay(txos)
-    }).flatten.iterateUntil(x => x.isEmpty).map(_ => Right("Wallet synced"))
+    }).flatten.iterateUntil(x => x.isEmpty).map(txos => {
+      Right("Wallet synced")})
   }
 
   def currentaddress(

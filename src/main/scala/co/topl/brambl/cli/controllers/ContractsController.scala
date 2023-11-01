@@ -3,12 +3,12 @@ package co.topl.brambl.cli.controllers
 import cats.Id
 import cats.data.Validated
 import cats.effect.kernel.Sync
-import co.topl.brambl.dataApi.{ContractStorageAlgebra, WalletContract}
+import co.topl.brambl.dataApi.{TemplateStorageAlgebra, WalletTemplate}
 import co.topl.brambl.cli.impl.QuivrFastParser
 import co.topl.brambl.codecs.LockTemplateCodecs
 
 class TemplatesController[F[_]: Sync](
-    templateStorageAlgebra: ContractStorageAlgebra[F]
+    templateStorageAlgebra: TemplateStorageAlgebra[F]
 ) {
 
   def addTemplate(
@@ -29,8 +29,8 @@ class TemplatesController[F[_]: Sync](
                   lockTemplate
                 )
               )
-            added <- templateStorageAlgebra.addContract(
-              WalletContract(0, name, lockTemplateAsJson.noSpaces)
+            added <- templateStorageAlgebra.addTemplate(
+              WalletTemplate(0, name, lockTemplateAsJson.noSpaces)
             )
           } yield
             if (added == 1) Right("Template added successfully")
@@ -50,7 +50,7 @@ class TemplatesController[F[_]: Sync](
     import cats.implicits._
 
     templateStorageAlgebra
-      .findContracts()
+      .findTemplates()
       .map(templates =>
         Right(
           displayWalletTemplateHeader() + "\n" + templates

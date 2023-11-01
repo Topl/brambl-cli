@@ -23,7 +23,7 @@ brambl-cli simple-transaction create --from-fellowship $FELLOWSHIP --from-templa
 
 This will create a transaction that spends the interaction `$INTERACTION_NR` of the template `$LOCK_TEMPLATE` of the fellowship `$FELLOWSHIP` and sends `$SEND_AMOUNT` polys to the address `$TO_ADDRESS`. The transaction will be stored in the file `$TX_FILE`.
 
-The `--from-interaction` parameter is only required if the fellowship is `noparty`. If the fellowship is `self`, or any template where there is at least one fellowship, then the `--from-interaction` parameter is not required.
+The `--from-interaction` parameter is only required if the fellowship is `nofellowship`. If the fellowship is `self`, or any template where there is at least one fellowship, then the `--from-interaction` parameter is not required.
 
 
 ## Prove the Transaction

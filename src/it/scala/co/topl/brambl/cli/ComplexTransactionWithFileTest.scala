@@ -43,7 +43,7 @@ class ComplexTransactionWithFileTest
         _ <- IO.asyncForIO.timeout(
           (for {
             _ <- IO.println("Querying genesis to start")
-            queryRes <- queryAccount("noparty", "genesis", Some(1))
+            queryRes <- queryAccount("nofellowship", "genesis", Some(1))
               .run(aliceContext)
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
@@ -52,7 +52,7 @@ class ComplexTransactionWithFileTest
         )
         ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
         genesisAddress <- walletController(ALICE_WALLET)
-          .currentaddress("noparty", "genesis", Some(1))
+          .currentaddress("nofellowship", "genesis", Some(1))
         utxos <- genusQueryAlgebra
           .queryUtxo(
             decodeAddress(genesisAddress.get).toOption.get
