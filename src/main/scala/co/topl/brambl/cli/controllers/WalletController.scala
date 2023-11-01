@@ -339,7 +339,7 @@ class WalletController[F[_]: Sync](
       } yield txos
     } else {
       Sync[F].delay(txos)
-    }).flatten.iterateUntil(x => x.isEmpty).map(txos => {
+    }).flatten.iterateUntil(x => x.isEmpty).map(_ => {
       Right("Wallet synced")})
   }
 

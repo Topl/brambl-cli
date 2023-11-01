@@ -241,7 +241,9 @@ object BramblCliParamsParserModule {
       checkConfig(c =>
         if (c.fromFellowship == "nofellowship") {
           if (c.someFromInteraction.isEmpty) {
-            failure("You must specify a from-interaction when using nofellowship")
+            failure(
+              "You must specify a from-interaction when using nofellowship"
+            )
           } else {
             (
               c.someChangeFellowship,
@@ -301,6 +303,12 @@ object BramblCliParamsParserModule {
         .text("Template where we are sending the funds from"),
       opt[Option[Int]]("from-interaction")
         .action((x, c) => c.copy(someFromInteraction = x))
+        .validate(
+          _.map(x =>
+            if (x >= 1) success
+            else failure("Interaction needs to be greater or equal to 1")
+          ).getOrElse(success)
+        )
         .text("Interaction from where we are sending the funds from")
     )
   }

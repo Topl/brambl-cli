@@ -8,11 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ## [v2.0.0-alpha6] - 2023-mm-dd (this date should be changed on release)
 
+### Added
+
+- Support to set the current interaction of the wallet with the command
+`wallet set-current-interaction`.
+
 ### Changed
 
 - Change terminology. Now we use `fellowship` instead of `party` and `template` instead of `contract`,
 and `interaction` instead of `state`. Both the code and the documentation were updated.
 The CLI parameters also reflect this change.
+- BramblSc was updated with the new terminology. Now `noparty` became `nofellowship`.
+- Update bifrost node for integration tests to `bifrost-node:2.0.0-alpha10`.
 
 ## [v2.0.0-alpha5] - 2023-10-24
 
