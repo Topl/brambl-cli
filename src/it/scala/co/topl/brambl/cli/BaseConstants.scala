@@ -15,8 +15,8 @@ trait BaseConstants {
 
   val BASE_FEE = 10
 
-  val HOST = "localhost"
+  val HOST = "localhost"//"testnet.topl.co"
 
-  val BIFROST_PORT = 9084
+  val BIFROST_PORT = 9084 // 443
 
 }
