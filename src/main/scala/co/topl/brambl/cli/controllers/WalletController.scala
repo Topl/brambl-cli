@@ -13,8 +13,7 @@ import co.topl.brambl.dataApi
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.LockAddress
 import co.topl.brambl.models.LockId
-import co.topl.brambl.models.box.QuantityDescriptorType
-import co.topl.brambl.syntax.GroupAndSeriesFungible
+import co.topl.brambl.syntax.AssetType
 import co.topl.brambl.syntax.GroupType
 import co.topl.brambl.syntax.LvlType
 import co.topl.brambl.syntax.SeriesType
@@ -377,10 +376,9 @@ class WalletController[F[_]: Sync](
         else if (x.transactionOutput.value.value.isSeries)
           SeriesType(x.transactionOutput.value.value.series.get.seriesId)
         else if (x.transactionOutput.value.value.isAsset)
-          GroupAndSeriesFungible(
-            x.transactionOutput.value.value.asset.get.groupId.get,
-            x.transactionOutput.value.value.asset.get.seriesId.get,
-            QuantityDescriptorType.LIQUID
+          AssetType(
+            x.transactionOutput.value.value.asset.get.groupId.get.value,
+            x.transactionOutput.value.value.asset.get.seriesId.get.value
           )
         else ()
       )
@@ -411,7 +409,7 @@ class WalletController[F[_]: Sync](
             "Group(" + Encoding.encodeToHex(groupId.toByteArray) + ")"
           case SeriesType(seriesId) =>
             "Series(" + Encoding.encodeToHex(seriesId.toByteArray) + ")"
-          case GroupAndSeriesFungible(groupId, seriesId, _) =>
+          case AssetType(groupId, seriesId) =>
             "Asset(" + Encoding.encodeToHex(
               groupId.toByteArray
             ) + ", " + Encoding
