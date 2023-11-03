@@ -100,10 +100,11 @@ object BramblCliParamsParserModule {
     )
     .required()
 
-  val walletDbArg = opt[String]("walletdb")
+  def walletDbArg = opt[String]("walletdb")
     .action((x, c) => c.copy(walletFile = x))
     .validate(validateWalletDbFile(_))
     .text("Wallet DB file. (mandatory)")
+    .required()
 
   val templateNameArg = opt[String]("template-name")
     .validate(x =>
@@ -238,22 +239,32 @@ object BramblCliParamsParserModule {
         .text("Interaction where we are sending the change to")
         .optional(),
       checkConfig(c =>
-        if (c.fromFellowship == "noparty") {
+        if (c.fromFellowship == "nofellowship") {
           if (c.someFromInteraction.isEmpty) {
-            failure("You must specify a from-interaction when using noparty")
+            failure(
+              "You must specify a from-interaction when using nofellowship"
+            )
           } else {
-            (c.someChangeFellowship, c.someChangeTemplate, c.someChangeInteraction) match {
+            (
+              c.someChangeFellowship,
+              c.someChangeTemplate,
+              c.someChangeInteraction
+            ) match {
               case (Some(_), Some(_), Some(_)) =>
                 success
               case (_, _, _) =>
                 failure(
-                  "You must specify a change-fellowship, change-template and change-interaction when using noparty"
+                  "You must specify a change-fellowship, change-template and change-interaction when using nofellowship"
                 )
             }
             success
           }
         } else {
-          (c.someChangeFellowship, c.someChangeTemplate, c.someChangeInteraction) match {
+          (
+            c.someChangeFellowship,
+            c.someChangeTemplate,
+            c.someChangeInteraction
+          ) match {
             case (Some(_), Some(_), Some(_)) =>
               success
             case (None, None, None) =>
@@ -268,21 +279,22 @@ object BramblCliParamsParserModule {
     )
   }
 
+  val fromAddress = opt[Option[String]]("from-address")
+    .action((x, c) => c.copy(fromAddress = x))
+    .text("Address where we are sending the funds from")
+    .validate(someAddress =>
+      someAddress
+        .map(AddressCodecs.decodeAddress(_))
+        .map(_ match {
+          case Left(_)  => failure("Invalid from address")
+          case Right(_) => success
+        })
+        .getOrElse(success)
+    )
+
   val coordinates = {
     import builder._
     Seq(
-      opt[Option[String]]("from-address")
-        .action((x, c) => c.copy(fromAddress = x))
-        .text("Address where we are sending the funds from")
-        .validate(someAddress =>
-          someAddress
-            .map(AddressCodecs.decodeAddress(_))
-            .map(_ match {
-              case Left(_)  => failure("Invalid from address")
-              case Right(_) => success
-            })
-            .getOrElse(success)
-        ),
       opt[String]("from-fellowship")
         .action((x, c) => c.copy(fromFellowship = x))
         .text("Fellowship where we are sending the funds from"),
@@ -291,6 +303,13 @@ object BramblCliParamsParserModule {
         .text("Template where we are sending the funds from"),
       opt[Option[Int]]("from-interaction")
         .action((x, c) => c.copy(someFromInteraction = x))
+        .validate(
+          _.map(x =>
+            
+            if (x >= 1) success
+            else failure("Interaction needs to be greater or equal to 1")
+          ).getOrElse(success)
+        )
         .text("Interaction from where we are sending the funds from")
     )
   }
@@ -308,8 +327,7 @@ object BramblCliParamsParserModule {
   val keyfileAndPassword = {
     Seq(
       keyfileArg,
-      passwordArg,
-      walletDbArg
+      passwordArg
     )
   }
 
@@ -378,6 +396,7 @@ object BramblCliParamsParserModule {
         .text("Query utxo")
         .children(
           (coordinates ++ hostPort ++ Seq(
+            fromAddress,
             walletDbArg,
             tokenType.optional()
           )): _*
@@ -444,8 +463,18 @@ object BramblCliParamsParserModule {
         .text("Get balance of wallet")
         .children(
           (hostPortNetwork ++ coordinates ++ (Seq(
+            fromAddress,
             walletDbArg
           ))): _*
+        ),
+      cmd("set-interaction")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.setinteraction))
+        .text("Set the current interaction")
+        .children(
+          coordinates.map(_.required()) ++
+            Seq(
+              walletDbArg
+            ): _*
         ),
       cmd("sync")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.sync))
@@ -509,7 +538,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
         .text("Obtain current address")
         .children(
-          (Seq(walletDbArg) ++ coordinates): _*
+          (Seq(walletDbArg) ++ coordinates.take(2).map(_.required())): _*
         ),
       cmd("export-vk")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.exportvk))
@@ -530,6 +559,7 @@ object BramblCliParamsParserModule {
         .text("Import verification key")
         .children(
           (keyfileAndPassword ++ Seq(
+            walletDbArg,
             fellowshipNameArg,
             templateNameArg,
             opt[Seq[File]]("input-vks")
@@ -562,6 +592,7 @@ object BramblCliParamsParserModule {
         .text("Prove transaction")
         .children(
           ((keyfileAndPassword ++ Seq(
+            walletDbArg,
             outputArg.required(),
             inputFileArg.required()
           ))): _*
@@ -586,6 +617,7 @@ object BramblCliParamsParserModule {
         .text("Create minting transaction")
         .children(
           ((coordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
+            walletDbArg,
             outputArg.required(),
             inputFileArg.required(),
             opt[String]("commitment")
@@ -670,6 +702,7 @@ object BramblCliParamsParserModule {
         .text("Create transaction")
         .children(
           ((coordinates ++ changeCoordinates ++ hostPortNetwork ++ keyfileAndPassword ++ Seq(
+            walletDbArg,
             outputArg.required()
           )) ++
             Seq(

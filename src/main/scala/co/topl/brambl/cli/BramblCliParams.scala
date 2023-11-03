@@ -21,7 +21,7 @@ object BramblCliSubCmd extends Enumeration {
 
   val invalid, init, recoverkeys, utxobyaddress, blockbyheight, blockbyid,
       transactionbyid, create, prove, broadcast, currentaddress, list, add,
-      inspect, exportvk, importvks, sync, balance = Value
+      inspect, exportvk, importvks, sync, setinteraction, balance = Value
 }
 
 sealed abstract class NetworkIdentifiers(

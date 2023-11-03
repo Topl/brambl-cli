@@ -16,30 +16,32 @@ class MintingTests
 
   override val munitTimeout = Duration(180, "s")
 
+  val secure = false
+
   tmpDirectory.test("Move funds from genesis to alice") { _ =>
     assertIO(
-      moveFundsFromGenesisToAlice(),
+      moveFundsFromGenesisToAlice(secure),
       ExitCode.Success
     )
   }
 
   test("Use alice's funds to mint a group") {
     assertIO(
-      mintGroup(),
+      mintGroup(secure),
       ExitCode.Success
     )
   }
 
   test("Use alice's funds to mint a series") {
     assertIO(
-      mintSeries(),
+      mintSeries(secure),
       ExitCode.Success
     )
   }
 
   test("Use alice's funds to mint an asset") {
     assertIO(
-      mintAsset(),
+      mintAsset(secure),
       ExitCode.Success
     )
   }

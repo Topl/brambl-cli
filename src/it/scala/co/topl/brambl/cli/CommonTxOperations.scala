@@ -20,8 +20,8 @@ trait CommonTxOperations
     with BaseConstants {
 
   def syncWallet(
-      templateName: String,
-      fellowshipName: String
+      fellowshipName: String,
+      templateName: String
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -175,7 +175,8 @@ trait CommonTxOperations
       outputFile: String,
       token: TokenType.Value,
       someGroupId: Option[String],
-      someSeriesId: Option[String]
+      someSeriesId: Option[String],
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode] { (c: WalletKeyConfig) =>
       Main.run(
@@ -226,6 +227,7 @@ trait CommonTxOperations
           ++ someChangeInteraction
             .map(s => List("--change-interaction", s.toString()))
             .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     }
 
@@ -236,7 +238,8 @@ trait CommonTxOperations
       amount: Long,
       fee: Long,
       groupPolicy: String,
-      outputFile: String
+      outputFile: String,
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -272,6 +275,7 @@ trait CommonTxOperations
         ) ++ someFromInteraction
           .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     )
   def createSimpleSeriesMintingTransaction(
@@ -281,7 +285,8 @@ trait CommonTxOperations
       amount: Long,
       fee: Long,
       seriesPolicy: String,
-      outputFile: String
+      outputFile: String,
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -317,6 +322,7 @@ trait CommonTxOperations
         ) ++ someFromInteraction
           .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     )
   def createSimpleAssetMintingTransaction(
@@ -326,7 +332,8 @@ trait CommonTxOperations
       fee: Long,
       assetMintingStatement: String,
       outputFile: String,
-      ephemeralMetadata: String
+      ephemeralMetadata: String,
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -364,13 +371,15 @@ trait CommonTxOperations
         ) ++ someFromInteraction
           .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     )
 
   def queryAccount(
       fellowshipName: String,
       templateName: String,
-      someFromInteraction: Option[Int] = None
+      someFromInteraction: Option[Int] = None,
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -392,6 +401,7 @@ trait CommonTxOperations
         ) ++ someFromInteraction
           .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     )
   def queryAccountAllTokens(
@@ -424,7 +434,8 @@ trait CommonTxOperations
   def queryAccountGroupTokens(
       fellowshipName: String,
       templateName: String,
-      someFromInteraction: Option[Int] = None
+      someFromInteraction: Option[Int] = None,
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -446,12 +457,14 @@ trait CommonTxOperations
         ) ++ someFromInteraction
           .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     )
   def queryAccountSeriesTokens(
       fellowshipName: String,
       templateName: String,
-      someFromInteraction: Option[Int] = None
+      someFromInteraction: Option[Int] = None,
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -473,12 +486,14 @@ trait CommonTxOperations
         ) ++ someFromInteraction
           .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     )
   def queryAccountAssetTokens(
       fellowshipName: String,
       templateName: String,
-      someFromInteraction: Option[Int] = None
+      someFromInteraction: Option[Int] = None,
+      secure: Boolean = false
   ) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(
@@ -500,6 +515,7 @@ trait CommonTxOperations
         ) ++ someFromInteraction
           .map(s => List("--from-interaction", s.toString()))
           .getOrElse(List.empty)
+          ++ (if (secure) List("--secure", "true") else List.empty)
       )
     )
 
@@ -667,7 +683,7 @@ trait CommonTxOperations
     genusQueryAlgebra
   )
 
-  def broadcastSimpleTx(provedTx: String) = Main.run(
+  def broadcastSimpleTx(provedTx: String, secure: Boolean = false) = Main.run(
     List(
       "tx",
       "broadcast",
@@ -679,6 +695,6 @@ trait CommonTxOperations
       HOST,
       "--port",
       s"$BIFROST_PORT"
-    )
+    ) ++ (if (secure) List("--secure", "true") else List.empty)
   )
 }

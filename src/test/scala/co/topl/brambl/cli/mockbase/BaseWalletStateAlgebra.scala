@@ -11,6 +11,12 @@ import quivr.models.VerificationKey
 
 class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
+  override def setCurrentIndices(
+      fellowship: String,
+      template: String,
+      interaction: Int
+  ): F[Option[Indices]] = ???
+
   override def getLockByAddress(
       lockAddress: String
   ): F[Option[Lock.Predicate]] = ???

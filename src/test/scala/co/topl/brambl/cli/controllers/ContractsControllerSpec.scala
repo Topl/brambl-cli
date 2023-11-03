@@ -1,7 +1,7 @@
 package co.topl.brambl.cli.controllers
 
 import cats.effect.IO
-import co.topl.brambl.dataApi.{ContractStorageAlgebra, WalletContract}
+import co.topl.brambl.dataApi.{TemplateStorageAlgebra, WalletTemplate}
 import munit.CatsEffectSuite
 
 class TemplatesControllerSpec extends CatsEffectSuite {
@@ -9,12 +9,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add signature template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -39,12 +39,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add and template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -70,12 +70,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add or template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -101,12 +101,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add lock template empty") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -132,12 +132,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add lock template with data") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -163,12 +163,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add height template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -193,12 +193,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add tick template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -224,12 +224,12 @@ class TemplatesControllerSpec extends CatsEffectSuite {
   test("Add digest template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(List.empty)
       }
     )
@@ -254,25 +254,25 @@ class TemplatesControllerSpec extends CatsEffectSuite {
 
   test("List templates") {
     val simpleController = new TemplatesController[IO](
-      new ContractStorageAlgebra[IO] {
-        override def addContract(
-            walletTemplate: WalletContract
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
         ): IO[Int] = IO(1)
 
-        override def findContracts(): IO[List[WalletContract]] =
+        override def findTemplates(): IO[List[WalletTemplate]] =
           IO(
             List(
-              WalletContract(
+              WalletTemplate(
                 1,
                 "sign",
                 """{"threshold":1,"innerTemplates":[{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"}],"type":"predicate"}"""
               ),
-              WalletContract(
+              WalletTemplate(
                 2,
                 "or",
                 """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"or"}],"type":"predicate"}"""
               ),
-              WalletContract(
+              WalletTemplate(
                 3,
                 "and",
                 """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""

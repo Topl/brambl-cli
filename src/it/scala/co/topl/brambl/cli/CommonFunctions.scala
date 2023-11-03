@@ -29,13 +29,13 @@ trait CommonFunctions extends PolicyTemplates {
 
   import scala.concurrent.duration._
 
-  def moveFundsFromGenesisToAlice() = {
+  def moveFundsFromGenesisToAlice(secure: Boolean = false) = {
     for {
       _ <- createWallet().run(aliceContext)
       _ <- IO.asyncForIO.timeout(
         (for {
           _ <- IO.println("Querying genesis to start")
-          queryRes <- queryAccount("noparty", "genesis", Some(1))
+          queryRes <- queryAccount("nofellowship", "genesis", Some(1), secure)
             .run(aliceContext)
           _ <- IO.sleep(5.seconds)
         } yield queryRes)
@@ -47,10 +47,10 @@ trait CommonFunctions extends PolicyTemplates {
       _ <- IO.println("Moving funds from genesis to alice")
       _ <- assertIO(
         createSimpleTransactionToAddress(
-          "noparty",
+          "nofellowship",
           "genesis",
           Some(1),
-          Some("noparty"),
+          Some("nofellowship"),
           Some("genesis"),
           Some(1),
           ALICE_TO_ADDRESS.get,
@@ -59,7 +59,8 @@ trait CommonFunctions extends PolicyTemplates {
           ALICE_FIRST_TX_RAW,
           TokenType.lvl,
           None,
-          None
+          None,
+          secure
         ).run(aliceContext),
         ExitCode.Success
       )
@@ -71,13 +72,13 @@ trait CommonFunctions extends PolicyTemplates {
         ExitCode.Success
       )
       _ <- assertIO(
-        broadcastSimpleTx(ALICE_FIRST_TX_PROVED),
+        broadcastSimpleTx(ALICE_FIRST_TX_PROVED, secure),
         ExitCode.Success
       )
       _ <- IO.println("Check alice's address (is contained in the change)")
       res <- IO.asyncForIO.timeout(
         (for {
-          queryRes <- queryAccount("self", "default").run(aliceContext)
+          queryRes <- queryAccount("self", "default", None, secure).run(aliceContext)
           _ <- IO.sleep(5.seconds)
         } yield queryRes)
           .iterateUntil(_ == ExitCode.Success),

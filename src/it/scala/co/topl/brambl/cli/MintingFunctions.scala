@@ -15,7 +15,7 @@ trait MintingFunctions extends PolicyTemplates {
 
   import scala.concurrent.duration._
 
-  def mintGroup() = for {
+  def mintGroup(secure: Boolean = false) = for {
     _ <- IO.println("Crate a group minting policy")
     ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
       .currentaddress("self", "default", None)
@@ -42,7 +42,8 @@ trait MintingFunctions extends PolicyTemplates {
         1,
         100,
         ALICE_FIRST_GROUP_POLICY,
-        ALICE_FIRST_GROUP_MINTING_TX
+        ALICE_FIRST_GROUP_MINTING_TX, 
+        secure
       ).run(aliceContext),
       ExitCode.Success
     )
@@ -54,7 +55,7 @@ trait MintingFunctions extends PolicyTemplates {
       ExitCode.Success
     )
     _ <- assertIO(
-      broadcastSimpleTx(ALICE_FIRST_GROUP_MINTING_TX_PROVED),
+      broadcastSimpleTx(ALICE_FIRST_GROUP_MINTING_TX_PROVED, secure),
       ExitCode.Success
     )
     _ <- IO.println(
@@ -63,7 +64,7 @@ trait MintingFunctions extends PolicyTemplates {
     res <- IO.asyncForIO.timeout(
       (for {
         _ <- IO.println("Querying alice's change account")
-        queryRes <- queryAccountGroupTokens("self", "default").run(
+        queryRes <- queryAccountGroupTokens("self", "default", None, secure).run(
           aliceContext
         )
         _ <- IO.sleep(5.seconds)
@@ -73,7 +74,7 @@ trait MintingFunctions extends PolicyTemplates {
     )
   } yield res
 
-  def mintSeries() = for {
+  def mintSeries(secure: Boolean = false) = for {
     _ <- IO.println("Crate a series minting policy")
     ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
       .currentaddress("self", "default", None)
@@ -102,7 +103,8 @@ trait MintingFunctions extends PolicyTemplates {
         1,
         100,
         ALICE_FIRST_SERIES_POLICY,
-        ALICE_FIRST_SERIES_MINTING_TX
+        ALICE_FIRST_SERIES_MINTING_TX,
+        secure
       ).run(aliceContext),
       ExitCode.Success
     )
@@ -114,7 +116,7 @@ trait MintingFunctions extends PolicyTemplates {
       ExitCode.Success
     )
     _ <- assertIO(
-      broadcastSimpleTx(ALICE_FIRST_SERIES_MINTING_TX_PROVED),
+      broadcastSimpleTx(ALICE_FIRST_SERIES_MINTING_TX_PROVED, secure),
       ExitCode.Success
     )
     _ <- IO.println(
@@ -123,7 +125,7 @@ trait MintingFunctions extends PolicyTemplates {
     res <- IO.asyncForIO.timeout(
       (for {
         _ <- IO.println("Querying alice's change account")
-        queryRes <- queryAccountSeriesTokens("self", "default").run(
+        queryRes <- queryAccountSeriesTokens("self", "default", None, secure).run(
           aliceContext
         )
         _ <- IO.sleep(5.seconds)
@@ -133,7 +135,7 @@ trait MintingFunctions extends PolicyTemplates {
     )
   } yield res
 
-  def mintAsset() = for {
+  def mintAsset(secure: Boolean = false) = for {
     _ <- IO.println("Crate an asset minting statement")
     ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
       .currentaddress("self", "default", None)
@@ -171,7 +173,8 @@ trait MintingFunctions extends PolicyTemplates {
         100,
         ALICE_FIRST_ASSET_MINTING_STATEMENT,
         ALICE_FIRST_ASSET_MINTING_TX,
-        ALICE_FIRST_ASSET_MINTING_METADATA
+        ALICE_FIRST_ASSET_MINTING_METADATA,
+        secure
       ).run(aliceContext),
       ExitCode.Success
     )
@@ -183,7 +186,7 @@ trait MintingFunctions extends PolicyTemplates {
       ExitCode.Success
     )
     _ <- assertIO(
-      broadcastSimpleTx(ALICE_FIRST_ASSET_MINTING_TX_PROVED),
+      broadcastSimpleTx(ALICE_FIRST_ASSET_MINTING_TX_PROVED, secure),
       ExitCode.Success
     )
     _ <- IO.println(
@@ -192,7 +195,7 @@ trait MintingFunctions extends PolicyTemplates {
     res <- IO.asyncForIO.timeout(
       (for {
         _ <- IO.println("Querying alice's change account")
-        queryRes <- queryAccountAssetTokens("self", "default").run(
+        queryRes <- queryAccountAssetTokens("self", "default", None, secure).run(
           aliceContext
         )
         _ <- IO.sleep(5.seconds)

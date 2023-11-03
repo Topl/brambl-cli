@@ -95,4 +95,83 @@ class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
       } yield ()
   }
 
+  test("setCurrentInteraction fails with none") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getCurrentIndicesForFunds(
+            fellowship: String,
+            template: String,
+            someInteraction: Option[Int]
+        ): IO[Option[Indices]] = IO.pure(Some(Indices(1, 2, 3)))
+
+        override def setCurrentIndices(
+            fellowship: String,
+            template: String,
+            interaction: Int
+        ): IO[Option[Indices]] = IO.pure(None)
+      }, // : dataApi.WalletStateAlgebra[F],
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.setCurrentInteraction(
+          "self",
+          "default",
+          3
+        )
+      } yield res,
+      Left("Error setting current interaction")
+    )
+  }
+  test("setCurrentInteraction succeeds with valid result") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getCurrentIndicesForFunds(
+            fellowship: String,
+            template: String,
+            someInteraction: Option[Int]
+        ): IO[Option[Indices]] = IO.pure(Some(Indices(1, 2, 3)))
+
+        override def setCurrentIndices(
+            fellowship: String,
+            template: String,
+            interaction: Int
+        ): IO[Option[Indices]] = IO.pure(Some(Indices(1, 2, 3)))
+      }, // : dataApi.WalletStateAlgebra[F],
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.setCurrentInteraction(
+          "self",
+          "default",
+          3
+        )
+      } yield res,
+      Right("Current interaction set")
+    )
+  }
+
 }
