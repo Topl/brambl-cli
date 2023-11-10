@@ -79,6 +79,11 @@ trait WalletModeModule
           validateParams.templateName,
           validateParams.fellowshipName
         )
+      case BramblCliSubCmd.listinteraction =>
+        walletController.listInteractions(
+          validateParams.fellowshipName,
+          validateParams.templateName
+        )
       case BramblCliSubCmd.init =>
         walletController.createWalletFromParams(validateParams)
       case BramblCliSubCmd.recoverkeys =>

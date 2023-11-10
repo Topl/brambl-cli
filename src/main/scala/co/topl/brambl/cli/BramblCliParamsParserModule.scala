@@ -305,7 +305,6 @@ object BramblCliParamsParserModule {
         .action((x, c) => c.copy(someFromInteraction = x))
         .validate(
           _.map(x =>
-            
             if (x >= 1) success
             else failure("Interaction needs to be greater or equal to 1")
           ).getOrElse(success)
@@ -475,6 +474,14 @@ object BramblCliParamsParserModule {
             Seq(
               walletDbArg
             ): _*
+        ),
+      cmd("list-interactions")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.listinteraction))
+        .text("List the interactions for a given fellowship and template")
+        .children(
+          fellowshipNameArg,
+          templateNameArg,
+          walletDbArg
         ),
       cmd("sync")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.sync))

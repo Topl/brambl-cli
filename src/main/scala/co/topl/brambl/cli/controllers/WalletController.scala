@@ -220,6 +220,25 @@ class WalletController[F[_]: Sync](
       .map(_ => Right("Wallet created"))
   }
 
+  def listInteractions(
+      fromFellowship: String,
+      fromTemplate: String
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    walletStateAlgebra
+      .getInteractionList(fromFellowship, fromTemplate)
+      .map(_ match {
+        case Some(interactions) =>
+          Right(
+            interactions
+              .sortBy(x => (x._1.x, x._1.y, x._1.z))
+              .map(x => x._1.x + "\t" + x._1.y + "\t" + x._1.z + "\t" + x._2)
+              .mkString("\n")
+          )
+        case None => Left("No interactions found")
+      })
+  }
+
   def setCurrentInteraction(
       fromFellowship: String,
       fromTemplate: String,
@@ -341,8 +360,11 @@ class WalletController[F[_]: Sync](
       } yield txos
     } else {
       Sync[F].delay(txos)
-    }).flatten.iterateUntil(x => x.isEmpty).map(_ => {
-      Right("Wallet synced")})
+    }).flatten
+      .iterateUntil(x => x.isEmpty)
+      .map(_ => {
+        Right("Wallet synced")
+      })
   }
 
   def currentaddress(
