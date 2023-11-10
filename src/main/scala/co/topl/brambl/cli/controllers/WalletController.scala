@@ -235,7 +235,7 @@ class WalletController[F[_]: Sync](
               .map(x => x._1.x + "\t" + x._1.y + "\t" + x._1.z + "\t" + x._2)
               .mkString("\n")
           )
-        case None => Left("No interactions found")
+        case None => Left("The fellowship or template does not exist.")
       })
   }
 
