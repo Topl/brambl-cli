@@ -11,6 +11,9 @@ import quivr.models.VerificationKey
 
 class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
+  override def getInteractionList(fellowship: String, template: String): F[Option[List[(Indices, String)]]] = ???
+
+
   override def setCurrentIndices(
       fellowship: String,
       template: String,

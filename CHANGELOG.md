@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support to set the current interaction of the wallet with the command
 `wallet set-current-interaction`.
+- Support the list of new interactions with the command `wallet list-interactions`.
 
 ### Changed
 

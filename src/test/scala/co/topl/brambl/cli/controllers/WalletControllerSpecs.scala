@@ -134,6 +134,72 @@ class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
       Left("Error setting current interaction")
     )
   }
+  test("listInteractions succeeds with valid result") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getInteractionList(
+            fellowship: String,
+            template: String
+        ): IO[Option[List[(Indices, String)]]] =
+          IO.pure(Some(List((Indices(1, 2, 3), "test"))))
+
+      }, // : dataApi.WalletStateAlgebra[F],
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.listInteractions(
+          "self",
+          "default"
+        )
+      } yield res,
+      Right("1\t2\t3\ttest")
+    )
+  }
+  test("listInteractions fails with none") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getInteractionList(
+            fellowship: String,
+            template: String
+        ): IO[Option[List[(Indices, String)]]] =
+          IO.pure(None)
+
+      }, // : dataApi.WalletStateAlgebra[F],
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.listInteractions(
+          "self",
+          "default"
+        )
+      } yield res,
+      Left(s"The fellowship or template does not exist.")
+    )
+  }
   test("setCurrentInteraction succeeds with valid result") {
     val controller = new WalletController[IO](
       new BaseWalletStateAlgebra[IO] {
