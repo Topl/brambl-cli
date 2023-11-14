@@ -21,6 +21,9 @@ and `interaction` instead of `state`. Both the code and the documentation were u
 The CLI parameters also reflect this change.
 - BramblSc was updated with the new terminology. Now `noparty` became `nofellowship`.
 - Update bifrost node for integration tests to `bifrost-node:2.0.0-alpha10`.
+- Changed the display of lock templates in the template list command. Now, it
+shows a user friendlier template instead of the JSON representation of the
+backend.
 
 ## [v2.0.0-alpha5] - 2023-10-24
 
