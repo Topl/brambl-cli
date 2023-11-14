@@ -21,5 +21,5 @@ abstract class BaseBifrostQueryAlgebra[F[_]]
       txId: TransactionId
   ): F[Option[IoTransaction]] = ???
 
-  override def broadcastTransaction(tx: IoTransaction): F[Unit] = ???
+  override def broadcastTransaction(tx: IoTransaction): F[TransactionId] = ???
 }
