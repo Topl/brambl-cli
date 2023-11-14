@@ -2,12 +2,11 @@ package co.topl.brambl.cli.modules
 
 import cats.effect.IO
 import co.topl.brambl.cli.controllers.BifrostQueryController
-import co.topl.brambl.cli.modules.ChannelResourceModule
 import co.topl.brambl.cli.BramblCliSubCmd
-import co.topl.brambl.dataApi.BifrostQueryAlgebra
+import co.topl.brambl.dataApi.{BifrostQueryAlgebra, RpcChannelResource}
 import co.topl.brambl.cli.BramblCliParams
 
-trait BifrostQueryModeModule extends ChannelResourceModule {
+trait BifrostQueryModeModule extends RpcChannelResource  {
 
   def bifrostQuerySubcmd(
       validateParams: BramblCliParams

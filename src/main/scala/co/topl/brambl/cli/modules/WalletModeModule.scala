@@ -4,7 +4,7 @@ import cats.effect.IO
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.controllers.WalletController
-import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.dataApi.{GenusQueryAlgebra, RpcChannelResource}
 
 trait WalletModeModule
     extends WalletStateAlgebraModule
@@ -12,7 +12,7 @@ trait WalletModeModule
     with WalletApiModule
     with WalletAlgebraModule
     with TransactionBuilderApiModule
-    with ChannelResourceModule {
+    with RpcChannelResource {
 
   def walletModeSubcmds(
       validateParams: BramblCliParams

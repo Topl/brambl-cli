@@ -4,19 +4,18 @@ import cats.data.Kleisli
 import cats.effect.ExitCode
 import cats.effect.IO
 import co.topl.brambl.cli.controllers.WalletController
-import co.topl.brambl.cli.modules.ChannelResourceModule
 import co.topl.brambl.cli.modules.TransactionBuilderApiModule
 import co.topl.brambl.cli.modules.WalletAlgebraModule
 import co.topl.brambl.cli.modules.WalletManagementUtilsModule
 import co.topl.brambl.cli.modules.WalletStateAlgebraModule
-import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.dataApi.{GenusQueryAlgebra, RpcChannelResource}
 
 trait CommonTxOperations
     extends TransactionBuilderApiModule
     with WalletStateAlgebraModule
     with WalletManagementUtilsModule
     with WalletAlgebraModule
-    with ChannelResourceModule
+    with RpcChannelResource
     with BaseConstants {
 
   def syncWallet(
