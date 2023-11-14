@@ -2,11 +2,9 @@ package co.topl.brambl.cli.impl
 
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
-import co.topl.brambl.dataApi.WalletStateAlgebra
+import co.topl.brambl.dataApi.{BifrostQueryAlgebra, WalletStateAlgebra}
 import co.topl.brambl.wallet.CredentiallerInterpreter
 import co.topl.brambl.wallet.WalletApi
-import co.topl.node.services.BroadcastTransactionReq
-import co.topl.node.services.NodeRpcGrpc
 import io.grpc.ManagedChannel
 
 import java.io.FileInputStream
@@ -57,24 +55,13 @@ object TransactionAlgebra {
                   InvalidProtobufFile("Invalid protobuf file")
                 })
             )
-          response <- channelResource.use { channel =>
-            (for {
-              blockingStub <- Sync[F]
-                .point(NodeRpcGrpc.blockingStub(channel))
-                .adaptErr(_ => CannotInitializeProtobuf("Cannot obtain stub"))
-              _ <- Sync[F]
-                .blocking(
-                  blockingStub
-                    .broadcastTransaction(
-                      BroadcastTransactionReq(provedTransaction)
-                    )
-                )
-                .adaptErr { e =>
-                  e.printStackTrace()
-                  NetworkProblem("Problem connecting to node")
-                }
-            } yield provedTransaction)
-          }
+          response <- BifrostQueryAlgebra.make[F](channelResource)
+            .broadcastTransaction(provedTransaction)
+            .map(_ => provedTransaction)
+            .adaptErr { e =>
+              e.printStackTrace()
+              NetworkProblem("Problem connecting to node")
+            }
         } yield response).attempt.map(e =>
           e match {
             case Right(tx) =>
