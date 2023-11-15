@@ -286,9 +286,9 @@ class TemplatesControllerSpec extends CatsEffectSuite {
       .assertEquals(
         Right(
           "Y Coordinate\tTemplate Name\tLock Template\n" +
-            "1\tsign\t" + """{"threshold":1,"innerTemplates":[{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"}],"type":"predicate"}""" + "\n" +
-            "2\tor\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"or"}],"type":"predicate"}""" + "\n" +
-            "3\tand\t" + """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""
+            "1\t\tsign\t\t" + """threshold(1, sign(0))""" + "\n" +
+            "2\t\tor\t\t" + """threshold(1, sign(0) or sign(1))""" + "\n" +
+            "3\t\tand\t\t" + """threshold(1, sign(0) and sign(1))"""
         )
       )
   }
