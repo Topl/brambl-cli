@@ -2,13 +2,13 @@ package co.topl.brambl.cli.modules
 
 import cats.effect.IO
 import co.topl.brambl.cli.controllers.GenusQueryController
-import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.dataApi.{GenusQueryAlgebra, RpcChannelResource}
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliParams
 
 trait GenusQueryModeModule
     extends WalletStateAlgebraModule
-    with ChannelResourceModule {
+    with RpcChannelResource {
 
   def genusQuerySubcmd(
       validateParams: BramblCliParams
