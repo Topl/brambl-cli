@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## [v2.0.0-alpha6] - 2023-mm-dd (this date should be changed on release)
+## [v2.0.0-beta1] - 2023-mm-dd (this date should be changed on release)
+## [v2.0.0-beta0] - 2023-11-16
 
 ### Added
 
@@ -24,6 +25,8 @@ The CLI parameters also reflect this change.
 - Changed the display of lock templates in the template list command. Now, it
 shows a user friendlier template instead of the JSON representation of the
 backend.
+- Update to `BramblSc 2.0.0-beta0`.
+- Update deployment to deploy documentation only when a tag is created.
 
 ## [v2.0.0-alpha5] - 2023-10-24
 

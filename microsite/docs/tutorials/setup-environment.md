@@ -29,7 +29,7 @@ Docker is installed, you can launch a node using the following command:
 docker run --rm -p 9085:9085 -p 9084:9084 docker.io/toplprotocol/bifrost-node:$NODE_VERSION
 ```
 
-The latest available version right now is `2.0.0-alpha9`.
+The latest available version right now is `2.0.0-alpha10`.
 
 ### Use a Public Testnet Node
 
