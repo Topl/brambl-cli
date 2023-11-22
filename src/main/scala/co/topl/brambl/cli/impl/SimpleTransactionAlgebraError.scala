@@ -23,3 +23,6 @@ case class UnexpectedError(description: String)
 
 case class CreateTxError(description: String)
     extends SimpleTransactionAlgebraError
+
+case class ValidateTxErrpr(description: String)
+    extends SimpleTransactionAlgebraError

@@ -5,6 +5,8 @@ import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.controllers.WalletController
 import co.topl.brambl.dataApi.{GenusQueryAlgebra, RpcChannelResource}
+import scopt.OParser
+import co.topl.brambl.cli.BramblCliParamsParserModule
 
 trait WalletModeModule
     extends WalletStateAlgebraModule
@@ -48,7 +50,13 @@ trait WalletModeModule
           validateParams.someFromInteraction
         )
       case BramblCliSubCmd.invalid =>
-        IO.pure(Left("A subcommand needs to be specified"))
+        IO.pure(
+          Left(
+            OParser.usage(
+              BramblCliParamsParserModule.walletMode
+            ) + "\nA subcommand needs to be specified"
+          )
+        )
       case BramblCliSubCmd.exportvk =>
         validateParams.someFromInteraction
           .map(x =>

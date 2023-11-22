@@ -10,6 +10,11 @@ import io.grpc.ManagedChannel
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import co.topl.brambl.utils.Encoding
+import co.topl.brambl.validation.TransactionSyntaxInterpreter
+import co.topl.brambl.validation.TransactionSyntaxError.InvalidDataLength
+import co.topl.brambl.validation.TransactionSyntaxError.EmptyInputs
+import co.topl.brambl.validation.TransactionSyntaxError
+import co.topl.brambl.models.transaction.IoTransaction
 
 trait TransactionAlgebra[F[_]] {
   def proveSimpleTransactionFromParams(
@@ -55,7 +60,9 @@ object TransactionAlgebra {
                   InvalidProtobufFile("Invalid protobuf file")
                 })
             )
-          response <- BifrostQueryAlgebra.make[F](channelResource)
+          _ <- validateTx(provedTransaction)
+          response <- BifrostQueryAlgebra
+            .make[F](channelResource)
             .broadcastTransaction(provedTransaction)
             .map(_ => provedTransaction)
             .adaptErr { e =>
@@ -71,6 +78,54 @@ object TransactionAlgebra {
             case Left(e) => UnexpectedError(e.getMessage()).asLeft
           }
         )
+      }
+
+      private def validateTx(tx: IoTransaction) = {
+        import cats.implicits._
+        for {
+          syntaxValidator <- Sync[F]
+            .delay(
+              TransactionSyntaxInterpreter
+                .make[F]()
+            )
+          valResult <- syntaxValidator.validate(tx)
+          _ <-  valResult match {
+              case Left(errors) =>
+                Sync[F].raiseError(
+                  ValidateTxErrpr(
+                    "Error validating transaction: " + errors
+                      .map(_ match {
+                        case InvalidDataLength =>
+                          "Invalid data length. Transaction too big."
+                        case EmptyInputs =>
+                          "No inputs in transaction."
+                        case TransactionSyntaxError.DuplicateInput(_) =>
+                          "There are duplicate inputs in the transactions."
+                        case TransactionSyntaxError.ExcessiveOutputsCount =>
+                          "Too many outputs in the transaction."
+                        case TransactionSyntaxError.InvalidTimestamp(_) =>
+                          "The timestamp for the transaction is invalid."
+                        case TransactionSyntaxError.InvalidSchedule(_) =>
+                          "The schedule for the transaction is invalid."
+                        case TransactionSyntaxError.NonPositiveOutputValue(_) =>
+                          "One of the output values is not positive."
+                        case TransactionSyntaxError
+                              .InsufficientInputFunds(_, _) =>
+                          "There are not enought funds to complete the transaction."
+                        case TransactionSyntaxError.InvalidProofType(_, _) =>
+                          "The type of the proof is invalid."
+                        case TransactionSyntaxError.InvalidUpdateProposal(_) =>
+                          "There are invalid update proposals in the output."
+                        case _ =>
+                          "Error."
+                      })
+                      .toList
+                      .mkString(", ")
+                  )
+                )
+              case Right(_) => Sync[F].unit
+            }
+        } yield ()
       }
 
       override def proveSimpleTransactionFromParams(
@@ -99,12 +154,10 @@ object TransactionAlgebra {
                 .make[F](walletApi, walletStateApi, keyPair)
             )
           provedTransaction <- credentialer.prove(ioTransaction)
+          _ <- validateTx(ioTransaction)
           _ <- outputRes.use(fos =>
             Sync[F]
               .delay(provedTransaction.writeTo(fos))
-              .adaptErr(_ =>
-                CannotSerializeProtobufFile("Cannot write to file")
-              )
           )
         } yield ()).attempt.map(e =>
           e match {

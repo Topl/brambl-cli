@@ -10,28 +10,52 @@ import java.nio.file.Paths
 import co.topl.brambl.models.GroupId
 import com.google.protobuf.ByteString
 import co.topl.brambl.models.SeriesId
+import scala.util.Try
+import co.topl.brambl.constants.NetworkConstants
 
 object BramblCliParamsParserModule {
 
   implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
-    scopt.Read.reads(TokenType.withName)
+    Try(scopt.Read.reads(TokenType.withName)) match {
+      case scala.util.Success(value) => value
+      case scala.util.Failure(_) =>
+        throw new IllegalArgumentException(
+          "Invalid token type. Possible values: lvl, topl, asset, group, series, all"
+        )
+    }
 
   val builder = OParser.builder[BramblCliParams]
 
   import builder._
 
   implicit val networkRead: scopt.Read[NetworkIdentifiers] =
-    scopt.Read.reads(NetworkIdentifiers.fromString(_).get)
+    scopt.Read
+      .reads(NetworkIdentifiers.fromString(_))
+      .map(_ match {
+        case Some(value) => value
+        case None =>
+          throw new IllegalArgumentException(
+            "Invalid network. Possible values: mainnet, testnet, private"
+          )
+      })
 
   implicit val groupIdRead: scopt.Read[GroupId] =
     scopt.Read.reads { x =>
-      val array = Encoding.decodeFromHex(x).toOption.get
+      val array = Encoding.decodeFromHex(x).toOption match {
+        case Some(value) => value
+        case None =>
+          throw new IllegalArgumentException("Invalid group id")
+      }
       GroupId(ByteString.copyFrom(array))
     }
 
   implicit val seriesIdRead: scopt.Read[SeriesId] =
     scopt.Read.reads { x =>
-      val array = Encoding.decodeFromHex(x).toOption.get
+      val array = Encoding.decodeFromHex(x).toOption match {
+        case Some(value) => value
+        case None =>
+          throw new IllegalArgumentException("Invalid series id")
+      }
       SeriesId(ByteString.copyFrom(array))
     }
 
@@ -545,7 +569,9 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
         .text("Obtain current address")
         .children(
-          (Seq(walletDbArg) ++ coordinates.take(2).map(_.required())): _*
+          (Seq(walletDbArg) ++ coordinates
+            .take(2)
+            .map(_.required()) ++ coordinates.takeRight(1)): _*
         ),
       cmd("export-vk")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.exportvk))
@@ -680,7 +706,7 @@ object BramblCliParamsParserModule {
                         success
                       } else {
                         failure(
-                          "Amount is only mandatory for group and series minting"
+                          "Amount already defined in the asset minting statement"
                         )
                       }
                     } else {
@@ -743,12 +769,12 @@ object BramblCliParamsParserModule {
                     )
                   } else
                     (c.toAddress, c.someToFellowship, c.someToTemplate) match {
-                      case (Some(_), None, None) =>
-                        checkTokenAndId(
+                      case (Some(address), None, None) =>
+                        checkAddress(address, c.network).flatMap(_ => checkTokenAndId(
                           c.tokenType,
                           c.someGroupId,
                           c.someSeriesId
-                        )
+                        ))
                       case (None, Some(_), Some(_)) =>
                         checkTokenAndId(
                           c.tokenType,
@@ -766,6 +792,19 @@ object BramblCliParamsParserModule {
             )): _*
         )
     )
+
+  private def checkAddress(
+      lockAddress: LockAddress,
+      networkId: NetworkIdentifiers
+  ) = {
+    if (lockAddress.ledger != NetworkConstants.MAIN_LEDGER_ID) {
+      failure("Invalid ledger id")
+    } else if (lockAddress.network != networkId.networkId) {
+      failure("Invalid network id. Address is using a different network id than the one passed as a parameter: "+ networkId.toString())
+    } else {
+      success
+    }
+  }
 
   private def checkTokenAndId(
       tokenType: TokenType.Value,

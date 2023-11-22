@@ -382,22 +382,32 @@ class WalletController[F[_]: Sync](
   ): F[Either[String, String]] = {
 
     import cats.implicits._
-    val addressGetter = (someAddress, someFellowship, someTemplate) match {
-      case (Some(address), None, None) =>
-        Sync[F].point(Some(address))
-      case (None, Some(fellowship), Some(template)) =>
-        walletStateAlgebra.getAddress(
-          fellowship,
-          template,
-          someInteraction
-        )
-      case (_, _, _) =>
-        Sync[F].raiseError(
-          new Exception("Invalid arguments (should not happen)")
-        )
-    }
-    for {
+    val addressGetter: F[Option[String]] =
+      (someAddress, someFellowship, someTemplate) match {
+        case (Some(address), None, None) =>
+          Sync[F].delay(Some(address))
+        case (None, Some(fellowship), Some(template)) =>
+          Sync[F].defer(
+            walletStateAlgebra.getAddress(
+              fellowship,
+              template,
+              someInteraction
+            )
+          )
+        case (_, _, _) =>
+          Sync[F].raiseError(
+            new Exception("Invalid arguments (should not happen)")
+          )
+      }
+    (for {
       someAddress <- addressGetter
+      _ <- Sync[F]
+        .raiseError(
+          new IllegalArgumentException(
+            "Could not find address. Check the fellowship or template."
+          )
+        )
+        .whenA(someAddress.isEmpty)
       balance <- someAddress
         .map(address =>
           genusQueryAlgebra
@@ -407,6 +417,13 @@ class WalletController[F[_]: Sync](
             )
         )
         .getOrElse(Sync[F].pure(Seq.empty[Txo]))
+        .handleErrorWith(_ =>
+          Sync[F].raiseError(
+            new IllegalStateException(
+              "Could not get UTXOs. Check the network connection."
+            )
+          )
+        )
     } yield {
       val assetMap = balance.groupBy(x =>
         if (x.transactionOutput.value.value.isLvl)
@@ -458,13 +475,16 @@ class WalletController[F[_]: Sync](
         }
         (keyIdentifier -> result)
       }
-      Right(
-        res
-          .filterNot(_._1 == "Unknown")
-          .map(x => x._1 + ": " + x._2.toString)
-          .mkString("\n")
-      )
-    }
+      if (res.isEmpty)
+        Left("No balance found at address")
+      else
+        Right(
+          res
+            .filterNot(_._1 == "Unknown")
+            .map(x => x._1 + ": " + x._2.toString)
+            .mkString("\n")
+        ): Either[String, String]
+    }).handleError(f => Left(f.getMessage))
 
   }
 
