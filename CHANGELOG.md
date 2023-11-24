@@ -1,3 +1,6 @@
+
+## [v2.0.0-beta1] - 2023-mm-dd (this date should be changed on release)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -31,7 +34,6 @@ node.
 - Check that the address corresponds to the network when creating simple transactions.
 - Error messages are now more user friendly.
 
-## [v2.0.0-beta1] - 2023-mm-dd (this date should be changed on release)
 ## [v2.0.0-beta0] - 2023-11-16
 
 ### Added
