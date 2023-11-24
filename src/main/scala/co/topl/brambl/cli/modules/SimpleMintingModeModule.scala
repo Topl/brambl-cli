@@ -9,6 +9,8 @@ import co.topl.brambl.cli.impl.GroupPolicyParserModule
 import co.topl.brambl.cli.impl.SeriesPolicyParserModule
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.cli.impl.AssetStatementParserModule
+import scopt.OParser
+import co.topl.brambl.cli.BramblCliParamsParserModule
 
 trait SimpleMintingModeModule
     extends GroupPolicyParserModule
@@ -34,7 +36,13 @@ trait SimpleMintingModeModule
     )
     validateParams.subcmd match {
       case BramblCliSubCmd.invalid =>
-        IO.pure(Left("A subcommand needs to be specified"))
+        IO.pure(
+          Left(
+            OParser.usage(
+              BramblCliParamsParserModule.simpleMintingMode
+            ) + "\nA subcommand needs to be specified"
+          )
+        )
       case BramblCliSubCmd.create =>
         validateParams.tokenType match {
           case TokenType.group =>

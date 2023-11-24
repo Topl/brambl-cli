@@ -13,9 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Broadcast transaction validates transaction before broadcasting it and also
 checks that the transaction is valid in the node. 
 - Tutorial on how to fund the wallet.
+- Tutorial on how to recover the wallet
+- Default values for `--from-fellowship`, `--from-template`, `--fellowsip-name` 
+and `--template-name` parameters. When not provided, the default values are
+`self` for the fellowship and `default` for the template.
 
 ### Changed
 
+- The errors don't show the usage anymore. We also show the usage only for
+a given mode when no subcomand is given.
 - Fixed bugs with change address. 1. Change address was not required with
 nofellowship. 2. Change address always requires the three fields: party, contract
 and state. 

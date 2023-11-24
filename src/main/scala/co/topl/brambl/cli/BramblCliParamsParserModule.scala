@@ -332,10 +332,12 @@ object BramblCliParamsParserModule {
     Seq(
       opt[String]("from-fellowship")
         .action((x, c) => c.copy(fromFellowship = x))
-        .text("Fellowship where we are sending the funds from"),
+        .text("Fellowship where we are sending the funds from")
+        .optional(),
       opt[String]("from-template")
         .action((x, c) => c.copy(fromTemplate = x))
-        .text("Template where we are sending the funds from"),
+        .text("Template where we are sending the funds from")
+        .optional(),
       opt[Option[Int]]("from-interaction")
         .action((x, c) => c.copy(someFromInteraction = x))
         .validate(
@@ -585,9 +587,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
         .text("Obtain current address")
         .children(
-          (Seq(walletDbArg) ++ coordinates
-            .take(2)
-            .map(_.required()) ++ coordinates.takeRight(1)): _*
+          (Seq(walletDbArg) ++ coordinates): _*
         ),
       cmd("export-vk")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.exportvk))

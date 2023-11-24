@@ -5,6 +5,8 @@ import co.topl.brambl.cli.controllers.BifrostQueryController
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.dataApi.{BifrostQueryAlgebra, RpcChannelResource}
 import co.topl.brambl.cli.BramblCliParams
+import scopt.OParser
+import co.topl.brambl.cli.BramblCliParamsParserModule
 
 trait BifrostQueryModeModule extends RpcChannelResource  {
 
@@ -20,7 +22,13 @@ trait BifrostQueryModeModule extends RpcChannelResource  {
     )
     validateParams.subcmd match {
       case BramblCliSubCmd.invalid =>
-        IO.pure(Left("A subcommand needs to be specified"))
+        IO.pure(
+          Left(
+            OParser.usage(
+              BramblCliParamsParserModule.bifrostQueryMode
+            ) + "\nA subcommand needs to be specified"
+          )
+        )
       case BramblCliSubCmd.blockbyheight =>
         new BifrostQueryController(
           bifrostQueryAlgebra

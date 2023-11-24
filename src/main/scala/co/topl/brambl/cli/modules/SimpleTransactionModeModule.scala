@@ -4,6 +4,8 @@ import cats.effect.IO
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.controllers.SimpleTransactionController
 import co.topl.brambl.cli.BramblCliParams
+import scopt.OParser
+import co.topl.brambl.cli.BramblCliParamsParserModule
 
 trait SimpleTransactionModeModule
     extends SimpleTransactionAlgebraModule
@@ -13,7 +15,13 @@ trait SimpleTransactionModeModule
       validateParams: BramblCliParams
   ): IO[Either[String, String]] = validateParams.subcmd match {
     case BramblCliSubCmd.invalid =>
-      IO.pure(Left("Invalid subcommand"))
+        IO.pure(
+          Left(
+            OParser.usage(
+              BramblCliParamsParserModule.simpleTransactionMode
+            ) + "\nA subcommand needs to be specified"
+          )
+        )
     case BramblCliSubCmd.create =>
       new SimpleTransactionController(
         walletStateAlgebra(

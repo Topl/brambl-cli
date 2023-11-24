@@ -5,6 +5,8 @@ import co.topl.brambl.cli.controllers.TemplatesController
 import co.topl.brambl.servicekit.{TemplateStorageApi, WalletStateResource}
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliParams
+import scopt.OParser
+import co.topl.brambl.cli.BramblCliParamsParserModule
 
 trait TemplateModeModule extends WalletStateResource {
   def templateModeSubcmds(
@@ -15,7 +17,13 @@ trait TemplateModeModule extends WalletStateResource {
     )
     validateParams.subcmd match {
       case BramblCliSubCmd.invalid =>
-        IO.pure(Left("A subcommand needs to be specified"))
+        IO.pure(
+          Left(
+            OParser.usage(
+              BramblCliParamsParserModule.templatesMode
+            ) + "\nA subcommand needs to be specified"
+          )
+        )
       case BramblCliSubCmd.list =>
         new TemplatesController(
           templateStorageAlgebra
