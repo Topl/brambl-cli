@@ -1,13 +1,8 @@
 ---
 sidebar_position: 18
 ---
+import ResetInteraction from './_reset-interaction.mdx';
 
 # Reset an Interaction
 
-Each time a transaction is created a new interaction is created. Sometimes
-the transaction might not be useful or might be invalid. In this case, the
-interaction can be reset. This command will set the interaction to a given value.
-
-```bash
-brambl-cli wallet set-interaction  --walletdb $WALLET_DB --from-fellowship $FELLOWSHIP --from-template $TEMPLATE --from-interaction $NEW_INTERACTION
-```
+<ResetInteraction />
