@@ -5,17 +5,21 @@ import co.topl.brambl.models.TransactionId
 import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.consensus.models.BlockId
 import co.topl.node.models.BlockBody
+import co.topl.consensus.models.BlockHeader
 
-abstract class BaseBifrostQueryAlgebra[F[_]]
-    extends BifrostQueryAlgebra[F] {
+abstract class BaseBifrostQueryAlgebra[F[_]] extends BifrostQueryAlgebra[F] {
 
   override def blockByHeight(
       height: Long
-  ): F[Option[(BlockId, BlockBody, Seq[IoTransaction])]] = ???
+  ): F[Option[(BlockId, BlockHeader, BlockBody, Seq[IoTransaction])]] = ???
 
   override def blockById(
       blockId: BlockId
-  ): F[Option[(BlockId, BlockBody, Seq[IoTransaction])]] = ???
+  ): F[Option[(BlockId, BlockHeader, BlockBody, Seq[IoTransaction])]] = ???
+
+  override def blockByDepth(
+      depth: Long
+  ): F[Option[(BlockId, BlockHeader, BlockBody, Seq[IoTransaction])]] = ???
 
   override def fetchTransaction(
       txId: TransactionId

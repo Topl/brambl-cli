@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+- Prove transaction validates the transaction before proving it.
+- Broadcast transaction validates transaction before broadcasting it and also
+checks that the transaction is valid in the node. 
+- Tutorial on how to fund the wallet.
+
+### Changed
+
+- Fixed bugs with change address. 1. Change address was not required with
+nofellowship. 2. Change address always requires the three fields: party, contract
+and state. 
+- Broadcast will not let you broadcast a transaction that will not validate in
+node.
+- Show nicer error when a lock address passed as parameter is invalid
+- Check that the address corresponds to the network when creating simple transactions.
+- Error messages are now more user friendly.
+
 ## [v2.0.0-beta1] - 2023-mm-dd (this date should be changed on release)
 ## [v2.0.0-beta0] - 2023-11-16
 

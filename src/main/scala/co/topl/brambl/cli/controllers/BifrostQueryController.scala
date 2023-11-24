@@ -21,18 +21,21 @@ class BifrostQueryController[F[_]: Sync](
       )
       .map { someResult =>
         someResult match {
-          case Some(((blockId, _, ioTransactions))) =>
+          case Some(((blockId, _, _, ioTransactions))) =>
             Right(BlockDisplayOps.display(blockId, ioTransactions))
           case None =>
             Left("No blocks found at that height")
         }
-      }            .attempt
-            .map {
-              _ match {
-                case Left(_)     => Left("Problem contacting the network.")
-                case Right(txos) => txos
-              }
-            }
+      }
+      .attempt
+      .map {
+        _ match {
+          case Left(e)     => 
+            e.printStackTrace()
+            Left("Problem contacting the network.")
+          case Right(txos) => txos
+        }
+      }
   }
 
   def blockById(
@@ -49,18 +52,19 @@ class BifrostQueryController[F[_]: Sync](
       )
       .map { someResult =>
         someResult match {
-          case Some(((blockId, _, ioTransactions))) =>
+          case Some(((blockId, _, _, ioTransactions))) =>
             Right(BlockDisplayOps.display(blockId, ioTransactions))
           case None =>
             Left("No blocks found at that block id")
         }
-      }            .attempt
-            .map {
-              _ match {
-                case Left(_)     => Left("Problem contacting the network.")
-                case Right(txos) => txos
-              }
-            }
+      }
+      .attempt
+      .map {
+        _ match {
+          case Left(_)     => Left("Problem contacting the network.")
+          case Right(txos) => txos
+        }
+      }
   }
 
   def fetchTransaction(transactionId: String): F[Either[String, String]] = {
@@ -80,13 +84,14 @@ class BifrostQueryController[F[_]: Sync](
           case None =>
             Left(s"No transaction found with id ${transactionId}")
         }
-      }            .attempt
-            .map {
-              _ match {
-                case Left(_)     => Left("Problem contacting the network.")
-                case Right(txos) => txos
-              }
-            }
+      }
+      .attempt
+      .map {
+        _ match {
+          case Left(_)     => Left("Problem contacting the network.")
+          case Right(txos) => txos
+        }
+      }
   }
 
 }

@@ -2,12 +2,10 @@
 sidebar_position: 6
 ---
 
+import BroadcastTx from './_broadcast-tx.mdx';
+
 # Broadcast a Transaction
 
-To broadcast a simple transaction run the following command:
+<BroadcastTx txFileProved="$TX_PROVED_FILE" />
 
-```bash
-brambl-cli tx broadcast -n $NETWORK -i $TX_PROVED_FILE -h $HOST --port $PORT --walletdb $WALLET
-```
-
-This will broadcast the transaction in the file `$TX_PROVED_FILE` to the network.
+Before broadcasting, this command will validate the transaction and the proof. If the validation fails, the command will fail and the transaction will not be broadcasted.

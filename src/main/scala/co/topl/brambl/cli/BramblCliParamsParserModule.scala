@@ -263,12 +263,10 @@ object BramblCliParamsParserModule {
         .text("Interaction where we are sending the change to")
         .optional(),
       checkConfig(c =>
-        if (c.fromFellowship == "nofellowship") {
-          if (c.someFromInteraction.isEmpty) {
-            failure(
-              "You must specify a from-interaction when using nofellowship"
-            )
-          } else {
+        if (
+          c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
+        ) {
+          if (c.fromFellowship == "nofellowship") {
             (
               c.someChangeFellowship,
               c.someChangeTemplate,
@@ -281,9 +279,23 @@ object BramblCliParamsParserModule {
                   "You must specify a change-fellowship, change-template and change-interaction when using nofellowship"
                 )
             }
-            success
+          } else {
+            (
+              c.someChangeFellowship,
+              c.someChangeTemplate,
+              c.someChangeInteraction
+            ) match {
+              case (Some(_), Some(_), Some(_)) =>
+                success
+              case (None, None, None) =>
+                success
+              case (_, _, _) =>
+                failure(
+                  "You must specify a change-fellowship, change-template and change-interaction or not specify any of them"
+                )
+            }
           }
-        } else {
+        } else // if you need to set the change you set all the parameters
           (
             c.someChangeFellowship,
             c.someChangeTemplate,
@@ -298,7 +310,6 @@ object BramblCliParamsParserModule {
                 "You must specify a change-fellowship, change-template and change-interaction or not specify any of them"
               )
           }
-        }
       )
     )
   }
@@ -406,8 +417,13 @@ object BramblCliParamsParserModule {
     scopt.Read.reads(
       AddressCodecs
         .decodeAddress(_)
-        .toOption
-        .get
+        .toOption match {
+        case None =>
+          throw new IllegalArgumentException(
+            "Invalid address, could not decode."
+          )
+        case Some(value) => value
+      }
     )
 
   val genusQueryMode = cmd("genus-query")
@@ -770,11 +786,13 @@ object BramblCliParamsParserModule {
                   } else
                     (c.toAddress, c.someToFellowship, c.someToTemplate) match {
                       case (Some(address), None, None) =>
-                        checkAddress(address, c.network).flatMap(_ => checkTokenAndId(
-                          c.tokenType,
-                          c.someGroupId,
-                          c.someSeriesId
-                        ))
+                        checkAddress(address, c.network).flatMap(_ =>
+                          checkTokenAndId(
+                            c.tokenType,
+                            c.someGroupId,
+                            c.someSeriesId
+                          )
+                        )
                       case (None, Some(_), Some(_)) =>
                         checkTokenAndId(
                           c.tokenType,
@@ -800,7 +818,10 @@ object BramblCliParamsParserModule {
     if (lockAddress.ledger != NetworkConstants.MAIN_LEDGER_ID) {
       failure("Invalid ledger id")
     } else if (lockAddress.network != networkId.networkId) {
-      failure("Invalid network id. Address is using a different network id than the one passed as a parameter: "+ networkId.toString())
+      failure(
+        "Invalid network id. Address is using a different network id than the one passed as a parameter: " + networkId
+          .toString()
+      )
     } else {
       success
     }

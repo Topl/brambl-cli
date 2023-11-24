@@ -9,6 +9,7 @@ import munit.CatsEffectSuite
 import co.topl.brambl.cli.modules.DummyObjects
 import co.topl.brambl.cli.views.BlockDisplayOps
 import co.topl.brambl.models.TransactionId
+import co.topl.consensus.models.BlockHeader
 
 class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
@@ -18,7 +19,8 @@ class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
         override def blockByHeight(
             height: Long
-        ): IO[Option[(BlockId, BlockBody, Seq[IoTransaction])]] = IO(None)
+        ): IO[Option[(BlockId, BlockHeader, BlockBody, Seq[IoTransaction])]] =
+          IO(None)
 
       }
     )
@@ -34,8 +36,10 @@ class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
         override def blockByHeight(
             height: Long
-        ): IO[Option[(BlockId, BlockBody, Seq[IoTransaction])]] =
-          IO(Some((blockId01, blockBody01, Seq(iotransaction01))))
+        ): IO[Option[(BlockId, BlockHeader, BlockBody, Seq[IoTransaction])]] =
+          IO(
+            Some((blockId01, blockHeader01, blockBody01, Seq(iotransaction01)))
+          )
 
       }
     )
@@ -52,7 +56,8 @@ class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
         override def blockById(
             blockId: BlockId
-        ): IO[Option[(BlockId, BlockBody, Seq[IoTransaction])]] = IO(None)
+        ): IO[Option[(BlockId, BlockHeader, BlockBody, Seq[IoTransaction])]] =
+          IO(None)
 
       }
     )
@@ -69,8 +74,10 @@ class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
         override def blockById(
             blockId: BlockId
-        ): IO[Option[(BlockId, BlockBody, Seq[IoTransaction])]] =
-          IO(Some((blockId01, blockBody01, Seq(iotransaction01))))
+        ): IO[Option[(BlockId, BlockHeader, BlockBody, Seq[IoTransaction])]] =
+          IO(
+            Some((blockId01, blockHeader01, blockBody01, Seq(iotransaction01)))
+          )
 
       }
     )
