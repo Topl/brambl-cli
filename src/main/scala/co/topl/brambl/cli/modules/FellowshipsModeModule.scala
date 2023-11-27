@@ -5,6 +5,8 @@ import co.topl.brambl.cli.controllers.FellowshipsController
 import co.topl.brambl.servicekit.{FellowshipStorageApi, WalletStateResource}
 import co.topl.brambl.cli.BramblCliSubCmd
 import co.topl.brambl.cli.BramblCliParams
+import scopt.OParser
+import co.topl.brambl.cli.BramblCliParamsParserModule
 
 trait FellowshipsModeModule extends WalletStateResource {
   def fellowshipsModeSubcmds(
@@ -15,7 +17,13 @@ trait FellowshipsModeModule extends WalletStateResource {
     )
     validateParams.subcmd match {
       case BramblCliSubCmd.invalid =>
-        IO.pure(Left("A subcommand needs to be specified"))
+        IO.pure(
+          Left(
+            OParser.usage(
+              BramblCliParamsParserModule.fellowshipsMode
+            ) + "\nA subcommand needs to be specified"
+          )
+        )
       case BramblCliSubCmd.add =>
         new FellowshipsController(fellowshipStorageAlgebra)
           .addFellowship(validateParams.fellowshipName)

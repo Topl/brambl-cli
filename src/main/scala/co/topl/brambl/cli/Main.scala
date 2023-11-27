@@ -27,8 +27,8 @@ object Main
   import BramblCliParamsParserModule._
 
   override def run(args: List[String]): IO[ExitCode] = {
-    OParser.parse(paramParser, args, BramblCliParams()) match {
-      case Some(params) =>
+    OParser.runParser(paramParser, args, BramblCliParams()) match {
+      case (Some(params), effects) =>
         val op: IO[Either[String, String]] =
           params.mode match {
             case BramblCliMode.tx =>
@@ -48,7 +48,7 @@ object Main
             case BramblCliMode.bifrostquery =>
               bifrostQuerySubcmd(params)
             case _ =>
-              IO.pure(Left("Invalid mode"))
+              IO(OParser.runEffects(effects)) >> IO.pure(Left("Invalid mode"))
           }
         import cats.implicits._
         for {
@@ -58,8 +58,10 @@ object Main
             x => IO.consoleForIO.println(x).map(_ => ExitCode.Success)
           )
         } yield res
-      case _ =>
-        IO.pure(ExitCode.Error)
+      case (None, effects) =>
+        IO(OParser.runEffects(effects.reverse.tail.reverse)) >> IO.pure(
+          ExitCode.Error
+        )
     }
   }
 

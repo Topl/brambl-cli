@@ -86,18 +86,22 @@ object SimpleTransactionAlgebra {
             someChangeTemplate,
             someChangeInteraction
           ) match {
-            case (Some(changeFellowship), Some(changeTemplate), Some(changeState)) =>
-              walletStateApi.getCurrentIndicesForFunds(
-                changeFellowship,
-                changeTemplate,
-                Some(changeState)
-              ).map(_.isDefined)
+            case (
+                  Some(changeFellowship),
+                  Some(changeTemplate),
+                  Some(changeState)
+                ) =>
+              walletStateApi
+                .getCurrentIndicesForFunds(
+                  changeFellowship,
+                  changeTemplate,
+                  Some(changeState)
+                )
+                .map(_.isDefined)
             case _ => Sync[F].point(false)
           }
           _ <-
-            if (
-              ioTransaction.outputs.length >= 2 && !nextIndicesExist
-            ) for {
+            if (ioTransaction.outputs.length >= 2 && !nextIndicesExist) for {
               lockAddress <-
                 transactionBuilderApi.lockAddress(
                   lockForChange
@@ -167,6 +171,11 @@ object SimpleTransactionAlgebra {
               keyfile,
               password
             )
+            .adaptErr(_ =>
+              CreateTxError(
+                "Cannot load keyfile: Check password and keyfile"
+              ): SimpleTransactionAlgebraError
+            )
           someCurrentIndices <- walletStateApi.getCurrentIndicesForFunds(
             fromFellowship,
             fromTemplate,
@@ -179,7 +188,11 @@ object SimpleTransactionAlgebra {
             .sequence
             .map(_.flatten.map(Lock().withPredicate(_)))
           someNextIndices <-
-            (someChangeFellowship, someChangeTemplate, someChangeInteraction) match {
+            (
+              someChangeFellowship,
+              someChangeTemplate,
+              someChangeInteraction
+            ) match {
               case (Some(fellowship), Some(template), Some(interaction)) =>
                 walletStateApi.getCurrentIndicesForFunds(
                   fellowship,
@@ -194,7 +207,7 @@ object SimpleTransactionAlgebra {
             }
           // Generate a new lock for the change, if possible
           changeLock <- someNextIndices
-            .map{idx =>
+            .map { idx =>
               walletStateApi
                 .getLock(fromFellowship, fromTemplate, idx.z)
             }

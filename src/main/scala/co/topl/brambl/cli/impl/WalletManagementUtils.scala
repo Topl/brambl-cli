@@ -20,10 +20,20 @@ class WalletManagementUtils[F[_]: Sync](
           .extractMainKey(wallet, password.getBytes())
           .flatMap(
             _.fold(
-              _ =>
-                Sync[F].raiseError[KeyPair](
-                  new Throwable("No input file (should not happen)")
-                ),
+              _ match {
+                case WalletApi.FailedToDecodeWallet(_) =>
+                  Sync[F].raiseError[KeyPair](
+                    new Throwable(
+                      "Failed to decode wallet: check that the password is correct"
+                    )
+                  )
+                case _ =>
+                  Sync[F].raiseError[KeyPair] {
+                    new Throwable(
+                      "There was a problem decoding the wallet (check that the password is correct)"
+                    )
+                  }
+              },
               Sync[F].point(_)
             )
           )

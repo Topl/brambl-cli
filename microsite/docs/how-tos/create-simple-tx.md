@@ -2,17 +2,13 @@
 sidebar_position: 4
 ---
 
+import SimpleLvlTx from './_simple-lvl-tx.mdx';
+
 # Create a Simple Transaction
 
 ## Transfering LVLs
 
-To create a simple transaction you need to run the following command:
-
-```bash
-brambl-cli simple-transaction create --from-fellowship $FELLOWSHIP --from-template $LOCK_TEMPLATE --from-interaction $INTERACTION_NR -t $TO_ADDRESS -w $PASSWORD --port $PORT -o $TX_FILE -n $NETWORK -a $SEND_AMOUNT -h $HOST -i $MAIN_KEY --walletdb $WALLET --fee $FEE --transfer-token $TOKEN_TYPE
-```
-
-This will create a transaction that spends the interaction `$INTERACTION_NR` of the template `$LOCK_TEMPLATE` of the fellowship `$FELLOWSHIP` and sends `$SEND_AMOUNT` polys to the address `$TO_ADDRESS`. The transaction will be stored in the file `$TX_FILE`.
+<SimpleLvlTx fellowship="$FROM_FELLOWSHIP" template="$LOCK_TEMPLATE" interaction="$INTERACTION_NR" token="$TOKEN_TYPE" wallet="$WALLET" keyfile="$MAIN_KEY" txFile="$TX_FILE" />
 
 The `--from-interaction` parameter is only required if the fellowship is `nofellowship`. If the fellowship is `self`, or any template where there is at least one fellowship, then the `--from-interaction` parameter is not required.
 

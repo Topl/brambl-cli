@@ -24,6 +24,14 @@ import co.topl.node.models.BlockBody
 import com.google.protobuf.ByteString
 import quivr.models.Int128
 import quivr.models.Proposition
+import co.topl.consensus.models.BlockHeader
+import co.topl.consensus.models.EligibilityCertificate
+import co.topl.consensus.models.OperationalCertificate
+import co.topl.consensus.models.StakingAddress
+import co.topl.consensus.models.ProtocolVersion
+import co.topl.consensus.models.VerificationKeyKesProduct
+import co.topl.consensus.models.SignatureKesProduct
+import co.topl.consensus.models.SignatureKesSum
 
 trait DummyObjects {
 
@@ -106,29 +114,33 @@ trait DummyObjects {
   )
   lazy val assetValue01 = Value(
     Value.Asset(
-      Some(GroupId(
-        ByteString.copyFrom(
-          Encoding
-            .decodeFromHex(
-              "fdae7b6ea08b7d5489c3573abba8b1765d39365b4e803c4c1af6b97cf02c54bf"
-            )
-            .toOption
-            .get
-        )
-      )
-    ),
-    Some(SeriesId(
-      ByteString.copyFrom(
-        Encoding
-          .decodeFromHex(
-            "1ed1caaefda61528936051929c525a17a0d43ea6ae09592da06c9735d9416c03"
+      Some(
+        GroupId(
+          ByteString.copyFrom(
+            Encoding
+              .decodeFromHex(
+                "fdae7b6ea08b7d5489c3573abba8b1765d39365b4e803c4c1af6b97cf02c54bf"
+              )
+              .toOption
+              .get
           )
-          .toOption
-          .get
-      )
-    )),
-    1L
-  ))
+        )
+      ),
+      Some(
+        SeriesId(
+          ByteString.copyFrom(
+            Encoding
+              .decodeFromHex(
+                "1ed1caaefda61528936051929c525a17a0d43ea6ae09592da06c9735d9416c03"
+              )
+              .toOption
+              .get
+          )
+        )
+      ),
+      1L
+    )
+  )
 
   lazy val transactionOutputAddress01 = TransactionOutputAddress(
     lockAddress01.network,
@@ -191,6 +203,41 @@ trait DummyObjects {
     ByteString.copyFrom(
       Array.fill[Byte](32)(0)
     )
+  )
+
+  lazy val blockHeader01 = BlockHeader(
+    headerId = Some(blockId01),
+    parentHeaderId = blockId01,
+    txRoot = ByteString.copyFrom(Array.fill[Byte](32)(0)),
+    bloomFilter = ByteString.copyFrom(Array.fill[Byte](256)(0)),
+    eligibilityCertificate = EligibilityCertificate(
+      vrfSig = ByteString.copyFrom(Array.fill[Byte](80)(0)),
+      vrfVK = ByteString.copyFrom(Array.fill[Byte](32)(0)),
+      eta = ByteString.copyFrom(Array.fill[Byte](32)(0)),
+      thresholdEvidence = ByteString.copyFrom(Array.fill[Byte](32)(0))
+    ),
+    operationalCertificate = OperationalCertificate(
+      VerificationKeyKesProduct(value =
+        ByteString.copyFrom(Array.fill[Byte](32)(0))
+      ),
+      SignatureKesProduct(
+        SignatureKesSum(
+          verificationKey = ByteString.copyFrom(Array.fill[Byte](32)(0)),
+          signature = ByteString.copyFrom(Array.fill[Byte](64)(0))
+        ),
+        SignatureKesSum(
+          verificationKey = ByteString.copyFrom(Array.fill[Byte](32)(0)),
+          signature = ByteString.copyFrom(Array.fill[Byte](64)(0))
+        ),
+        subRoot = ByteString.copyFrom(Array.fill[Byte](32)(0))
+      ),
+      ByteString.copyFrom(Array.fill[Byte](32)(0)),
+      ByteString.copyFrom(Array.fill[Byte](64)(0)),
+    ),
+    address = StakingAddress(
+      value = ByteString.copyFrom(Array.fill[Byte](32)(0))
+    ),
+    version = ProtocolVersion()
   )
 
   lazy val blockBody01 = BlockBody(

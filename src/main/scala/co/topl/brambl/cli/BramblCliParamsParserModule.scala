@@ -10,28 +10,52 @@ import java.nio.file.Paths
 import co.topl.brambl.models.GroupId
 import com.google.protobuf.ByteString
 import co.topl.brambl.models.SeriesId
+import scala.util.Try
+import co.topl.brambl.constants.NetworkConstants
 
 object BramblCliParamsParserModule {
 
   implicit val tokenTypeRead: scopt.Read[TokenType.Value] =
-    scopt.Read.reads(TokenType.withName)
+    Try(scopt.Read.reads(TokenType.withName)) match {
+      case scala.util.Success(value) => value
+      case scala.util.Failure(_) =>
+        throw new IllegalArgumentException(
+          "Invalid token type. Possible values: lvl, topl, asset, group, series, all"
+        )
+    }
 
   val builder = OParser.builder[BramblCliParams]
 
   import builder._
 
   implicit val networkRead: scopt.Read[NetworkIdentifiers] =
-    scopt.Read.reads(NetworkIdentifiers.fromString(_).get)
+    scopt.Read
+      .reads(NetworkIdentifiers.fromString(_))
+      .map(_ match {
+        case Some(value) => value
+        case None =>
+          throw new IllegalArgumentException(
+            "Invalid network. Possible values: mainnet, testnet, private"
+          )
+      })
 
   implicit val groupIdRead: scopt.Read[GroupId] =
     scopt.Read.reads { x =>
-      val array = Encoding.decodeFromHex(x).toOption.get
+      val array = Encoding.decodeFromHex(x).toOption match {
+        case Some(value) => value
+        case None =>
+          throw new IllegalArgumentException("Invalid group id")
+      }
       GroupId(ByteString.copyFrom(array))
     }
 
   implicit val seriesIdRead: scopt.Read[SeriesId] =
     scopt.Read.reads { x =>
-      val array = Encoding.decodeFromHex(x).toOption.get
+      val array = Encoding.decodeFromHex(x).toOption match {
+        case Some(value) => value
+        case None =>
+          throw new IllegalArgumentException("Invalid series id")
+      }
       SeriesId(ByteString.copyFrom(array))
     }
 
@@ -239,12 +263,10 @@ object BramblCliParamsParserModule {
         .text("Interaction where we are sending the change to")
         .optional(),
       checkConfig(c =>
-        if (c.fromFellowship == "nofellowship") {
-          if (c.someFromInteraction.isEmpty) {
-            failure(
-              "You must specify a from-interaction when using nofellowship"
-            )
-          } else {
+        if (
+          c.mode == BramblCliMode.simpletransaction && c.subcmd == BramblCliSubCmd.create
+        ) {
+          if (c.fromFellowship == "nofellowship") {
             (
               c.someChangeFellowship,
               c.someChangeTemplate,
@@ -257,9 +279,23 @@ object BramblCliParamsParserModule {
                   "You must specify a change-fellowship, change-template and change-interaction when using nofellowship"
                 )
             }
-            success
+          } else {
+            (
+              c.someChangeFellowship,
+              c.someChangeTemplate,
+              c.someChangeInteraction
+            ) match {
+              case (Some(_), Some(_), Some(_)) =>
+                success
+              case (None, None, None) =>
+                success
+              case (_, _, _) =>
+                failure(
+                  "You must specify a change-fellowship, change-template and change-interaction or not specify any of them"
+                )
+            }
           }
-        } else {
+        } else // if you need to set the change you set all the parameters
           (
             c.someChangeFellowship,
             c.someChangeTemplate,
@@ -274,7 +310,6 @@ object BramblCliParamsParserModule {
                 "You must specify a change-fellowship, change-template and change-interaction or not specify any of them"
               )
           }
-        }
       )
     )
   }
@@ -297,10 +332,12 @@ object BramblCliParamsParserModule {
     Seq(
       opt[String]("from-fellowship")
         .action((x, c) => c.copy(fromFellowship = x))
-        .text("Fellowship where we are sending the funds from"),
+        .text("Fellowship where we are sending the funds from")
+        .optional(),
       opt[String]("from-template")
         .action((x, c) => c.copy(fromTemplate = x))
-        .text("Template where we are sending the funds from"),
+        .text("Template where we are sending the funds from")
+        .optional(),
       opt[Option[Int]]("from-interaction")
         .action((x, c) => c.copy(someFromInteraction = x))
         .validate(
@@ -382,8 +419,13 @@ object BramblCliParamsParserModule {
     scopt.Read.reads(
       AddressCodecs
         .decodeAddress(_)
-        .toOption
-        .get
+        .toOption match {
+        case None =>
+          throw new IllegalArgumentException(
+            "Invalid address, could not decode."
+          )
+        case Some(value) => value
+      }
     )
 
   val genusQueryMode = cmd("genus-query")
@@ -545,7 +587,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.currentaddress))
         .text("Obtain current address")
         .children(
-          (Seq(walletDbArg) ++ coordinates.take(2).map(_.required())): _*
+          (Seq(walletDbArg) ++ coordinates): _*
         ),
       cmd("export-vk")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.exportvk))
@@ -680,7 +722,7 @@ object BramblCliParamsParserModule {
                         success
                       } else {
                         failure(
-                          "Amount is only mandatory for group and series minting"
+                          "Amount already defined in the asset minting statement"
                         )
                       }
                     } else {
@@ -743,11 +785,13 @@ object BramblCliParamsParserModule {
                     )
                   } else
                     (c.toAddress, c.someToFellowship, c.someToTemplate) match {
-                      case (Some(_), None, None) =>
-                        checkTokenAndId(
-                          c.tokenType,
-                          c.someGroupId,
-                          c.someSeriesId
+                      case (Some(address), None, None) =>
+                        checkAddress(address, c.network).flatMap(_ =>
+                          checkTokenAndId(
+                            c.tokenType,
+                            c.someGroupId,
+                            c.someSeriesId
+                          )
                         )
                       case (None, Some(_), Some(_)) =>
                         checkTokenAndId(
@@ -766,6 +810,22 @@ object BramblCliParamsParserModule {
             )): _*
         )
     )
+
+  private def checkAddress(
+      lockAddress: LockAddress,
+      networkId: NetworkIdentifiers
+  ) = {
+    if (lockAddress.ledger != NetworkConstants.MAIN_LEDGER_ID) {
+      failure("Invalid ledger id")
+    } else if (lockAddress.network != networkId.networkId) {
+      failure(
+        "Invalid network id. Address is using a different network id than the one passed as a parameter: " + networkId
+          .toString()
+      )
+    } else {
+      success
+    }
+  }
 
   private def checkTokenAndId(
       tokenType: TokenType.Value,

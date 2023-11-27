@@ -1,3 +1,5 @@
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -7,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## [v2.0.0-beta1] - 2023-mm-dd (this date should be changed on release)
+
+### Added
+
+- Prove transaction validates the transaction before proving it.
+- Broadcast transaction validates transaction before broadcasting it and also
+checks that the transaction is valid in the node. 
+- Tutorial on how to fund the wallet.
+- Tutorial on how to recover the wallet
+- Default values for `--from-fellowship`, `--from-template`, `--fellowsip-name` 
+and `--template-name` parameters. When not provided, the default values are
+`self` for the fellowship and `default` for the template.
+
+### Changed
+
+- The errors don't show the usage anymore. We also show the usage only for
+a given mode when no subcomand is given.
+- Fixed bugs with change address. 1. Change address was not required with
+nofellowship. 2. Change address always requires the three fields: party, contract
+and state. 
+- Broadcast will not let you broadcast a transaction that will not validate in
+node.
+- Show nicer error when a lock address passed as parameter is invalid
+- Check that the address corresponds to the network when creating simple transactions.
+- Error messages are now more user friendly.
+
 ## [v2.0.0-beta0] - 2023-11-16
 
 ### Added

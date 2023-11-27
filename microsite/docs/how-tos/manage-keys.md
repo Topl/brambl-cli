@@ -2,6 +2,8 @@
 sidebar_position: 11
 ---
 
+import SyncWallet from './_sync-wallet.mdx';
+
 # Manage Keys
 
 To interact with other fellowships and templates you need to import their public
@@ -31,16 +33,4 @@ brambl-cli wallet import-vks --input-vks $BASE_VK_1,$BASE_VK_2 --fellowship-name
 
 ## Sync the wallet
 
-To sync the wallet run the following command:
-
-```bash
-brambl-cli wallet sync --template-name $LOCK_TEMPLATE_NAME --fellowship-name $FELLOWSHIP_NAME --walletdb $WALLET -n $NETWORK -h $HOST --port $PORT --keyfile $KEYFILE -w $PASSWORD
-```
-
-This will sync the wallet for the fellowship `$FELLOWSHIP_NAME` and template `$LOCK_TEMPLATE_NAME` with the bifrost node running on `$HOST` on port `$PORT`. The keyfile `$KEYFILE` is used to derive keys. The password for the wallet is `$PASSWORD`. 
-
-The procedure for the sync is the following:
-
-- we first derive the next address for the fellowship and template
-- we query the node to see if the UTXOs in that address are spent
-- if the UTXOs are spent, then we derive the next address and repeat the process
+<SyncWallet />
