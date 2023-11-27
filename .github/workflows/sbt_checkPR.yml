@@ -48,7 +48,7 @@ jobs:
         run: sbt "cli / IntegrationTest / test"
       - uses: actions/download-artifact@v3
         with:
-          path: target/test-reports/
+          path: cli/target/test-reports/
           name: unit-test-reports
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
