@@ -74,6 +74,7 @@ lazy val gui = project
         .endsWith(".css")
     }
   )
+  .settings(noPublish)
   .dependsOn(shared.js)
 
 
