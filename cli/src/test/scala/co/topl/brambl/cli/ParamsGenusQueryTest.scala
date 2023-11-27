@@ -22,7 +22,7 @@ class ParamsGenusQueryTest extends FunSuite {
       "-h",
       "localhost",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }

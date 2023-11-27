@@ -124,8 +124,8 @@ class SimpleMintingControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleGroupMintingTransactionFromParams(
-        "cli/src/test/resources/valid_group_policy.yaml",
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/valid_group_policy.yaml",
+        "src/test/resources/keyfile.json",
         "test",
         "self",
         "default",
@@ -143,8 +143,8 @@ class SimpleMintingControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleSeriesMintingTransactionFromParams(
-        "cli/src/test/resources/valid_series_policy.yaml",
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/valid_series_policy.yaml",
+        "src/test/resources/keyfile.json",
         "test",
         "self",
         "default",
@@ -161,8 +161,8 @@ class SimpleMintingControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleAssetMintingTransactionFromParams(
-        "cli/src/test/resources/valid_asset_minting_statement.yaml",
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/valid_asset_minting_statement.yaml",
+        "src/test/resources/keyfile.json",
         "test",
         "self",
         "default",
@@ -181,14 +181,14 @@ class SimpleMintingControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleAssetMintingTransactionFromParams(
-        "cli/src/test/resources/valid_asset_minting_statement_metadata.yaml",
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/valid_asset_minting_statement_metadata.yaml",
+        "src/test/resources/keyfile.json",
         "test",
         "self",
         "default",
         None,
         100,
-        Some(new File("cli/src/test/resources/simple_metadata.json")),
+        Some(new File("src/test/resources/simple_metadata.json")),
         None,
         "target/transaction_asset_metadata_mint.pbuf"
       ),
@@ -201,8 +201,8 @@ class SimpleMintingControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleSeriesMintingTransactionFromParams(
-        "cli/src/test/resources/invalid_series_policy_quantity_descriptor.yaml",
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/invalid_series_policy_quantity_descriptor.yaml",
+        "src/test/resources/keyfile.json",
         "test",
         "self",
         "default",
@@ -220,8 +220,8 @@ class SimpleMintingControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleSeriesMintingTransactionFromParams(
-        "cli/src/test/resources/invalid_series_policy_fungibility.yaml",
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/invalid_series_policy_fungibility.yaml",
+        "src/test/resources/keyfile.json",
         "test",
         "self",
         "default",
@@ -239,8 +239,8 @@ class SimpleMintingControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleGroupMintingTransactionFromParams(
-        "cli/src/test/resources/invalid_group_policy.yaml",
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/invalid_group_policy.yaml",
+        "src/test/resources/keyfile.json",
         "test",
         "self",
         "default",

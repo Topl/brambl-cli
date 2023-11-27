@@ -19,7 +19,7 @@ class GroupPolicyParserSpec
           Resource.make(
             IO.delay(
               scala.io.Source.fromFile(
-                "cli/src/test/resources/valid_group_policy.yaml"
+                "src/test/resources/valid_group_policy.yaml"
               )
             )
           )(source => IO.delay(source.close()))
@@ -39,7 +39,7 @@ class GroupPolicyParserSpec
           Resource.make(
             IO.delay(
               scala.io.Source.fromFile(
-                "cli/src/test/resources/valid_group_policy_fixed_series.yaml"
+                "src/test/resources/valid_group_policy_fixed_series.yaml"
               )
             )
           )(source => IO.delay(source.close()))
@@ -58,7 +58,7 @@ class GroupPolicyParserSpec
           Resource.make(
             IO.delay(
               scala.io.Source.fromFile(
-                "cli/src/test/resources/invalid_group_policy_fixed_series.yaml"
+                "src/test/resources/invalid_group_policy_fixed_series.yaml"
               )
             )
           )(source => IO.delay(source.close()))

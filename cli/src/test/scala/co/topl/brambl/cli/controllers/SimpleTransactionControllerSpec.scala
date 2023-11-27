@@ -128,7 +128,7 @@ class SimpleTransactionControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleTransactionFromParams(
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
         (None, None, None),
@@ -151,7 +151,7 @@ class SimpleTransactionControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleTransactionFromParams(
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
         (Some("nofellowship"), Some("genesis"), None),
@@ -174,7 +174,7 @@ class SimpleTransactionControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleTransactionFromParams(
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
         (None, None, None),
@@ -208,7 +208,7 @@ class SimpleTransactionControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleTransactionFromParams(
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
         (None, None, None),
@@ -241,7 +241,7 @@ class SimpleTransactionControllerSpec
   ) {
     assertIO(
       controllerUnderTest.createSimpleTransactionFromParams(
-        "cli/src/test/resources/keyfile.json",
+        "src/test/resources/keyfile.json",
         "test",
         ("self", "default", None),
         (None, None, None),

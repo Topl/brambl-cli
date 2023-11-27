@@ -32,9 +32,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--group-id",
       "0"*64,	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
@@ -60,9 +60,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--transfer-token",
       "lvl",	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(!OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
@@ -88,9 +88,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--transfer-token",
       "lvl",	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(!OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
@@ -118,9 +118,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--transfer-token",
       "lvl",	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
@@ -152,9 +152,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--transfer-token",
       "lvl",	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
@@ -187,9 +187,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--transfer-token",
       "lvl",	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
@@ -229,9 +229,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--transfer-token",
       "lvl",	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
@@ -261,9 +261,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "--transfer-token",
       "lvl",	
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
   }
@@ -293,9 +293,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "-a",
       "100",
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
@@ -318,9 +318,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "-a",
       "100",
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
 
@@ -346,9 +346,9 @@ class ParamsSimpleTransactionTest extends FunSuite {
       "-a",
       "100",
       "--keyfile",
-      "cli/src/test/resources/keyfile.json",
+      "src/test/resources/keyfile.json",
       "--walletdb",
-      "cli/src/test/resources/wallet.db"
+      "src/test/resources/wallet.db"
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isEmpty)
   }
