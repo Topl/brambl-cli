@@ -12,7 +12,7 @@ object BramblCliMode extends Enumeration {
   type BramblCliMode = Value
 
   val invalid, wallet, genusquery, bifrostquery, simpletransaction,
-      simpleminting, fellowships, templates, tx =
+      simpleminting, fellowships, templates, tx, server =
     Value
 }
 

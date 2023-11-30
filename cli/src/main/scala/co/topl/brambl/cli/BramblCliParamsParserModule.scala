@@ -367,6 +367,19 @@ object BramblCliParamsParserModule {
     )
   }
 
+  val serverMode = cmd("server")
+    .action((_, c) => c.copy(mode = BramblCliMode.server))
+    .text("Server mode")
+    .children(
+      cmd("init")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.init))
+        .text("Run the server")
+        .children(
+          (Seq(walletDbArg) ++
+            keyfileAndPassword ++ hostPortNetwork): _*
+        )
+    )
+
   val templatesMode = cmd("templates")
     .action((_, c) => c.copy(mode = BramblCliMode.templates))
     .text("Template mode")
@@ -857,7 +870,8 @@ object BramblCliParamsParserModule {
       walletMode,
       transactionMode,
       simpleTransactionMode,
-      simpleMintingMode
+      simpleMintingMode,
+      serverMode
     )
   }
 }

@@ -141,7 +141,11 @@ lazy val cli = project
       circeYaml,
       circeGenericJVM,
       monocleCore,
-      monocleMacro
+      monocleMacro,
+      http4sEmber,
+      http4sCirce,
+      http4sDsl,
+      log4cats
     )
   )
   .settings(

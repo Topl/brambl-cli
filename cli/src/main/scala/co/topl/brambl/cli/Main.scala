@@ -12,6 +12,7 @@ import co.topl.brambl.cli.modules.TxModeModule
 import co.topl.brambl.cli.modules.WalletModeModule
 import scopt.OParser
 import co.topl.brambl.cli.modules.SimpleMintingModeModule
+import co.topl.brambl.cli.modules.ServerModule
 
 object Main
     extends IOApp
@@ -22,7 +23,8 @@ object Main
     with WalletModeModule
     with SimpleTransactionModeModule
     with TxModeModule
-    with SimpleMintingModeModule {
+    with SimpleMintingModeModule
+    with ServerModule {
 
   import BramblCliParamsParserModule._
 
@@ -47,6 +49,8 @@ object Main
               genusQuerySubcmd(params)
             case BramblCliMode.bifrostquery =>
               bifrostQuerySubcmd(params)
+            case BramblCliMode.server =>
+              serverSubcmd(params)
             case _ =>
               IO(OParser.runEffects(effects)) >> IO.pure(Left("Invalid mode"))
           }
