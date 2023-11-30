@@ -20,3 +20,5 @@ grouppolicy.yaml
 node_modules/
 dist/
 resources/static
+test.fish
+*.code-workspace
