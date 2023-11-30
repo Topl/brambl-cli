@@ -70,7 +70,7 @@ jobs:
         uses: olafurpg/setup-scala@v13
       - uses: olafurpg/setup-gpg@v3
       - name: Deploy 
-        run: sbt ci-release
+        run: sbt "buildClient; ci-release"
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
