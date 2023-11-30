@@ -19,6 +19,6 @@ mnemonic.txt
 grouppolicy.yaml
 node_modules/
 dist/
-resources/static
+cli/src/main/resources/static/
 test.fish
 *.code-workspace

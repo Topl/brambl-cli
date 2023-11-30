@@ -187,17 +187,17 @@ val buildClient = taskKey[Unit]("Build client (frontend)")
 
 buildClient := {
   // Generate Scala.js JS output for production
-  (client / Compile / fullLinkJS).value
+  (gui / Compile / fullLinkJS).value
 
   // Install JS dependencies from package-lock.json
-  val npmCiExitCode = Process("npm ci", cwd = (client / baseDirectory).value).!
+  val npmCiExitCode = Process("npm ci", cwd = (gui / baseDirectory).value).!
   if (npmCiExitCode > 0) {
     throw new IllegalStateException(s"npm ci failed. See above for reason")
   }
 
   // Build the frontend with vite
   val buildExitCode =
-    Process("npm run build", cwd = (client / baseDirectory).value).!
+    Process("npm run build", cwd = (gui / baseDirectory).value).!
   if (buildExitCode > 0) {
     throw new IllegalStateException(
       s"Building frontend failed. See above for reason"
@@ -207,8 +207,8 @@ buildClient := {
   // Copy vite output into server resources, where it can be accessed by the server,
   // even after the server is packaged in a fat jar.
   IO.copyDirectory(
-    source = (client / baseDirectory).value / "dist",
+    source = (gui / baseDirectory).value / "dist",
     target =
-      (server / baseDirectory).value / "src" / "main" / "resources" / "static"
+      (cli / baseDirectory).value / "src" / "main" / "resources" / "static"
   )
 }
