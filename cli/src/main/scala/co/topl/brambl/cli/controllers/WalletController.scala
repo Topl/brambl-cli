@@ -22,7 +22,6 @@ import co.topl.shared.models.AssetTokenBalanceDTO
 import co.topl.shared.models.GroupTokenBalanceDTO
 import co.topl.shared.models.LvlBalance
 import co.topl.shared.models.SeriesTokenBalanceDTO
-import co.topl.shared.models.UnknownBalanceDTO
 import quivr.models.VerificationKey
 
 import java.io.File

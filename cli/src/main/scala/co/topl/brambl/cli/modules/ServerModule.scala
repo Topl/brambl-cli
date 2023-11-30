@@ -99,8 +99,8 @@ trait ServerModule extends FellowshipsModeModule with WalletModeModule {
                 List.empty,
                 List.empty
               )
-            )((acc, x) =>
-              x match {
+            ){(acc, x) =>
+              (x: @unchecked) match { // we have filtered out Unknown tokens
                 case LvlBalance(b) => acc.copy(lvlBalance = b)
                 case GroupTokenBalanceDTO(g, b) =>
                   acc.copy(groupBalances =
@@ -119,7 +119,7 @@ trait ServerModule extends FellowshipsModeModule with WalletModeModule {
                     )
                   )
               }
-            )
+            }
             .asJson
         )
       } yield res).handleErrorWith { t =>
@@ -182,7 +182,7 @@ trait ServerModule extends FellowshipsModeModule with WalletModeModule {
           input.fromInteraction.map(_.toInt),
           AddressCodecs.decodeAddress(input.address).toOption,
           input.amount.toLong,
-          10,
+          input.fee.toLong,
           Files.createTempFile("txFile", ".pbuf").toAbsolutePath().toString(),
           Files
             .createTempFile("provedTxFile", ".pbuf")

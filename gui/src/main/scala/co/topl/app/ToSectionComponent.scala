@@ -7,6 +7,7 @@ case class ToSectionComponent(
     networkVar: Var[String],
     addressVar: Var[String],
     amountVar: Var[String],
+    feeVar: Var[String],
     txStatusVar: Var[Option[Either[String, String]]]
 ) {
 
@@ -26,7 +27,12 @@ case class ToSectionComponent(
         .isRight &&
       UIUtils.isAmount(amount)
     )
-      h4(s"Send ", span(cls := "badge bg-secondary", amount, "LVLs"), " to " , span(cls := "badge bg-secondary", address))
+      h4(
+        s"Send ",
+        span(cls := "badge bg-secondary", amount, "LVLs"),
+        " to ",
+        span(cls := "badge bg-secondary", address)
+      )
     else if (
       Validation
         .decodeAddress(address, UIUtils.hexToInt(network))
@@ -47,22 +53,23 @@ case class ToSectionComponent(
         onClick --> { _ =>
           currentSection.update { e =>
             e match {
-              case ToSection   => SentTxSection
-              case _ => ToSection
+              case ToSection => SentTxSection
+              case _         => ToSection
             }
           }
         },
         cls := "accordion-button",
         cls <-- currentSection.signal.map { e =>
           e match {
-            case ToSection   => ""
-            case _ => "collapsed"
+            case ToSection => ""
+            case _         => "collapsed"
           }
         },
         tpe := "button",
         dataAttr("data-bs-toggle") := "collapse",
         dataAttr("data-bs-target") := "#collapseTwo",
-        dataAttr("aria-expanded") <-- UIUtils.isExpanded(ToSection, currentSection),
+        dataAttr("aria-expanded") <-- UIUtils
+          .isExpanded(ToSection, currentSection),
         dataAttr("aria-controls") := "collapseTwo",
         child <-- networdAddressAndAmountAndCurrentSectionSignal.map { e =>
           val (network, address, amount, s) = e
@@ -84,8 +91,8 @@ case class ToSectionComponent(
       cls := "accordion-collapse collapse",
       cls <-- currentSection.signal.map { e =>
         e match {
-          case ToSection   => "show"
-          case _ => ""
+          case ToSection => "show"
+          case _         => ""
         }
       },
       dataAttr("aria-labelledby") := "headingTwo",
@@ -169,6 +176,33 @@ case class ToSectionComponent(
               idAttr := "amountHelp",
               cls := "form-text",
               "The amount of LVLs to be sent."
+            )
+          ),
+          div(
+            cls := "mb-3",
+            label(
+              forId := "fee",
+              cls := "form-label",
+              "Fee"
+            ),
+            input(
+              tpe := "text",
+              cls := "form-control",
+              idAttr := "fee",
+              cls <-- feeVar.signal.map { fee =>
+                if (UIUtils.isAmount(fee)) "is-valid"
+                else "is-invalid"
+              },
+              controlled(
+                value <-- feeVar.signal,
+                onInput.mapToValue --> feeVar.writer
+              ),
+              dataAttr("aria-describedby") := "feeHelp"
+            ),
+            div(
+              idAttr := "feeHelp",
+              cls := "form-text",
+              "The fee to be paid."
             )
           )
         )

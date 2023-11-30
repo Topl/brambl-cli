@@ -19,3 +19,4 @@ mnemonic.txt
 grouppolicy.yaml
 node_modules/
 dist/
+resources/static

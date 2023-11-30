@@ -1,15 +1,14 @@
 package co.topl.app
 
-import co.topl.shared.models.FellowshipDTO
-import com.raquo.laminar.api.L._
-import io.circe.parser.parse
-import io.circe.generic.auto._
-import io.circe.syntax._
-import co.topl.shared.models.TemplateDTO
-import io.circe.Json
 import co.topl.shared.models.BalanceRequestDTO
 import co.topl.shared.models.BalanceResponseDTO
+import co.topl.shared.models.FellowshipDTO
 import co.topl.shared.models.SimpleErrorDTO
+import co.topl.shared.models.TemplateDTO
+import com.raquo.laminar.api.L._
+import io.circe.Json
+import io.circe.generic.auto._
+import io.circe.parser.parse
 
 case class FromSectionComponent(
     currentSection: Var[TxSection],
@@ -211,10 +210,9 @@ case class FromSectionComponent(
             cls <-- fromFellowship.signal
               .combineWith(fromInteraction.signal)
               .map { e =>
-                val (fellowship, fromInt) = e
+                val (_, fromInt) = e
                 if (fromInt.trim().isEmpty) {
-                  if (fellowship == "nofellowship") "is-invalid"
-                  else "is-valid"
+                  "is-valid"
                 } else {
                   if (UIUtils.isAmount(fromInt)) "is-valid"
                   else "is-invalid"
@@ -232,11 +230,9 @@ case class FromSectionComponent(
           child <-- fromFellowship.signal
             .combineWith(fromInteraction.signal)
             .map { e =>
-              val (fellowship, fromInt) = e
+              val (_, fromInt) = e
               if (fromInt.trim().isEmpty) {
-                if (fellowship == "nofellowship")
-                  Some("nofellowhip requires an interaction number")
-                else None
+                None
               } else {
                 if (UIUtils.isAmount(fromInt)) None
                 else Some("Please provide a number")

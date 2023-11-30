@@ -28,6 +28,8 @@ class TxComponent(networkVar: Var[String]) {
 
   lazy val amountVar = Var("")
 
+  lazy val feeVar = Var("10")
+
   val amountValueSignal = amountVar.signal
 
   val networkValueSignal = networkVar.signal
@@ -55,6 +57,7 @@ class TxComponent(networkVar: Var[String]) {
           networkVar,
           addressVar,
           amountVar,
+          feeVar,
           txStatusVar
         ).component,
         SendTxComponent(
@@ -65,6 +68,7 @@ class TxComponent(networkVar: Var[String]) {
           networkVar,
           addressVar,
           amountVar,
+          feeVar,
           txStatusVar
         ).component
       )

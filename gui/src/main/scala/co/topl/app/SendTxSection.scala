@@ -15,6 +15,7 @@ case class SendTxComponent(
     networkVar: Var[String],
     addressVar: Var[String],
     amountVar: Var[String],
+    feeVar: Var[String],
     txStatusVar: Var[Option[Either[String, String]]]
 ) {
 
@@ -114,8 +115,7 @@ case class SendTxComponent(
                   UIUtils.isAmount(amount)
                 ) {
                   if (fromInt.trim().isEmpty) {
-                    if (fellowship == "nofellowship") Map("disabled" -> true)
-                    else Map("disabled" -> false)
+                    Map("disabled" -> false)
                   } else {
                     if (UIUtils.isAmount(fromInt)) Map("disabled" -> false)
                     else Map("disabled" -> true)
@@ -145,6 +145,7 @@ case class SendTxComponent(
                       else Some(fromInteractionVar.now()),
                       addressVar.now(),
                       amountVar.now(),
+                      feeVar.now(),
                       networkVar.now()
                     ).asJson
                   ),

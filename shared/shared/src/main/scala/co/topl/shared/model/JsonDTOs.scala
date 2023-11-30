@@ -6,6 +6,7 @@ case class TxRequest(
     fromInteraction: Option[String],
     address: String,
     amount: String,
+    fee: String,
     network: String
 )
 
