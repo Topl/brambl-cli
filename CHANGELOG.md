@@ -20,6 +20,8 @@ checks that the transaction is valid in the node.
 - Default values for `--from-fellowship`, `--from-template`, `--fellowsip-name` 
 and `--template-name` parameters. When not provided, the default values are
 `self` for the fellowship and `default` for the template.
+- Feature to create transactions using a web gui. The command `server init` now
+starts a web server that allows to create transactions using a web interface.
 
 ### Changed
 
