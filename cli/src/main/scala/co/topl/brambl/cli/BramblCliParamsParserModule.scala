@@ -375,8 +375,9 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.init))
         .text("Run the server")
         .children(
-          (Seq(walletDbArg) ++
-            keyfileAndPassword ++ hostPortNetwork): _*
+          (Seq(walletDbArg.required()) ++
+            keyfileAndPassword.map(_.required()) ++ hostPortNetwork.reverse.tail
+              .map(_.required())): _*
         )
     )
 
@@ -705,53 +706,52 @@ object BramblCliParamsParserModule {
               .validate(x =>
                 if (x.exists()) success
                 else failure("Ephemeral metadata file does not exist")
+              ),
+            mintAmountArg,
+            feeArg,
+            mintTokenType.required(),
+            checkConfig(c =>
+              if (
+                c.mode == BramblCliMode.simpleminting &&
+                c.subcmd == BramblCliSubCmd.create &&
+                c.tokenType != TokenType.group &&
+                c.tokenType != TokenType.series &&
+                c.tokenType != TokenType.asset
               )
-          )) ++
-            Seq(
-              mintAmountArg,
-              feeArg,
-              mintTokenType.required(),
-              checkConfig(c =>
+                failure(
+                  "Invalid asset to mint, supported assets are group, series and asset"
+                )
+              else {
                 if (
                   c.mode == BramblCliMode.simpleminting &&
-                  c.tokenType != TokenType.group &&
-                  c.tokenType != TokenType.series &&
-                  c.tokenType != TokenType.asset
-                )
-                  failure(
-                    "Invalid asset to mint, supported assets are group, series and asset"
-                  )
-                else {
-                  if (
-                    c.mode == BramblCliMode.simpleminting &&
-                    c.subcmd == BramblCliSubCmd.create
-                  ) {
-                    if (c.fromAddress.isDefined) {
-                      failure(
-                        "From address is not supported for minting"
-                      )
-                    } else if (c.tokenType == TokenType.asset) {
-                      if (c.amount < 0) { // not set
-                        success
-                      } else {
-                        failure(
-                          "Amount already defined in the asset minting statement"
-                        )
-                      }
+                  c.subcmd == BramblCliSubCmd.create
+                ) {
+                  if (c.fromAddress.isDefined) {
+                    failure(
+                      "From address is not supported for minting"
+                    )
+                  } else if (c.tokenType == TokenType.asset) {
+                    if (c.amount < 0) { // not set
+                      success
                     } else {
-                      if (c.amount > 0) {
-                        success
-                      } else {
-                        failure(
-                          "Amount is mandatory for group and series minting"
-                        )
-                      }
+                      failure(
+                        "Amount already defined in the asset minting statement"
+                      )
                     }
-                  } else
-                    success
-                }
-              )
-            )): _*
+                  } else {
+                    if (c.amount > 0) {
+                      success
+                    } else {
+                      failure(
+                        "Amount is mandatory for group and series minting"
+                      )
+                    }
+                  }
+                } else
+                  success
+              }
+            )
+          ))): _*
         )
     )
 

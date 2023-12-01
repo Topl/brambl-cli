@@ -28,12 +28,12 @@ case class ToSectionComponent(
       UIUtils.isAmount(amount)
     )
       h4(
-        s"Send ",
+        s"Send ", 
         span(cls := "badge bg-secondary", amount, "LVLs"),
         " to ",
         span(cls := "badge bg-secondary", address)
       )
-    else if (
+    else if ( 
       Validation
         .decodeAddress(address, UIUtils.hexToInt(network))
         .isRight

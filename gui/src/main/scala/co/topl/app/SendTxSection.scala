@@ -95,7 +95,7 @@ case class SendTxComponent(
                 case Some(Left(error)) => error
                 case Some(Right(txId)) => txId
                 case None =>
-                  "Please fill the form and click on the button to send the funds."
+                  "The button will activate when all fields are filled correctly."
               }
             )
           ),
@@ -107,7 +107,7 @@ case class SendTxComponent(
               .combineWith(fromTemplateVar)
               .combineWith(fromInteractionVar)
               .map { e =>
-                val (network, address, amount, fellowship, _, fromInt) = e
+                val (network, address, amount, _, _, fromInt) = e
                 if (
                   Validation
                     .decodeAddress(address, UIUtils.hexToInt(network))

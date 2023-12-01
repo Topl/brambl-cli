@@ -68,7 +68,7 @@ object SimpleMintingAlgebra {
     with SeriesMintingOps[F]
     with AssetMintingOps[F] {
 
-    override implicit val sync = psync
+    override implicit val sync: cats.effect.kernel.Sync[F]= psync
 
     implicit val m: Monad[F] = sync
 

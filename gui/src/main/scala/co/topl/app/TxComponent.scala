@@ -1,6 +1,7 @@
 package co.topl.app
 
 import com.raquo.laminar.api.L._
+import co.topl.shared.models.NetworkResponseDTO
 
 sealed trait TxSection
 
@@ -32,9 +33,27 @@ class TxComponent(networkVar: Var[String]) {
 
   val amountValueSignal = amountVar.signal
 
-  val networkValueSignal = networkVar.signal
-
   lazy val txStatusVar: Var[Option[Either[String, String]]] = Var(None)
+
+  private lazy val fetchNetwork = FetchStream
+    .withDecoder[String](x => EventStream.fromJsPromise(x.text(), true))
+    .get(
+      "http://localhost:3000/api/wallet/network",
+      _.headers(
+        "Content-Type" -> "application/json"
+      )
+    )
+    .map { x =>
+      import io.circe.parser.parse
+      parse(x).toOption
+        .map({ x =>
+          import io.circe.generic.auto._
+          x.as[NetworkResponseDTO].toOption.get
+        })
+    } --> { x =>
+    networkVar.update(_ => x.map(_.networkId).get)
+  } 
+
 
   lazy val component = {
     div(
@@ -71,7 +90,8 @@ class TxComponent(networkVar: Var[String]) {
           feeVar,
           txStatusVar
         ).component
-      )
+      ),
+      fetchNetwork
     )
   }
 }

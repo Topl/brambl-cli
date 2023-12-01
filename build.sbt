@@ -2,7 +2,7 @@ import Dependencies._
 import org.scalajs.linker.interface.ModuleSplitStyle
 import scala.sys.process.Process
 
-lazy val scalacVersion = "2.13.8"
+lazy val scalacVersion = "2.13.12"
 
 
 
@@ -178,9 +178,7 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-Ymacro-annotations",
     "-Ywarn-unused"
-  ),
-  semanticdbEnabled := true,
-  semanticdbVersion := scalafixSemanticdb.revision
+  )
 )
 
 val buildClient = taskKey[Unit]("Build client (frontend)")

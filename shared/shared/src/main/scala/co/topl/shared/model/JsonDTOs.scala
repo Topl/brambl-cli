@@ -43,3 +43,8 @@ case class BalanceResponseDTO(
 case class SimpleErrorDTO(
     error: String
 )
+
+case class NetworkResponseDTO(
+    network: String,
+    networkId: String
+)

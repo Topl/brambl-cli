@@ -1,25 +1,13 @@
 package co.topl.brambl.cli.modules
 
-import cats.Id
 import cats.data.Kleisli
 import cats.effect.IO
 import cats.effect._
 import co.topl.brambl.cli.BramblCliParams
 import co.topl.brambl.cli.BramblCliSubCmd
+import co.topl.brambl.cli.http.WalletHttpService
 import co.topl.brambl.cli.impl.FullTxOps
-import co.topl.brambl.cli.impl.WalletModeHelper
 import co.topl.brambl.codecs.AddressCodecs
-import co.topl.brambl.dataApi.GenusQueryAlgebra
-import co.topl.brambl.servicekit.FellowshipStorageApi
-import co.topl.brambl.servicekit.TemplateStorageApi
-import co.topl.shared.models.AssetTokenBalanceDTO
-import co.topl.shared.models.BalanceRequestDTO
-import co.topl.shared.models.BalanceResponseDTO
-import co.topl.shared.models.FellowshipDTO
-import co.topl.shared.models.GroupTokenBalanceDTO
-import co.topl.shared.models.LvlBalance
-import co.topl.shared.models.SeriesTokenBalanceDTO
-import co.topl.shared.models.TemplateDTO
 import co.topl.shared.models.TxRequest
 import co.topl.shared.models.TxResponse
 import io.circe.generic.auto._
@@ -33,7 +21,8 @@ import org.http4s.server.Router
 import org.http4s.server.staticcontent.resourceServiceBuilder
 
 import java.nio.file.Files
-import co.topl.shared.models.SimpleErrorDTO
+import scopt.OParser
+import co.topl.brambl.cli.BramblCliParamsParserModule
 
 trait ServerModule extends FellowshipsModeModule with WalletModeModule {
 
@@ -60,108 +49,6 @@ trait ServerModule extends FellowshipsModeModule with WalletModeModule {
       TemporaryRedirect(headers.Location(Uri.fromString("/").toOption.get))
   }
 
-  def walletService(validateParams: BramblCliParams) = HttpRoutes.of[IO] {
-    case req @ POST -> Root / "balance" =>
-      implicit val balanceReqdecoder: EntityDecoder[IO, BalanceRequestDTO] =
-        jsonOf[IO, BalanceRequestDTO]
-      (for {
-        input <- req.as[BalanceRequestDTO]
-        balanceEither <- WalletModeHelper[IO](
-          walletStateAlgebra(
-            validateParams.walletFile
-          ),
-          GenusQueryAlgebra
-            .make[IO](
-              channelResource(
-                validateParams.host,
-                validateParams.bifrostPort,
-                validateParams.secureConnection
-              )
-            )
-        ).getBalance(
-          None,
-          Some(input.fellowship),
-          Some(input.template),
-          input.interaction.map(_.toInt)
-        ).map(
-          _.left
-            .map { e =>
-              new IllegalArgumentException(e)
-            }
-        )
-        balances <- IO.fromEither(balanceEither)
-        res <- Ok(
-          balances
-            .foldLeft(
-              BalanceResponseDTO(
-                "0",
-                List.empty,
-                List.empty,
-                List.empty
-              )
-            ){(acc, x) =>
-              (x: @unchecked) match { // we have filtered out Unknown tokens
-                case LvlBalance(b) => acc.copy(lvlBalance = b)
-                case GroupTokenBalanceDTO(g, b) =>
-                  acc.copy(groupBalances =
-                    acc.groupBalances :+ GroupTokenBalanceDTO(g, b)
-                  )
-                case SeriesTokenBalanceDTO(id, balance) =>
-                  acc.copy(seriesBalances =
-                    acc.seriesBalances :+ SeriesTokenBalanceDTO(id, balance)
-                  )
-                case AssetTokenBalanceDTO(group, series, balance) =>
-                  acc.copy(assetBalances =
-                    acc.assetBalances :+ AssetTokenBalanceDTO(
-                      group,
-                      series,
-                      balance
-                    )
-                  )
-              }
-            }
-            .asJson
-        )
-      } yield res).handleErrorWith { t =>
-        t.printStackTrace()
-        InternalServerError(
-          SimpleErrorDTO(t.getMessage()).asJson,
-          headers.`Content-Type`(MediaType.text.html)
-        )
-      }
-    case GET -> Root / "fellowships" =>
-      val fellowshipStorageAlgebra = FellowshipStorageApi.make[IO](
-        walletResource(validateParams.walletFile)
-      )
-      fellowshipStorageAlgebra.findFellowships().flatMap { fellowships =>
-        Ok(fellowships.map(x => FellowshipDTO(x.xIdx, x.name)).asJson)
-      }
-    case GET -> Root / "templates" =>
-      val templateStorageAlgebra = TemplateStorageApi.make[IO](
-        walletResource(validateParams.walletFile)
-      )
-      import co.topl.brambl.cli.views.WalletModelDisplayOps._
-      import io.circe.parser.parse
-      import co.topl.brambl.codecs.LockTemplateCodecs._
-      import cats.implicits._
-      for {
-        templates <- templateStorageAlgebra.findTemplates()
-        resTemplates <- templates.traverse { x =>
-          IO(
-            (for {
-              json <- parse(x.lockTemplate)
-              decoded <- decodeLockTemplate[Id](json)
-            } yield TemplateDTO(
-              x.yIdx,
-              x.name,
-              serialize[Id](decoded)
-            )).toOption.get
-          )
-        }
-        res <- Ok(resTemplates.asJson)
-      } yield res
-
-  }
   def apiServices(validateParams: BramblCliParams) = HttpRoutes.of[IO] {
     case req @ POST -> Root / "send" =>
       implicit val txReqDecoder: EntityDecoder[IO, TxRequest] =
@@ -199,6 +86,14 @@ trait ServerModule extends FellowshipsModeModule with WalletModeModule {
   def serverSubcmd(
       validateParams: BramblCliParams
   ): IO[Either[String, String]] = validateParams.subcmd match {
+    case BramblCliSubCmd.invalid =>
+      IO.pure(
+        Left(
+          OParser.usage(
+            BramblCliParamsParserModule.serverMode
+          ) + "\nA subcommand needs to be specified"
+        )
+      )
     case BramblCliSubCmd.init =>
       val staticAssetsService = resourceServiceBuilder[IO]("/static").toRoutes
       val logger =
@@ -221,7 +116,20 @@ trait ServerModule extends FellowshipsModeModule with WalletModeModule {
         app = {
           val router = Router.define(
             "/" -> httpService,
-            "/api/wallet" -> walletService(validateParams),
+            "/api/wallet" -> WalletHttpService(
+              walletStateAlgebra(
+                validateParams.walletFile
+              ),
+              channelResource(
+                validateParams.host,
+                validateParams.bifrostPort,
+                validateParams.secureConnection
+              ),
+              walletResource(validateParams.walletFile)
+            ).walletService(
+              validateParams.network.name,
+              validateParams.network.networkId.toString()
+            ),
             "/api/tx" -> apiServices(validateParams)
           )(default = staticAssetsService)
 
