@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Entity Mode
+# Fellowships Mode
 
 ```
 Command: fellowships [list|add]

@@ -17,3 +17,8 @@ tmp/
 *.vk
 mnemonic.txt
 grouppolicy.yaml
+node_modules/
+dist/
+cli/src/main/resources/static/
+test.fish
+*.code-workspace

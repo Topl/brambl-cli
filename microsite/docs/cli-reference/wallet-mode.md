@@ -5,7 +5,7 @@ sidebar_position: 5
 # Wallet Mode
 
 ```                           
-Command: wallet [balance|set-interaction|sync|init|recover-keys|current-address|export-vk|import-vks]
+Command: wallet [balance|set-interaction|list-interactions|sync|init|recover-keys|current-address|export-vk|import-vks]
 Wallet mode
 Command: wallet balance [options]
 Get balance of wallet
@@ -27,6 +27,12 @@ Set the current interaction
   --from-template <value>  Template where we are sending the funds from
   --from-interaction <value>
                            Interaction from where we are sending the funds from
+  --walletdb <value>       Wallet DB file. (mandatory)
+Command: wallet list-interactions [options]
+List the interactions for a given fellowship and template
+  --fellowship-name <value>
+                           Name of the fellowship. (mandatory)
+  --template-name <value>  Name of the template. (mandatory)
   --walletdb <value>       Wallet DB file. (mandatory)
 Command: wallet sync [options]
 Sync wallet
@@ -64,6 +70,8 @@ Obtain current address
   --from-fellowship <value>
                            Fellowship where we are sending the funds from
   --from-template <value>  Template where we are sending the funds from
+  --from-interaction <value>
+                           Interaction from where we are sending the funds from
 Command: wallet export-vk [options]
 Export verification key
   -k, --keyfile <value>    The key file.
@@ -83,5 +91,4 @@ Import verification key
                            Name of the fellowship. (mandatory)
   --template-name <value>  Name of the template. (mandatory)
   --input-vks <value>      The keys to import. (mandatory)
-  
 ```

@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Bifrost Query Mode
 
-```  
+``` 
 Command: bifrost-query [block-by-height|block-by-id|transaction-by-id]
 Bifrost query mode
 Command: bifrost-query block-by-height [options]
@@ -25,5 +25,5 @@ Get the transaction with a given id
   --port <value>           Port Bifrost node. (mandatory)
   -s, --secure <value>     Enables the secure connection to the node. (optional)
   --transaction-id <value>
-                           The id of the transaction in base 58. (mandatory)                    
+                           The id of the transaction in base 58. (mandatory)                  
 ```

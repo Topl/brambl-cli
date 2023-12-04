@@ -18,11 +18,11 @@ jobs:
         with:
           java-version: adopt@1.11
       - name: Run unit tests
-        run: sbt test
+        run: sbt cli/test
       - uses: actions/upload-artifact@v3
         with:
           name: unit-test-reports
-          path: target/test-reports/
+          path: cli/target/test-reports/
   integration-test:
     name: Run Integration Tests
     runs-on: ubuntu-20.04
@@ -45,18 +45,18 @@ jobs:
         with:
           java-version: adopt@1.11
       - name: Run integration tests
-        run: sbt "IntegrationTest / test"
+        run: sbt "cli / IntegrationTest / test"
       - uses: actions/download-artifact@v3
         with:
-          path: target/test-reports/
+          path: cli/target/test-reports/
           name: unit-test-reports
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: success()
         with:
           files: |
-            target/test-reports/**/*.xml
-            target/it-reports/**/*.xml
+            cli/target/test-reports/**/*.xml
+            cli/target/it-reports/**/*.xml
   publish:
     name: Deploy to Maven Central
     runs-on: ubuntu-20.04
@@ -70,7 +70,7 @@ jobs:
         uses: olafurpg/setup-scala@v13
       - uses: olafurpg/setup-gpg@v3
       - name: Deploy 
-        run: sbt ci-release
+        run: sbt "buildClient; ci-release"
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
