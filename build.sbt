@@ -4,8 +4,6 @@ import scala.sys.process.Process
 
 lazy val scalacVersion = "2.13.12"
 
-
-
 lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .in(file("./shared"))
   .enablePlugins(BuildInfoPlugin)
@@ -22,15 +20,39 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
     // The BuildInfo case class is located in target/scala<version>/src_managed,
     // and with this setting, you'll need to `import com.raquo.buildinfo.BuildInfo`
     // to use it.
-    buildInfoPackage := "co.topl.buildinfo"
+    buildInfoPackage := "co.topl.buildinfo",
     // Because we add BuildInfo to the `shared` project, this will be available
     // on both the client and the server, but you can also make it e.g. server-only.
+    homepage := Some(url("https://github.com/Topl/brambl-cli")),
+    licenses := List("MPL2.0" -> url("https://www.mozilla.org/en-US/MPL/2.0/")),
+    ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
+    developers := List(
+      Developer(
+        "mundacho",
+        "Edmundo Lopez Bobeda",
+        "e.lopez@topl.me",
+        url("https://github.com/mundacho")
+      ),
+      Developer(
+        "DiademShoukralla",
+        "Diadem Shoukralla",
+        "d.shoukralla@topl.me",
+        url("https://github.com/DiademShoukralla")
+      ),
+      Developer(
+        "scasplte2",
+        "James Aman",
+        "j.aman@topl.me",
+        url("https://github.com/scasplte2")
+      )
+    )
   )
   .settings(
     libraryDependencies ++= List(
-  "io.circe" %%% "circe-core" % Dependencies.circeVersion,
-  "io.circe" %%% "circe-generic" % Dependencies.circeVersion,
-  "io.circe" %%% "circe-parser" % Dependencies.circeVersion
+      "io.circe" %%% "circe-core" % Dependencies.circeVersion,
+      "io.circe" %%% "circe-generic" % Dependencies.circeVersion,
+      "io.circe" %%% "circe-parser" % Dependencies.circeVersion
     )
   )
   .jvmSettings(
@@ -51,7 +73,6 @@ lazy val gui = project
     libraryDependencies ++= List(
       "com.raquo" %%% "laminar" % Dependencies.laminarVersion,
       "com.raquo" %%% "waypoint" % "7.0.0"
-
     ),
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
@@ -77,16 +98,14 @@ lazy val gui = project
   .settings(noPublish)
   .dependsOn(shared.js)
 
-
 lazy val root = project
   .in(file("."))
   .settings(
     organization := "co.topl",
     name := "brambl-cli-umbrella"
-    )
+  )
   .settings(noPublish)
   .aggregate(gui, cli, shared.jvm)
-
 
 lazy val cli = project
   .in(file("./cli"))
@@ -117,6 +136,12 @@ lazy val cli = project
         "Edmundo Lopez Bobeda",
         "e.lopez@topl.me",
         url("https://github.com/mundacho")
+      ),
+      Developer(
+        "DiademShoukralla",
+        "Diadem Shoukralla",
+        "d.shoukralla@topl.me",
+        url("https://github.com/DiademShoukralla")
       ),
       Developer(
         "scasplte2",
@@ -156,7 +181,8 @@ lazy val cli = project
     // Gets rid of "(server / assembly) deduplicate: different file contents found in the following" errors
     // https://stackoverflow.com/questions/54834125/sbt-assembly-deduplicate-module-info-class
     assembly / assemblyMergeStrategy := {
-      case x if x.contains("io.netty.versions.properties") => MergeStrategy.discard
+      case x if x.contains("io.netty.versions.properties") =>
+        MergeStrategy.discard
       case path if path.endsWith("module-info.class") => MergeStrategy.discard
       case path =>
         val oldStrategy = (assembly / assemblyMergeStrategy).value
@@ -165,12 +191,10 @@ lazy val cli = project
   )
   .dependsOn(shared.jvm)
 
-
 lazy val noPublish = Seq(
   publishLocal / skip := true,
   publish / skip := true
 )
-
 
 lazy val commonSettings = Seq(
   scalaVersion := scalacVersion,
