@@ -7,8 +7,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-## [v2.0.0-beta1] - 2023-mm-dd (this date should be changed on release)
+## [Unreleased] - 2023-mm-dd (this date should be changed on release)
+## [v2.0.0-beta1] - 2023-12-05
 
 ### Added
 
@@ -22,6 +22,7 @@ and `--template-name` parameters. When not provided, the default values are
 `self` for the fellowship and `default` for the template.
 - Feature to create transactions using a web gui. The command `server init` now
 starts a web server that allows to create transactions using a web interface.
+- Update to `BramblSc 2.0.0-beta1`.
 
 ### Changed
 
