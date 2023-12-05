@@ -38,6 +38,8 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
       digestProposition: Proposition.Digest
   ): F[Option[Preimage]] = ???
 
+  override def addPreimage(preimage: Preimage, digest: Proposition.Digest): F[Unit] = ???
+
   override def getCurrentAddress: F[String] = ???
 
   override def updateWalletState(
