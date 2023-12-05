@@ -375,7 +375,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.init))
         .text("Run the server")
         .children(
-          (Seq(walletDbArg.required()) ++
+          (Seq(walletDbArg.required()) ++ Seq(secureArg) ++ 
             keyfileAndPassword.map(_.required()) ++ hostPortNetwork.reverse.tail
               .map(_.required())): _*
         )
