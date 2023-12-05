@@ -4,7 +4,7 @@ object Dependencies {
 
   lazy val toplOrg = "co.topl"
 
-  lazy val bramblVersion = "2.0.0-beta0+8-d9798e3f-SNAPSHOT"
+  lazy val bramblVersion = "2.0.0-beta1"
   val bramblSdk = toplOrg %% "brambl-sdk" % bramblVersion 
   val circeVersion = "0.15.0-M1"
 
