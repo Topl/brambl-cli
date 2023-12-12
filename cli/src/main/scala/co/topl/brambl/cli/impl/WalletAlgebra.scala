@@ -135,8 +135,7 @@ object WalletAlgebra {
           .getOrElse {
             std.Console[F].println(wallet.mnemonic.mkString(","))
           }
-        derivedKey <- walletApi.deriveChildKeysPartial(keyPair, 1, 1)
-        _ <- walletStateApi.initWalletState(networkId, ledgerId, derivedKey.vk)
+        _ <- walletStateApi.initWalletState(networkId, ledgerId, keyPair)
       } yield ()
 
     }
@@ -154,8 +153,7 @@ object WalletAlgebra {
       for {
         wallet <- recoverWalletKey(mnemonic, password, somePassphrase)
         keyPair <- extractMainKey(wallet, password)
-        derivedKey <- walletApi.deriveChildKeysPartial(keyPair, 1, 1)
-        _ <- walletStateApi.initWalletState(networkId, ledgerId, derivedKey.vk)
+        _ <- walletStateApi.initWalletState(networkId, ledgerId, keyPair)
         _ <- someOutputFile
           .map { outputFile =>
             saveWallet(

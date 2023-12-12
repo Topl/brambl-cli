@@ -5,9 +5,7 @@ import co.topl.brambl.builders.locks.LockTemplate
 import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.Indices
 import co.topl.brambl.models.box.Lock
-import quivr.models.Preimage
-import quivr.models.Proposition
-import quivr.models.VerificationKey
+import quivr.models.{KeyPair, Preimage, Proposition}
 
 class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
 
@@ -27,7 +25,7 @@ class BaseWalletStateAlgebra[F[_]] extends WalletStateAlgebra[F] {
   override def initWalletState(
       networkId: Int,
       ledgerId: Int,
-      vk: VerificationKey
+      mainKey: KeyPair
   ): F[Unit] = ???
 
   override def getIndicesBySignature(
