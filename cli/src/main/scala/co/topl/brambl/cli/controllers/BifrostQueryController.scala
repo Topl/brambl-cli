@@ -3,6 +3,7 @@ package co.topl.brambl.cli.controllers
 import cats.effect.kernel.Sync
 import co.topl.brambl.cli.views.BlockDisplayOps
 import co.topl.brambl.dataApi.BifrostQueryAlgebra
+import co.topl.brambl.display.DisplayOps.DisplayTOps
 import co.topl.brambl.models.TransactionId
 import co.topl.brambl.utils.Encoding
 import co.topl.consensus.models.BlockId
@@ -80,7 +81,7 @@ class BifrostQueryController[F[_]: Sync](
       .map { someResult =>
         someResult match {
           case Some(ioTransaction) =>
-            Right(BlockDisplayOps.display(ioTransaction))
+            Right(ioTransaction.display)
           case None =>
             Left(s"No transaction found with id ${transactionId}")
         }

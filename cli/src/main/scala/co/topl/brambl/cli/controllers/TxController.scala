@@ -1,14 +1,11 @@
 package co.topl.brambl.cli.controllers
 
-import cats.effect.kernel.Resource
-import cats.effect.kernel.Sync
-import co.topl.brambl.cli.impl.CommonParserError
-import co.topl.brambl.cli.impl.TransactionAlgebra
-import co.topl.brambl.cli.impl.TxParserAlgebra
+import cats.effect.kernel.{Resource, Sync}
+import co.topl.brambl.cli.impl.{CommonParserError, TransactionAlgebra, TxParserAlgebra}
+import co.topl.brambl.display.DisplayOps.DisplayTOps
 import co.topl.brambl.models.transaction.IoTransaction
 
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import java.io.{FileInputStream, FileOutputStream}
 
 class TxController[F[_]: Sync](
     txParserAlgebra: TxParserAlgebra[F],
@@ -27,7 +24,7 @@ class TxController[F[_]: Sync](
       )(fos => Sync[F].delay(fos.close()))
     (for {
       tx <- inputRes.use(in => Sync[F].delay(IoTransaction.parseFrom(in)))
-      output <- Sync[F].delay(display(tx))
+      output <- Sync[F].delay(tx.display)
     } yield output).attempt.map(_ match {
       case Right(output) => Right(output)
       case Left(e)       => Left(e.getMessage())
