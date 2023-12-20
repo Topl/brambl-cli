@@ -1,13 +1,11 @@
 package co.topl.brambl.cli.controllers
 
 import cats.Monad
-import co.topl
-import co.topl.brambl.cli.views.BlockDisplayOps
-import co.topl.brambl.codecs.AddressCodecs
-import co.topl.brambl.dataApi.GenusQueryAlgebra
-import topl.brambl.dataApi.WalletStateAlgebra
-import topl.brambl.cli.TokenType
 import cats.effect.kernel.Sync
+import co.topl.brambl.cli.TokenType
+import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.dataApi.{GenusQueryAlgebra, WalletStateAlgebra}
+import co.topl.brambl.display.DisplayOps.DisplayTOps
 
 class GenusQueryController[F[_]: Sync](
     walletStateAlgebra: WalletStateAlgebra[F],
@@ -52,9 +50,7 @@ class GenusQueryController[F[_]: Sync](
             .map { txos =>
               if (txos.isEmpty) Left("No UTXO found")
               else
-                Right((txos.map { txo =>
-                  BlockDisplayOps.display(txo)
-                }).mkString)
+                Right(txos.map(_.display).mkString)
             }
             .attempt
             .map {

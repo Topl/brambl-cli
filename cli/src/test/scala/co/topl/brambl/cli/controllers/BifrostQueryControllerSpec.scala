@@ -8,6 +8,7 @@ import co.topl.node.models.BlockBody
 import munit.CatsEffectSuite
 import co.topl.brambl.cli.modules.DummyObjects
 import co.topl.brambl.cli.views.BlockDisplayOps
+import co.topl.brambl.display.DisplayOps.DisplayTOps
 import co.topl.brambl.models.TransactionId
 import co.topl.consensus.models.BlockHeader
 
@@ -120,7 +121,7 @@ class BifrostQueryControllerSpec extends CatsEffectSuite with DummyObjects {
     bifrostQueryController
       .fetchTransaction("A7k6tpK25N5ZvmjkYn8jN6CnP8u9aNheT9cYb7ZjS3PN")
       .assertEquals(
-        Right(BlockDisplayOps.display(iotransaction01))
+        Right(iotransaction01.display)
       )
   }
 

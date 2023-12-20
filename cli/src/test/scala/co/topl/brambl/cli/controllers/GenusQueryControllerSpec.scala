@@ -5,11 +5,10 @@ import cats.effect.IO
 import co.topl.brambl.cli.mockbase.BaseWalletStateAlgebra
 import co.topl.brambl.cli.modules.DummyObjects
 import co.topl.brambl.dataApi.GenusQueryAlgebra
+import co.topl.brambl.display.DisplayOps.DisplayTOps
 import co.topl.brambl.models.LockAddress
-import co.topl.genus.services.Txo
-import co.topl.genus.services.TxoState
+import co.topl.genus.services.{Txo, TxoState}
 import munit.CatsEffectSuite
-import co.topl.brambl.cli.views.BlockDisplayOps
 
 class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
 
@@ -65,7 +64,7 @@ class GenusQueryControllerSpec extends CatsEffectSuite with DummyObjects {
       genusQueryController.queryUtxoFromParams(None, "fellowship", "template", None)
     assertIO(
       result,
-      Right(BlockDisplayOps.display(txo01))
+      Right(txo01.display)
     )
   }
 }
