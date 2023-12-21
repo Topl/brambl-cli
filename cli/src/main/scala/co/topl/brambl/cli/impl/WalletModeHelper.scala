@@ -3,19 +3,10 @@ package co.topl.brambl.cli.impl
 import cats.effect.kernel.Sync
 import co.topl.brambl.codecs.AddressCodecs
 import co.topl.brambl.dataApi
-import co.topl.brambl.syntax.AssetType
-import co.topl.brambl.syntax.GroupType
-import co.topl.brambl.syntax.LvlType
-import co.topl.brambl.syntax.SeriesType
+import co.topl.brambl.syntax.{AssetType, GroupType, LvlType, SeriesType}
 import co.topl.brambl.utils.Encoding
-import co.topl.genus.services.Txo
-import co.topl.genus.services.TxoState
-import co.topl.shared.models.LvlBalance
-import co.topl.shared.models.GroupTokenBalanceDTO
-import co.topl.shared.models.AssetTokenBalanceDTO
-import co.topl.shared.models.SeriesTokenBalanceDTO
-import co.topl.shared.models.UnknownBalanceDTO
-import co.topl.shared.models.BalanceDTO
+import co.topl.genus.services.{Txo, TxoState}
+import co.topl.shared.models._
 
 case class WalletModeHelper[F[_]: Sync](
     walletStateAlgebra: dataApi.WalletStateAlgebra[F],
@@ -113,12 +104,12 @@ case class WalletModeHelper[F[_]: Sync](
           case LvlType => LvlBalance(result.toString)
           case GroupType(groupId) =>
             GroupTokenBalanceDTO(
-              Encoding.encodeToHex(groupId.toByteArray),
+              Encoding.encodeToHex(groupId.value.toByteArray),
               result.toString
             )
           case SeriesType(seriesId) =>
             SeriesTokenBalanceDTO(
-              Encoding.encodeToHex(seriesId.toByteArray),
+              Encoding.encodeToHex(seriesId.value.toByteArray),
               result.toString
             )
           case AssetType(groupId, seriesId) =>
