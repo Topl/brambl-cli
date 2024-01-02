@@ -50,7 +50,7 @@ class GenusQueryController[F[_]: Sync](
             .map { txos =>
               if (txos.isEmpty) Left("No UTXO found")
               else
-                Right(txos.map(_.display).mkString)
+                Right(txos.map(_.display).mkString("\n\n"))
             }
             .attempt
             .map {
