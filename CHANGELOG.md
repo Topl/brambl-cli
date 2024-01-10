@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2023-mm-dd (this date should be changed on release)
 
+## [v2.0.0-beta3] - 2024-01-10
+
 ### Changed
 
 - Various bug fixes and improvements
