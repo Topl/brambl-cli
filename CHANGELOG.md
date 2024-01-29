@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2023-mm-dd (this date should be changed on release)
 
+### Changed
+
+- Updated logback-classic to 1.4.14 to fix security vulnerability CVE-2023-6378.
+- Updated sqlite-jdbc to 3.45.0.0 to fix security vulnerability CVE-2023-32697.
+
 ## [v2.0.0-beta3] - 2024-01-10
 
 ### Changed
