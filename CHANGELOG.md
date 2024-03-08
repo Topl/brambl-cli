@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated logback-classic to 1.4.14 to fix security vulnerability CVE-2023-6378.
 - Updated sqlite-jdbc to 3.45.0.0 to fix security vulnerability CVE-2023-32697.
+- The quivr expression supported to add a template now support the keywords: 
+`sha256` and `blake2b`. The `digest` keyword is not supported anymore.
+- The digests for `sha256` and `blake2b` use the hexadecimal representation of the
+digest instead of the base64 representation.
+- The `import-vks` command now supports empty files for the verification key when
+the fellowship is a `nofellowship`.
 
 ## [v2.0.0-beta3] - 2024-01-10
 
