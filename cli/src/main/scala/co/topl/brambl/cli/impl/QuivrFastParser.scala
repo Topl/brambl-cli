@@ -47,7 +47,9 @@ case class Locked(location: Int, someData: Option[String]) extends TemplateAST
 
 case class Tick(location: Int, minTick: Long, maxTick: Long) extends TemplateAST
 
-case class Digest(location: Int, digest: String) extends TemplateAST
+case class Sha256Digest(location: Int, digest: String) extends TemplateAST
+
+case class Blake2bDigest(location: Int, digest: String) extends TemplateAST
 
 object TemplateAST {
 
@@ -232,21 +234,50 @@ object TemplateAST {
               .TickTemplate[F](min, max)
               .validNel
         )
-      case Digest(location, digest) =>
+      case Blake2bDigest(location, digest) =>
         State.pure(
-          Encoding.decodeFromBase58(digest) match {
+          Encoding.decodeFromHex(digest) match {
             case Left(_) =>
               InvalidQuivrTemplate(
                 location,
-                "Invalid base58 encoding"
+                "Invalid hexadecimal encoding"
               ).invalidNel
             case Right(decoded) =>
-              PropositionTemplate
-                .DigestTemplate[F](
-                  "Blake2b256",
-                  new models.Digest(ByteString.copyFrom(decoded))
-                )
-                .validNel
+              if (decoded.length != 32)
+                InvalidQuivrTemplate(
+                  location,
+                  "Blake2b256 digest must be 32 bytes"
+                ).invalidNel
+              else
+                PropositionTemplate
+                  .DigestTemplate[F](
+                    "Blake2b256",
+                    new models.Digest(ByteString.copyFrom(decoded))
+                  )
+                  .validNel
+          }
+        )
+      case Sha256Digest(location, digest) =>
+        State.pure(
+          Encoding.decodeFromHex(digest) match {
+            case Left(_) =>
+              InvalidQuivrTemplate(
+                location,
+                "Invalid hexadecimal encoding"
+              ).invalidNel
+            case Right(decoded) =>
+              if (decoded.length != 32)
+                InvalidQuivrTemplate(
+                  location,
+                  "Sha256 digest must be 32 bytes"
+                ).invalidNel
+              else
+                PropositionTemplate
+                  .DigestTemplate[F](
+                    "Sha256",
+                    new models.Digest(ByteString.copyFrom(decoded))
+                  )
+                  .validNel
           }
         )
     }
@@ -295,26 +326,44 @@ trait QuivrFastParser[F[_]] {
     }
 
   def digest[$: P]: P[TemplateAST] =
-    P(Index ~ P("digest") ~ P("(") ~ base58Chars ~ P(")")).map {
-      case (location, base58) =>
-        Digest(location, base58)
+    sha256 | blake2b
+
+  def sha256[$: P]: P[TemplateAST] =
+    P(Index ~ P("sha256") ~ P("(") ~ hexChars ~ P(")")).map {
+      case (location, hex) =>
+        Sha256Digest(location, hex)
+    }
+  def blake2b[$: P]: P[TemplateAST] =
+    P(Index ~ P("blake2b") ~ P("(") ~ hexChars ~ P(")")).map {
+      case (location, hex) =>
+        Blake2bDigest(location, hex)
     }
 
   def locked[$: P]: P[TemplateAST] =
     P(Index ~ P("locked") ~ P("(") ~ base58CharsOrEmpty ~ P(")")).map {
-      case (location, base58) =>
-        Locked(location, if (base58.trim().isEmpty()) None else Some(base58))
+      case (location, hex) =>
+        Locked(location, if (hex.trim().isEmpty()) None else Some(hex))
     }
 
-  def base58Char[$:P] = P(CharIn(
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-  ))
+  def hexChar[$: P] = P(
+    CharIn(
+      "0123456789ABCDEFabcdef"
+    )
+  )
 
+  def base58Char[$: P] = P(
+    CharIn(
+      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+    )
+  )
   def base58CharsOrEmpty[$: P]: P[String] =
     base58Char.rep.!
 
-  def base58Chars[$: P]: P[String] =
-    base58Char.rep(1).!
+  def hexCharsOrEmpty[$: P]: P[String] =
+    hexChar.rep.!
+
+  def hexChars[$: P]: P[String] =
+    hexChar.rep(1).!
 
   def signature[$: P]: P[TemplateAST] =
     P(Index ~ P("sign") ~ P("(") ~ decimal ~ P(")")).map {

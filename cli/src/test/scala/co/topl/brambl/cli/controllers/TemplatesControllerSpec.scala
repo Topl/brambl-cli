@@ -36,6 +36,7 @@ class TemplatesControllerSpec extends CatsEffectSuite {
         """{"threshold":1,"innerTemplates":[{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"}],"type":"predicate"}"""
       )
   }
+
   test("Add and template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
@@ -221,7 +222,7 @@ class TemplatesControllerSpec extends CatsEffectSuite {
       )
   }
 
-  test("Add digest template") {
+  test("Add digest (Blake2b) template") {
     var addedTemplate = ""
     val simpleController = new TemplatesController[IO](
       new TemplateStorageAlgebra[IO] {
@@ -236,7 +237,7 @@ class TemplatesControllerSpec extends CatsEffectSuite {
     simpleController
       .addTemplate(
         "myNewTemplate",
-        """threshold(1, digest(6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8))"""
+        """threshold(1, blake2b(b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc))"""
       )
       .assertEquals(
         Right("Template added successfully")
@@ -244,11 +245,42 @@ class TemplatesControllerSpec extends CatsEffectSuite {
     simpleController
       .addTemplate(
         "myNewTemplate",
-        """threshold(1, digest(6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8))"""
+        """threshold(1, blake2b(b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc))"""
       )
       .map(_ => addedTemplate)
       .assertEquals(
-        """{"threshold":1,"innerTemplates":[{"routine":"Blake2b256","digest":"6TcbSYWweHnZgEY2oVopiUue6xbZAE1NTkq77u8uFvD8","type":"digest"}],"type":"predicate"}"""
+        """{"threshold":1,"innerTemplates":[{"routine":"Blake2b256","digest":"D6B2xtYPM6Hv7GxbuK8GPzyJ6GD6JmVJEX7pLDJHhwuV","type":"digest"}],"type":"predicate"}"""
+      )
+  }
+
+  test("Add digest (Sha256) template") {
+    var addedTemplate = ""
+    val simpleController = new TemplatesController[IO](
+      new TemplateStorageAlgebra[IO] {
+        override def addTemplate(
+            walletTemplate: WalletTemplate
+        ): IO[Int] = IO { addedTemplate = walletTemplate.lockTemplate } *> IO(1)
+
+        override def findTemplates(): IO[List[WalletTemplate]] =
+          IO(List.empty)
+      }
+    )
+    simpleController
+      .addTemplate(
+        "myNewTemplate",
+        """threshold(1, sha256(b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc))"""
+      )
+      .assertEquals(
+        Right("Template added successfully")
+      )
+    simpleController
+      .addTemplate(
+        "myNewTemplate",
+        """threshold(1, sha256(b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc))"""
+      )
+      .map(_ => addedTemplate)
+      .assertEquals(
+        """{"threshold":1,"innerTemplates":[{"routine":"Sha256","digest":"D6B2xtYPM6Hv7GxbuK8GPzyJ6GD6JmVJEX7pLDJHhwuV","type":"digest"}],"type":"predicate"}"""
       )
   }
 
@@ -276,6 +308,16 @@ class TemplatesControllerSpec extends CatsEffectSuite {
                 3,
                 "and",
                 """{"threshold":1,"innerTemplates":[{"left":{"routine":"ExtendedEd25519","entityIdx":0,"type":"signature"},"right":{"routine":"ExtendedEd25519","entityIdx":1,"type":"signature"},"type":"and"}],"type":"predicate"}"""
+              ),
+              WalletTemplate(
+                4,
+                "digestSha256",
+                """{"threshold":1,"innerTemplates":[{"routine":"Sha256","digest":"D6B2xtYPM6Hv7GxbuK8GPzyJ6GD6JmVJEX7pLDJHhwuV","type":"digest"}],"type":"predicate"}"""
+              ),
+              WalletTemplate(
+                5,
+                "digestBlake2b",
+                """{"threshold":1,"innerTemplates":[{"routine":"Blake2b256","digest":"D6B2xtYPM6Hv7GxbuK8GPzyJ6GD6JmVJEX7pLDJHhwuV","type":"digest"}],"type":"predicate"}"""
               )
             )
           )
@@ -288,7 +330,9 @@ class TemplatesControllerSpec extends CatsEffectSuite {
           "Y Coordinate\tTemplate Name\tLock Template\n" +
             "1\t\tsign\t\t" + """threshold(1, sign(0))""" + "\n" +
             "2\t\tor\t\t" + """threshold(1, sign(0) or sign(1))""" + "\n" +
-            "3\t\tand\t\t" + """threshold(1, sign(0) and sign(1))"""
+            "3\t\tand\t\t" + """threshold(1, sign(0) and sign(1))""" + "\n" +
+            "4\t\tdigestSha256\t\t" + """threshold(1, sha256(b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc))""" + "\n" +
+            "5\t\tdigestBlake2b\t\t" + """threshold(1, blake2b(b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc))"""
         )
       )
   }

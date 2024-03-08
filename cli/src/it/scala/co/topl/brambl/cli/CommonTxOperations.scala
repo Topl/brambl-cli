@@ -643,6 +643,22 @@ trait CommonTxOperations
         )
       )
     )
+
+  def addTemplate(templateName: String, template: String) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "templates",
+          "add",
+          "--walletdb",
+          c.walletFile,
+          "--template-name",
+          templateName,
+          "--lock-template",
+          template
+        )
+      )
+    )
   def recoverWallet(mnemonic: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(

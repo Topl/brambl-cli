@@ -60,7 +60,7 @@ class WalletController[F[_]: Sync](
         })
         .sequence
         .flatMap(
-          _.map(
+          _.map(_.trim()).filterNot(_.isEmpty()).map(
             // TODO: replace with proper serialization in TSDK-476
             vk =>
               // we derive the key once

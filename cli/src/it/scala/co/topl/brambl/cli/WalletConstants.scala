@@ -2,6 +2,8 @@ package co.topl.brambl.cli
 
 trait WalletConstants extends BaseConstants {
 
+  val EMPTY_FILE = s"$TMP_DIR/empty.txt"
+
   val WALLET = s"$TMP_DIR/wallet_wallet.db"
 
   val WALLET_MAIN_KEY = s"$TMP_DIR/wallet_mainkey.json"

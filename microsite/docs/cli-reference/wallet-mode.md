@@ -63,7 +63,7 @@ Recover Wallet Main Key
   -o, --output <value>     The output file. (mandatory)
   --newwalletdb <value>    Wallet DB file. (mandatory)
   -P, --passphrase <value>
-                           Passphrase for the encrypted key. (optional))
+                           Passphrase for the encrypted key. (optional)
 Command: wallet current-address [options]
 Obtain current address
   --walletdb <value>       Wallet DB file. (mandatory)
