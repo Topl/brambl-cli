@@ -73,8 +73,10 @@ object WalletModelDisplayOps {
         s"height($min, $max)"
       case PropositionTemplate.TickTemplate(min, max) =>
         s"tick($min, $max)"
-      case PropositionTemplate.DigestTemplate(_, digest) =>
-        s"digest(${Encoding.encodeToBase58(digest.value.toByteArray())})"
+      case PropositionTemplate.DigestTemplate("Sha256", digest) =>
+        s"sha256(${Encoding.encodeToHex(digest.value.toByteArray())})"
+      case PropositionTemplate.DigestTemplate("Blake2b256", digest) =>
+        s"blake2b(${Encoding.encodeToHex(digest.value.toByteArray())})"
     }
   }
 

@@ -1,25 +1,45 @@
 package co.topl.brambl.cli
 
-
 import munit.FunSuite
 import scopt.OParser
+
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.Path
 
 class ParamsWalletModuleTest extends FunSuite {
 
   import BramblCliParamsParserModule._
 
-  test("Test valid wallet create") {
+  val tmpWallet = FunFixture[(String, String)](
+    setup = { _ =>
+      val initialWalletDb = Paths.get("wallet.db")
+      val initialMnemonic = Paths.get("mnemonic.txt")
+      if (Files.exists(initialWalletDb))
+        Files.delete(initialWalletDb)
+      if (Files.exists(initialMnemonic))
+        Files.delete(initialMnemonic)
+      (
+        initialWalletDb.toAbsolutePath().toString(),
+        initialMnemonic.toAbsolutePath().toString()
+      )
+    },
+    teardown = { _ => () }
+  )
+
+  tmpWallet.test("Test valid wallet create") { walletAndMnemonic =>
+    val (wallet, mnemonic) = walletAndMnemonic
     val args0 = List(
       "wallet",
       "init",
       "-w",
       "test",
       "--newwalletdb",
-      "wallet.db",
+      wallet,
       "-n",
       "private",
       "--mnemonicfile",
-      "mnemonic.txt"
+      mnemonic
     )
     assert(OParser.parse(paramParser, args0, BramblCliParams()).isDefined)
     val args1 = List(
@@ -62,7 +82,7 @@ class ParamsWalletModuleTest extends FunSuite {
         .isEmpty
     )
   }
-  test("Test valid key recovery") {
+  tmpWallet.test("Test valid key recovery") { _ =>
     val args0 = List(
       "wallet",
       "recover-keys",
