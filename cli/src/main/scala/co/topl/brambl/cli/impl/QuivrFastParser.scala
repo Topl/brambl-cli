@@ -269,7 +269,7 @@ object TemplateAST {
               if (decoded.length != 32)
                 InvalidQuivrTemplate(
                   location,
-                  "Blake2b256 digest must be 32 bytes"
+                  "Sha256 digest must be 32 bytes"
                 ).invalidNel
               else
                 PropositionTemplate
