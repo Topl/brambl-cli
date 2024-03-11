@@ -1,11 +1,15 @@
 package co.topl.brambl.cli.controllers
 
-import cats.effect.kernel.{Resource, Sync}
-import co.topl.brambl.cli.impl.{CommonParserError, TransactionAlgebra, TxParserAlgebra}
+import cats.effect.kernel.Resource
+import cats.effect.kernel.Sync
+import co.topl.brambl.cli.impl.CommonParserError
+import co.topl.brambl.cli.impl.TransactionAlgebra
+import co.topl.brambl.cli.impl.TxParserAlgebra
 import co.topl.brambl.display.DisplayOps.DisplayTOps
 import co.topl.brambl.models.transaction.IoTransaction
 
-import java.io.{FileInputStream, FileOutputStream}
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 class TxController[F[_]: Sync](
     txParserAlgebra: TxParserAlgebra[F],
@@ -16,7 +20,6 @@ class TxController[F[_]: Sync](
       inputFile: String
   ) = {
     import cats.implicits._
-    import co.topl.brambl.cli.views.BlockDisplayOps._
     val inputRes = Resource
       .make(
         Sync[F]

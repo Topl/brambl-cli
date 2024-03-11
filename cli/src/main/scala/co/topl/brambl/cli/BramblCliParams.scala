@@ -21,7 +21,8 @@ object BramblCliSubCmd extends Enumeration {
 
   val invalid, init, recoverkeys, utxobyaddress, blockbyheight, blockbyid,
       transactionbyid, create, prove, broadcast, currentaddress, list, add,
-      inspect, exportvk, importvks, sync, setinteraction, listinteraction, balance = Value
+      inspect, exportvk, addsecret, getpreimage, importvks, sync, setinteraction,
+      listinteraction, balance = Value
 }
 
 sealed abstract class NetworkIdentifiers(
@@ -69,11 +70,37 @@ object TokenType extends Enumeration {
   val all, lvl, topl, asset, group, series = Value
 }
 
+object DigestType {
+
+  def withName(name: String): DigestType = {
+    name match {
+      case "sha256"  => Sha256
+      case "blake2b" => Blake2b
+      case _         => InvalidDigest
+    }
+  }
+}
+
+sealed abstract class DigestType(
+    val shortName: String,
+    val digestIdentifier: String
+) {
+
+
+}
+
+case object Sha256 extends DigestType("sha256", "Sha256")
+case object Blake2b extends DigestType("blake2b", "Blake2b256")
+case object InvalidDigest extends DigestType("invalid", "Invalid")
+
 final case class BramblCliParams(
     mode: BramblCliMode.Value = BramblCliMode.invalid,
     subcmd: BramblCliSubCmd.Value = BramblCliSubCmd.invalid,
     tokenType: TokenType.Value = TokenType.all,
     network: NetworkIdentifiers = InvalidNet,
+    secret: String = "",
+    digestText: String = "",
+    digest: DigestType = InvalidDigest,
     fellowshipName: String = "self",
     templateName: String = "default",
     lockTemplate: String = "",

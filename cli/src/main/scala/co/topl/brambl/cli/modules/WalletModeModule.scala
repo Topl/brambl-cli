@@ -49,6 +49,13 @@ trait WalletModeModule
           else None,
           validateParams.someFromInteraction
         )
+      case BramblCliSubCmd.addsecret =>
+        walletController.addSecret(validateParams.secret, validateParams.digest)
+      case BramblCliSubCmd.getpreimage =>
+        walletController.getPreimage(
+          validateParams.digest,
+          validateParams.digestText
+        )
       case BramblCliSubCmd.invalid =>
         IO.pure(
           Left(
