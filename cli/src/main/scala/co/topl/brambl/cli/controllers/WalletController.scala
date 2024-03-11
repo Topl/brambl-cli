@@ -46,16 +46,15 @@ class WalletController[F[_]: Sync](
       secretTxt: String,
       digest: DigestType
   ): F[Either[String, String]] = {
+    import co.topl.crypto.hash.implicits.sha256Hash
     import cats.implicits._
     val paddedSecret = secretTxt.getBytes() ++ Array
       .fill(secretTxt.getBytes().length - 32)(0.toByte)
     val hashedSecret =
       if (digest == Sha256)
-        java.security.MessageDigest
-          .getInstance("SHA-256")
-          .digest(
+        sha256Hash.hash(
             paddedSecret
-          )
+          ).value
       else
         (new Blake2b256).hash(
           paddedSecret
