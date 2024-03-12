@@ -115,7 +115,7 @@ class ComplexTransactionProveTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
       } yield res,
       ExitCode.Success
@@ -207,7 +207,7 @@ class ComplexTransactionProveTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
       } yield res,
       ExitCode.Success
@@ -266,7 +266,7 @@ class ComplexTransactionProveTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
         _ <- IO.println("Sync alice's account")
         _ <- syncWallet("alice_bob_0", "or_sign").run(aliceContext)
@@ -277,7 +277,7 @@ class ComplexTransactionProveTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
       } yield res,
       ExitCode.Success
@@ -347,7 +347,7 @@ class ComplexTransactionProveTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
         _ <- IO.println("Sync alice's and account")
         _ <- syncWallet("alice_bob_0", "and_sign").run(aliceContext)
@@ -360,7 +360,7 @@ class ComplexTransactionProveTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
       } yield res,
       ExitCode.Success

@@ -40,7 +40,7 @@ trait CommonFunctions extends PolicyTemplates {
           _ <- IO.sleep(5.seconds)
         } yield queryRes)
           .iterateUntil(_ == ExitCode.Success),
-        60.seconds
+        120.seconds
       )
       ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
       _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")

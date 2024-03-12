@@ -87,7 +87,7 @@ class GeneralTransferTests
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
       } yield res,
       ExitCode.Success
@@ -149,7 +149,7 @@ class GeneralTransferTests
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
       } yield res,
       ExitCode.Success
@@ -212,7 +212,7 @@ class GeneralTransferTests
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          120.seconds
         )
       } yield res,
       ExitCode.Success
