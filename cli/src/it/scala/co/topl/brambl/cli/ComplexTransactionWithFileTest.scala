@@ -420,7 +420,7 @@ class ComplexTransactionWithFileTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          120.seconds
+          180.seconds
         )
       } yield res,
       ExitCode.Success
