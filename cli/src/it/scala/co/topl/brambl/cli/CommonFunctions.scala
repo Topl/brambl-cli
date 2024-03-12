@@ -82,7 +82,7 @@ trait CommonFunctions extends PolicyTemplates {
           _ <- IO.sleep(5.seconds)
         } yield queryRes)
           .iterateUntil(_ == ExitCode.Success),
-        60.seconds
+        120.seconds
       )
     } yield res
   }
