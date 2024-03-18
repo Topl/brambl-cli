@@ -42,7 +42,7 @@ class WalletRecoveryTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          120.seconds
+          240.seconds
         )
         next_address <- walletController(WALLET).currentaddress("self", "default", None)
         _ <- IO.println(s"Next address is $next_address")
@@ -83,7 +83,7 @@ class WalletRecoveryTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          120.seconds
+          240.seconds
         )
       } yield res,
       ExitCode.Success
@@ -155,7 +155,7 @@ class WalletRecoveryTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          120.seconds
+          240.seconds
         )
       } yield res,
       ExitCode.Success

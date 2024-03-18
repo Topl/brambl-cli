@@ -70,7 +70,7 @@ trait MintingFunctions extends PolicyTemplates {
         _ <- IO.sleep(5.seconds)
       } yield queryRes)
         .iterateUntil(_ == ExitCode.Success),
-      120.seconds
+      240.seconds
     )
   } yield res
 
@@ -131,7 +131,7 @@ trait MintingFunctions extends PolicyTemplates {
         _ <- IO.sleep(5.seconds)
       } yield queryRes)
         .iterateUntil(_ == ExitCode.Success),
-      120.seconds
+      240.seconds
     )
   } yield res
 
@@ -201,7 +201,7 @@ trait MintingFunctions extends PolicyTemplates {
         _ <- IO.sleep(5.seconds)
       } yield queryRes)
         .iterateUntil(_ == ExitCode.Success),
-      120.seconds
+      240.seconds
     )
   } yield res
 

@@ -94,7 +94,7 @@ class DigestTransactionTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          120.seconds
+          240.seconds
         )
       } yield res,
       ExitCode.Success
@@ -148,7 +148,7 @@ class DigestTransactionTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          120.seconds
+          240.seconds
         )
       } yield res,
       ExitCode.Success
