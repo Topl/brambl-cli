@@ -167,6 +167,8 @@ object BramblCliParamsParserModule {
   val secretArg = opt[String]("secret")
     .validate(x =>
       if (x.trim().isEmpty) failure("Secret may not be empty")
+      else if (x.trim().getBytes().length > 32)
+        failure("Secret (in bytes) may not be longer than 32 bytes")
       else success
     )
     .action((x, c) => c.copy(secret = x))
