@@ -68,7 +68,7 @@ class WalletDigestPropositionTest
       } yield ()
   }
 
-  tmpDirectory.test("Initialize wallet and add secret (sh256)") { _ =>
+  tmpDirectory.test("Initialize wallet and add secret (sha256)") { _ =>
     for {
       _ <- createWallet().run(walletContext)
       _ <- assertIO(
