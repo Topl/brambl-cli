@@ -49,7 +49,7 @@ class WalletController[F[_]: Sync](
     import co.topl.crypto.hash.implicits.sha256Hash
     import cats.implicits._
     val paddedSecret = secretTxt.getBytes() ++ Array
-      .fill(secretTxt.getBytes().length - 32)(0.toByte)
+      .fill(32 - secretTxt.getBytes().length)(0.toByte)
     val hashedSecret =
       if (digest == Sha256)
         sha256Hash.hash(
