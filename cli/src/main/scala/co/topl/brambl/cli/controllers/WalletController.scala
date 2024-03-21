@@ -78,7 +78,7 @@ class WalletController[F[_]: Sync](
               Preimage(
                 ByteString.copyFrom(secretTxt.getBytes()),
                 ByteString.copyFrom(
-                  Array.fill(secretTxt.getBytes().length - 32)(0.toByte)
+                  Array.fill(32 - secretTxt.getBytes().length)(0.toByte)
                 )
               ),
               propDigest
