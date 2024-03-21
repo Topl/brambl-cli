@@ -310,7 +310,7 @@ class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
           Sha256
         )
       } yield res,
-      Right("Secret added. Hash: b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc")
+      Right("Secret added. Hash: ee15b31e49931db6551ed8a82f1422ce5a5a8debabe8e81a724c88f79996d0df")
     )
   }
 
@@ -380,7 +380,7 @@ class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
           Blake2b
         )
       } yield res,
-      Right("Secret added. Hash: a28f43e7ba06f79b31b189cfee16e160fba1c0ea8f2c4cc8ca38fa567fbca2e3")
+      Right("Secret added. Hash: 0a0f4e1461688b3dbf01cad2882e5779998efcf7ee3800c80e964fd0424d7e0c")
     )
   }
 }
