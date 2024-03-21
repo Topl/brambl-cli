@@ -148,7 +148,7 @@ class WalletController[F[_]: Sync](
           _.map(_.trim())
             .filterNot(_.isEmpty())
             .map(
-              // TODO: replace with proper serialization in TSDK-476
+              // TODO: replace with proper serialization
               vk =>
                 // we derive the key once
                 walletApi
