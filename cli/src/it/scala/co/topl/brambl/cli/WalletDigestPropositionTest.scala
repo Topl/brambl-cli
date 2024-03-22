@@ -80,7 +80,7 @@ class WalletDigestPropositionTest
       )
       _ <- assertIO(
         getPreimage(
-          "b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc",
+          "0a0f4e1461688b3dbf01cad2882e5779998efcf7ee3800c80e964fd0424d7e0c",
           "sha256"
         ).run(walletContext),
         ExitCode.Success
@@ -89,7 +89,7 @@ class WalletDigestPropositionTest
         walletController(WALLET)
           .getPreimage(
             Sha256,
-            "b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc"
+            "0a0f4e1461688b3dbf01cad2882e5779998efcf7ee3800c80e964fd0424d7e0c"
           )
           .map(_.toOption),
         Some("Preimage: topl-secret")
