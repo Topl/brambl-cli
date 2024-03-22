@@ -38,7 +38,7 @@ class DigestTransactionTest
         _ <- assertIO(
           addTemplateToWallet(
             "digest_template",
-            "threshold(1, sign(0) and sha256(b39f7e1305cd9107ed9af824fcb0729ce9888bbb7f219cc0b6731332105675dc))"
+            "threshold(1, sign(0) and sha256(ee15b31e49931db6551ed8a82f1422ce5a5a8debabe8e81a724c88f79996d0df))"
           ).run(bobContext),
           ExitCode.Success
         )
