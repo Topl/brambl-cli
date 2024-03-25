@@ -440,6 +440,7 @@ object BramblCliParamsParserModule {
             )
             .action((x, c) => c.copy(lockTemplate = x))
             .text("Template template. (mandatory)")
+            .required()
         )
     )
 
