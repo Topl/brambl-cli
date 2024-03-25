@@ -17,6 +17,11 @@ import quivr.models.KeyPair
 import java.nio.file.Files
 import java.nio.file.Paths
 import scala.io.Source
+import co.topl.brambl.cli.Sha256
+import quivr.models.Proposition
+import quivr.models.Preimage
+import com.google.protobuf.ByteString
+import co.topl.brambl.cli.Blake2b
 
 class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
 
@@ -240,4 +245,142 @@ class WalletControllerSpecs extends CatsEffectSuite with WalletKeyApiModule {
     )
   }
 
+  test("addSecret fails when a secret already exists (sha256)") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getPreimage(
+            digestProposition: Proposition.Digest
+        ): IO[Option[Preimage]] =
+          IO.pure(Some(Preimage(ByteString.copyFrom("topl-secret".getBytes()))))
+      },
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.addSecret(
+          "topl-secret",
+          Sha256
+        )
+      } yield res,
+      Left("Secret already exists")
+    )
+  }
+
+  test("addSecret succeeds when a secret does not exists (sha256)") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getPreimage(
+            digestProposition: Proposition.Digest
+        ): IO[Option[Preimage]] =
+          IO.pure(None)
+
+        override def addPreimage(
+            preimage: Preimage,
+            digest: Proposition.Digest
+        ): IO[Unit] = IO.unit
+      },
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.addSecret(
+          "topl-secret",
+          Sha256
+        )
+      } yield res,
+      Right("Secret added. Hash: ee15b31e49931db6551ed8a82f1422ce5a5a8debabe8e81a724c88f79996d0df")
+    )
+  }
+
+  test("addSecret fails when a secret already exists (Blake2b)") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getPreimage(
+            digestProposition: Proposition.Digest
+        ): IO[Option[Preimage]] =
+          IO.pure(Some(Preimage(ByteString.copyFrom("topl-secret".getBytes()))))
+      },
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.addSecret(
+          "topl-secret",
+          Blake2b
+        )
+      } yield res,
+      Left("Secret already exists")
+    )
+  }
+
+  test("addSecret succeeds when a secret does not exists (blake2b)") {
+    val controller = new WalletController[IO](
+      new BaseWalletStateAlgebra[IO] {
+        override def getPreimage(
+            digestProposition: Proposition.Digest
+        ): IO[Option[Preimage]] =
+          IO.pure(None)
+
+        override def addPreimage(
+            preimage: Preimage,
+            digest: Proposition.Digest
+        ): IO[Unit] = IO.unit
+
+      },
+      new BaseWalletManagementUtils[IO] {
+        override def loadKeys(keyfile: String, password: String) = keyPair
+      }, // : WalletManagementUtils[F],
+      new BaseWalletApi[IO] {
+        override def deriveChildKeys(
+            vk: KeyPair,
+            idx: Indices
+        ): IO[KeyPair] = walletApi.deriveChildKeys(vk, idx)
+
+      }, // : WalletApi[F],
+      new BaseWalletAlgebra[IO], // : WalletAlgebra[F],
+      new BaseGenusQueryAlgebra[IO] // : dataApi.GenusQueryAlgebra[F]
+    )
+    assertIO(
+      for {
+        res <- controller.addSecret(
+          "topl-secret",
+          Blake2b
+        )
+      } yield res,
+      Right("Secret added. Hash: 0a0f4e1461688b3dbf01cad2882e5779998efcf7ee3800c80e964fd0424d7e0c")
+    )
+  }
 }

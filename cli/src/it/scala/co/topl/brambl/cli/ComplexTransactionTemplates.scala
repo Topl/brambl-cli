@@ -120,6 +120,7 @@ trait ComplexTransactionTemplates {
       aliceAndKey: String,
       bobAndKey: String,
       aliceOrKey: String,
+      bobOrKey: String,
       andAmount: Long,
       orAmount: Long,
       addressBob: String
@@ -133,6 +134,7 @@ trait ComplexTransactionTemplates {
             aliceAndKey,
             bobAndKey,
             aliceOrKey,
+            bobOrKey,
             andAmount,
             orAmount,
             addressBob
@@ -148,6 +150,7 @@ trait ComplexTransactionTemplates {
       aliceAndKey: String,
       bobAndKey: String,
       aliceOrKey: String,
+      bobOrKey: String,
       andAmount: Long,
       orAmount: Long,
       addressBob: String
@@ -161,6 +164,8 @@ trait ComplexTransactionTemplates {
         |    vk: $bobAndKey
         |  - id: aliceOr
         |    vk: $aliceOrKey
+        |  - id: bobOr
+        |    vk: $bobOrKey
         |
         |inputs:
         |  - address: $andUtxoAddress
@@ -176,7 +181,7 @@ trait ComplexTransactionTemplates {
         |     - index: 0
         |       identifier: aliceOr
         |     - index: 1
-        |       identifier: aliceOr
+        |       identifier: bobOr
         |    proposition: threshold(1, sign(0) or sign(1))
         |    value: $orAmount
         |outputs:

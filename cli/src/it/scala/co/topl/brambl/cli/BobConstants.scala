@@ -22,6 +22,8 @@ trait BobConstants extends BaseConstants {
 
   val BOB_VK = s"$TMP_DIR/bob_vk.json"
 
+  val EMPTY_VK = s"$TMP_DIR/empty.txt"
+
   val BOB_AND_VK = s"$TMP_DIR/bob_and_vk.json"
 
   val BOB_COMPLEX_VK_OR = s"$TMP_DIR/bob_complex_vk_or.json"

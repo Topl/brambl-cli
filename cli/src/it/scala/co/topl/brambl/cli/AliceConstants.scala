@@ -70,6 +70,8 @@ trait AliceConstants extends BaseConstants {
 
   val ALICE_OR_VK = s"$TMP_DIR/alice_or_vk.json"
 
+  val BOB_OR_VK = s"$TMP_DIR/bob_or_vk.json"
+
   val ALICE_VK_AND = s"$TMP_DIR/alice_vk_and.json"
 
   val ALICE_SECOND_TX_RAW = s"$TMP_DIR/alice_second_tx.pbuf"

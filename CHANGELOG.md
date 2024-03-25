@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2023-mm-dd (this date should be changed on release)
 
+### Added
+
+- Added 2 operations `add-secret` and `get-preimage` to the `wallet` mode.
+
 ### Changed
 
 - Updated logback-classic to 1.4.14 to fix security vulnerability CVE-2023-6378.
@@ -19,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 digest instead of the base64 representation.
 - The `import-vks` command now supports empty files for the verification key when
 the fellowship is a `nofellowship`.
+- Migrated the `BravlSc` dependency to `2.0.0-beta3`.
+- Migrated the `Bifrost` dependency to `2.0.0-beta2`.
 
 ## [v2.0.0-beta3] - 2024-01-10
 

@@ -659,6 +659,36 @@ trait CommonTxOperations
         )
       )
     )
+  def addSecret(secret: String, digestAlgorithm: String) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "wallet",
+          "add-secret",
+          "--walletdb",
+          c.walletFile,
+          "--secret",
+          secret,
+          "--digest",
+          digestAlgorithm
+        )
+      )
+    )
+  def getPreimage(digestText: String, digestAlgorithm: String) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "wallet",
+          "get-preimage",
+          "--walletdb",
+          c.walletFile,
+          "--digest-text",
+          digestText,
+          "--digest",
+          digestAlgorithm
+        )
+      )
+    )
   def recoverWallet(mnemonic: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
       Main.run(

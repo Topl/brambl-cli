@@ -1,17 +1,17 @@
 package co.topl.brambl.cli
 
 import co.topl.brambl.codecs.AddressCodecs
+import co.topl.brambl.constants.NetworkConstants
+import co.topl.brambl.models.GroupId
 import co.topl.brambl.models.LockAddress
+import co.topl.brambl.models.SeriesId
 import co.topl.brambl.utils.Encoding
+import com.google.protobuf.ByteString
 import scopt.OParser
 
 import java.io.File
 import java.nio.file.Paths
-import co.topl.brambl.models.GroupId
-import com.google.protobuf.ByteString
-import co.topl.brambl.models.SeriesId
 import scala.util.Try
-import co.topl.brambl.constants.NetworkConstants
 
 object BramblCliParamsParserModule {
 
@@ -38,6 +38,10 @@ object BramblCliParamsParserModule {
             "Invalid network. Possible values: mainnet, testnet, private"
           )
       })
+
+  implicit val digestRead: scopt.Read[DigestType] =
+    scopt.Read
+      .reads(DigestType.withName(_))
 
   implicit val groupIdRead: scopt.Read[GroupId] =
     scopt.Read.reads { x =>
@@ -159,6 +163,33 @@ object BramblCliParamsParserModule {
     )
     .action((x, c) => c.copy(fellowshipName = x))
     .text("Name of the fellowship. (mandatory)")
+
+  val secretArg = opt[String]("secret")
+    .validate(x =>
+      if (x.trim().isEmpty) failure("Secret may not be empty")
+      else if (x.trim().getBytes().length > 32)
+        failure("Secret (in bytes) may not be longer than 32 bytes")
+      else success
+    )
+    .action((x, c) => c.copy(secret = x))
+    .text("Secret to be encoded. (mandatory)")
+    .required()
+
+  val digestArg = opt[DigestType]("digest")
+    .action((x, c) => c.copy(digest = x))
+    .text("Digest algorithm used to encode the secret. (mandatory)")
+    .required()
+
+  val digestTextArg = opt[String]("digest-text")
+    .action((x, c) => c.copy(digestText = x))
+    .validate { x =>
+      if (x.trim().isEmpty) failure("Digest text may not be empty")
+      else if (Encoding.decodeFromHex(x).isRight)
+        success
+      else failure("Invalid digest text")
+    }
+    .text("Digest text to query for preimage. (mandatory)")
+    .required()
 
   def validateWalletDbFile(walletDbFile: String): Either[String, Unit] =
     if (walletDbFile.trim().isEmpty) failure("Wallet file may not be empty")
@@ -375,7 +406,7 @@ object BramblCliParamsParserModule {
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.init))
         .text("Run the server")
         .children(
-          (Seq(walletDbArg.required()) ++ Seq(secureArg) ++ 
+          (Seq(walletDbArg.required()) ++ Seq(secureArg) ++
             keyfileAndPassword.map(_.required()) ++ hostPortNetwork.reverse.tail
               .map(_.required())): _*
         )
@@ -616,6 +647,22 @@ object BramblCliParamsParserModule {
               .action((x, c) => c.copy(someFromInteraction = x))
               .text("Interaction from where we are sending the funds from")
           )): _*
+        ),
+      cmd("add-secret")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.addsecret))
+        .text("Add a secret to the wallet")
+        .children(
+          walletDbArg,
+          secretArg,
+          digestArg
+        ),
+      cmd("get-preimage")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.getpreimage))
+        .text("Get a preimage from the wallet")
+        .children(
+          walletDbArg,
+          digestTextArg,
+          digestArg
         ),
       cmd("import-vks")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.importvks))

@@ -4,8 +4,8 @@ sidebar_position: 5
 
 # Wallet Mode
 
-```                           
-Command: wallet [balance|set-interaction|list-interactions|sync|init|recover-keys|current-address|export-vk|import-vks]
+```
+Command: wallet [balance|set-interaction|list-interactions|sync|init|recover-keys|current-address|export-vk|add-secret|get-preimage|import-vks]
 Wallet mode
 Command: wallet balance [options]
 Get balance of wallet
@@ -63,7 +63,7 @@ Recover Wallet Main Key
   -o, --output <value>     The output file. (mandatory)
   --newwalletdb <value>    Wallet DB file. (mandatory)
   -P, --passphrase <value>
-                           Passphrase for the encrypted key. (optional)
+                           Passphrase for the encrypted key. (optional))
 Command: wallet current-address [options]
 Obtain current address
   --walletdb <value>       Wallet DB file. (mandatory)
@@ -82,6 +82,16 @@ Export verification key
                            Name of the fellowship. (mandatory)
   --template-name <value>  Name of the template. (mandatory)
   --interaction <value>    Interaction from where we are sending the funds from
+Command: wallet add-secret [options]
+Add a secret to the wallet
+  --walletdb <value>       Wallet DB file. (mandatory)
+  --secret <value>         Secret to be encoded. (mandatory)
+  --digest <value>         Digest algorithm used to encode the secret. (mandatory)
+Command: wallet get-preimage [options]
+Get a preimage from the wallet
+  --walletdb <value>       Wallet DB file. (mandatory)
+  --digest-text <value>    Digest text to query for preimage. (mandatory)
+  --digest <value>         Digest algorithm used to encode the secret. (mandatory)
 Command: wallet import-vks [options]
 Import verification key
   -k, --keyfile <value>    The key file.

@@ -26,6 +26,13 @@ import quivr.models.VerificationKey
 
 import java.io.File
 import java.io.PrintWriter
+import quivr.models.Preimage
+import com.google.protobuf.ByteString
+import quivr.models.Proposition
+import co.topl.brambl.cli.DigestType
+import quivr.models.Digest
+import co.topl.brambl.cli.Sha256
+import co.topl.crypto.hash.Blake2b256
 
 class WalletController[F[_]: Sync](
     walletStateAlgebra: dataApi.WalletStateAlgebra[F],
@@ -34,6 +41,84 @@ class WalletController[F[_]: Sync](
     walletAlgebra: WalletAlgebra[F],
     genusQueryAlgebra: dataApi.GenusQueryAlgebra[F]
 ) {
+
+  def addSecret(
+      secretTxt: String,
+      digest: DigestType
+  ): F[Either[String, String]] = {
+    import co.topl.crypto.hash.implicits.sha256Hash
+    import cats.implicits._
+    val paddedSecret = secretTxt.getBytes() ++ Array
+      .fill(32 - secretTxt.getBytes().length)(0.toByte)
+    val hashedSecret =
+      if (digest == Sha256)
+        sha256Hash.hash(
+            paddedSecret
+          ).value
+      else
+        (new Blake2b256).hash(
+          paddedSecret
+        )
+    val propDigest = Proposition.Digest(
+      digest.digestIdentifier,
+      Digest(
+        ByteString.copyFrom(
+          hashedSecret
+        )
+      )
+    )
+    for {
+      somePreimage <- walletStateAlgebra.getPreimage(
+        propDigest
+      )
+      res <-
+        if (somePreimage.isEmpty)
+          walletStateAlgebra
+            .addPreimage(
+              Preimage(
+                ByteString.copyFrom(secretTxt.getBytes()),
+                ByteString.copyFrom(
+                  Array.fill(32 - secretTxt.getBytes().length)(0.toByte)
+                )
+              ),
+              propDigest
+            )
+            .map { _ =>
+              Right(
+                "Secret added. Hash: " + Encoding.encodeToHex(hashedSecret)
+              )
+            }
+        else
+          Sync[F].pure(Left("Secret already exists"))
+    } yield res
+  }
+
+  def getPreimage(
+      digest: DigestType,
+      digestTxt: String
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    for {
+      decodedDigest <- Sync[F].fromEither(Encoding.decodeFromHex(digestTxt))
+      propDigest = Proposition.Digest(
+        digest.digestIdentifier,
+        Digest(
+          ByteString.copyFrom(
+            decodedDigest
+          )
+        )
+      )
+      somePreimage <- walletStateAlgebra.getPreimage(
+        propDigest
+      )
+    } yield somePreimage match {
+      case Some(preimage) =>
+        Right(
+          "Preimage: " + new String(preimage.input.toByteArray)
+        )
+      case None => Left("Preimage not found.")
+    }
+  }
 
   def importVk(
       networkId: Int,
@@ -60,19 +145,22 @@ class WalletController[F[_]: Sync](
         })
         .sequence
         .flatMap(
-          _.map(_.trim()).filterNot(_.isEmpty()).map(
-            // TODO: replace with proper serialization in TSDK-476
-            vk =>
-              // we derive the key once
-              walletApi
-                .deriveChildVerificationKey(
-                  VerificationKey.parseFrom(
-                    Encoding.decodeFromBase58(vk).toOption.get
-                  ),
-                  1
-                )
-                .map(x => (x, vk))
-          ).sequence
+          _.map(_.trim())
+            .filterNot(_.isEmpty())
+            .map(
+              // TODO: replace with proper serialization
+              vk =>
+                // we derive the key once
+                walletApi
+                  .deriveChildVerificationKey(
+                    VerificationKey.parseFrom(
+                      Encoding.decodeFromBase58(vk).toOption.get
+                    ),
+                    1
+                  )
+                  .map(x => (x, vk))
+            )
+            .sequence
         )
       lockTempl <- walletStateAlgebra
         .getLockTemplate(templateName)

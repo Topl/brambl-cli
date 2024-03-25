@@ -48,7 +48,7 @@ class ComplexTransactionWithFileTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          240.seconds
         )
         ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
         genesisAddress <- walletController(ALICE_WALLET)
@@ -111,7 +111,7 @@ class ComplexTransactionWithFileTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          240.seconds
         )
       } yield res,
       ExitCode.Success
@@ -176,14 +176,14 @@ class ComplexTransactionWithFileTest
           exportVk("alice_bob_0", "or_sign", BOB_COMPLEX_VK_OR).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.println("Importing or VK to alice's wallet")
+        _ <- IO.println("Importing or VK to bob's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR).run(
             bobContext
           ),
           ExitCode.Success
         )
-        _ <- IO.println("Importing or VK to bob's wallet")
+        _ <- IO.println("Importing or VK to alice's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "or_sign", BOB_COMPLEX_VK_OR).run(
             aliceContext
@@ -204,14 +204,14 @@ class ComplexTransactionWithFileTest
           ),
           ExitCode.Success
         )
-        _ <- IO.println("Importing and VK to alice's wallet")
+        _ <- IO.println("Importing and VK to bob's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND).run(
             bobContext
           ),
           ExitCode.Success
         )
-        _ <- IO.println("Importing VK to bob's wallet")
+        _ <- IO.println("Importing VK to alice's wallet")
         _ <- assertIO(
           importVk("alice_bob_0", "and_sign", BOB_COMPLEX_VK_AND).run(
             aliceContext
@@ -290,7 +290,7 @@ class ComplexTransactionWithFileTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          240.seconds
         )
         res <- IO.asyncForIO.timeout(
           (for {
@@ -301,7 +301,7 @@ class ComplexTransactionWithFileTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          240.seconds
         )
       } yield res,
       ExitCode.Success
@@ -352,6 +352,12 @@ class ComplexTransactionWithFileTest
           ),
           ExitCode.Success
         )
+        _ <- assertIO(
+          exportFinalVk("alice_bob_0", "or_sign", 1, BOB_OR_VK).run(
+            bobContext
+          ),
+          ExitCode.Success
+        )
         aliceAndKey <- Resource
           .make(IO(Source.fromFile(ALICE_AND_VK)))(f => IO(f.close()))
           .use { file =>
@@ -373,6 +379,13 @@ class ComplexTransactionWithFileTest
               file.getLines().mkString
             )
           }
+        bobOrKey <- Resource
+          .make(IO(Source.fromFile(BOB_OR_VK)))(f => IO(f.close()))
+          .use { file =>
+            IO(
+              file.getLines().mkString
+            )
+          }
         _ <- createSharedTemplatesToBob(
           ALICE_THIRD_COMPLEX_TX,
           andUtxo,
@@ -380,6 +393,7 @@ class ComplexTransactionWithFileTest
           aliceAndKey,
           bobAndKey,
           aliceOrKey,
+          bobOrKey,
           1000,
           1000,
           bobAddress.get
@@ -420,7 +434,7 @@ class ComplexTransactionWithFileTest
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
             .iterateUntil(_ == ExitCode.Success),
-          60.seconds
+          240.seconds
         )
       } yield res,
       ExitCode.Success

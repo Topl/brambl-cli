@@ -67,4 +67,62 @@ class WalletDigestPropositionTest
         )
       } yield ()
   }
+
+  tmpDirectory.test("Initialize wallet and add secret (sha256)") { _ =>
+    for {
+      _ <- createWallet().run(walletContext)
+      _ <- assertIO(
+        addSecret(
+          "topl-secret",
+          "sha256"
+        ).run(walletContext),
+        ExitCode.Success
+      )
+      _ <- assertIO(
+        getPreimage(
+          "ee15b31e49931db6551ed8a82f1422ce5a5a8debabe8e81a724c88f79996d0df",
+          "sha256"
+        ).run(walletContext),
+        ExitCode.Success
+      )
+      _ <- assertIO(
+        walletController(WALLET)
+          .getPreimage(
+            Sha256,
+            "ee15b31e49931db6551ed8a82f1422ce5a5a8debabe8e81a724c88f79996d0df"
+          )
+          .map(_.toOption),
+        Some("Preimage: topl-secret")
+      )
+    } yield ()
+  }
+
+  tmpDirectory.test("Initialize wallet and add secret (blake2b)") { _ =>
+    for {
+      _ <- createWallet().run(walletContext)
+      _ <- assertIO(
+        addSecret(
+          "topl-secret",
+          "blake2b"
+        ).run(walletContext),
+        ExitCode.Success
+      )
+      _ <- assertIO(
+        getPreimage(
+          "0a0f4e1461688b3dbf01cad2882e5779998efcf7ee3800c80e964fd0424d7e0c",
+          "blake2b"
+        ).run(walletContext),
+        ExitCode.Success
+      )
+      _ <- assertIO(
+        walletController(WALLET)
+          .getPreimage(
+            Blake2b,
+            "0a0f4e1461688b3dbf01cad2882e5779998efcf7ee3800c80e964fd0424d7e0c"
+          )
+          .map(_.toOption),
+        Some("Preimage: topl-secret")
+      )
+    } yield ()
+  }
 }
