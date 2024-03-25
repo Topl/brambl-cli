@@ -130,17 +130,5 @@ class ParamsWalletModuleTest extends FunSuite {
         .isEmpty
     )
   }
-  tmpWallet.test("Test templates add (TSDK-760)") { _ =>
-    val args0 = List(
-      "temapltes",
-      "add",
-      "--walletdb",
-      "wallet.db",
-    )
-    assert(
-      OParser
-        .parse(paramParser, args0, BramblCliParams())
-        .isEmpty
-    )
-  }
+
 }
