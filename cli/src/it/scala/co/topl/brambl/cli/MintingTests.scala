@@ -7,6 +7,7 @@ import scala.concurrent.duration.Duration
 
 class MintingTests
     extends CatsEffectSuite
+    with TestLogging
     with CommonFunctions
     with MintingFunctions
     with CommonTxOperations

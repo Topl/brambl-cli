@@ -10,10 +10,12 @@ import java.nio.file.Paths
 
 class DigestTransactionTest
     extends CatsEffectSuite
+    with TestLogging
     with CommonFunctions
     with AliceConstants
     with CommonTxOperations
     with BobConstants {
+
   override val munitTimeout = Duration(180, "s")
 
   tmpDirectory.test("Move funds from genesis to alice") { _ =>
@@ -27,14 +29,14 @@ class DigestTransactionTest
     import scala.concurrent.duration._
     assertIO(
       for {
-        _ <- IO.println("Create a wallet for bob")
+        _ <- logger.info("Create a wallet for bob")
         _ <- assertIO(createWallet().run(bobContext), ExitCode.Success)
-        _ <- IO.println("Add bob's digest fellowship to bob's wallet")
+        _ <- logger.info("Add bob's digest fellowship to bob's wallet")
         _ <- assertIO(
           addFellowshipToWallet("bob_digest_fellowship").run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.println("Add a template to bob's wallet")
+        _ <- logger.info("Add a template to bob's wallet")
         _ <- assertIO(
           addTemplateToWallet(
             "digest_template",
@@ -42,7 +44,7 @@ class DigestTransactionTest
           ).run(bobContext),
           ExitCode.Success
         )
-        _ <- IO.println("Importing VK to bob's wallet")
+        _ <- logger.info("Importing VK to bob's wallet")
         _ <- IO(Files.createFile(Paths.get(EMPTY_VK)))
         _ <- assertIO(
           importVk("bob_digest_fellowship", "digest_template", EMPTY_VK).run(
@@ -53,8 +55,8 @@ class DigestTransactionTest
         _ <- IO(Files.delete(Paths.get(EMPTY_VK)))
         BOB_DIGEST_ADDRESS <- walletController(BOB_WALLET)
           .currentaddress("bob_digest_fellowship", "digest_template", None)
-        _ <- IO.println("Bob's digest address: " + BOB_DIGEST_ADDRESS)
-        _ <- IO.println("Moving funds (500 LVLs) from alice to bob digest")
+        _ <- logger.info("Bob's digest address: " + BOB_DIGEST_ADDRESS)
+        _ <- logger.info("Moving funds (500 LVLs) from alice to bob digest")
         _ <- assertIO(
           createSimpleTransactionToAddress(
             "self",
@@ -84,12 +86,12 @@ class DigestTransactionTest
           broadcastSimpleTx(ALICE_SECOND_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.println(
+        _ <- logger.info(
           "Check digest account from bob's wallet, lvl tokens"
         )
         res <- IO.asyncForIO.timeout(
           (for {
-            _ <- IO.println("Querying bob's digest")
+            _ <- logger.info("Querying bob's digest")
             queryRes <- queryAccount("bob_digest_fellowship", "digest_template").run(bobContext)
             _ <- IO.sleep(5.seconds)
           } yield queryRes)
@@ -138,12 +140,12 @@ class DigestTransactionTest
           broadcastSimpleTx(BOB_FIRST_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.println(
+        _ <- logger.info(
           "Check digest account from bob's wallet, lvl tokens"
         )
         res <- IO.asyncForIO.timeout(
           (for {
-            _ <- IO.println("Querying bob's address")
+            _ <- logger.info("Querying bob's address")
             queryRes <- queryAccount("self", "default").run(bobContext)
             _ <- IO.sleep(5.seconds)
           } yield queryRes)

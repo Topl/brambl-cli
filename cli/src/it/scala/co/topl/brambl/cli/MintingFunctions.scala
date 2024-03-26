@@ -9,6 +9,7 @@ import munit.CatsEffectSuite
 trait MintingFunctions extends PolicyTemplates {
 
   self: CatsEffectSuite
+    with TestLogging
     with CommonTxOperations
     with AliceConstants
     with BobConstants =>
@@ -16,7 +17,7 @@ trait MintingFunctions extends PolicyTemplates {
   import scala.concurrent.duration._
 
   def mintGroup(secure: Boolean = false) = for {
-    _ <- IO.println("Crate a group minting policy")
+    _ <- logger.info("Crate a group minting policy")
     ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
       .currentaddress("self", "default", None)
     utxos <- genusQueryAlgebra
@@ -25,7 +26,7 @@ trait MintingFunctions extends PolicyTemplates {
       )
       .map(_.filter(_.transactionOutput.value.value.isLvl))
     lvlUtxos = utxos.filter(_.transactionOutput.value.value.isLvl)
-    _ <- IO.println(s"Alice's address is $ALICE_CURRENT_ADDRESS")
+    _ <- logger.info(s"Alice's address is $ALICE_CURRENT_ADDRESS")
     aliceUtxoAddress = Encoding.encodeToBase58(
       lvlUtxos.head.outputAddress.id.value.toByteArray
     ) + "#" + lvlUtxos.head.outputAddress.index.toString
@@ -58,12 +59,12 @@ trait MintingFunctions extends PolicyTemplates {
       broadcastSimpleTx(ALICE_FIRST_GROUP_MINTING_TX_PROVED, secure),
       ExitCode.Success
     )
-    _ <- IO.println(
+    _ <- logger.info(
       "Check change  account for from alice's wallet, group tokens"
     )
     res <- IO.asyncForIO.timeout(
       (for {
-        _ <- IO.println("Querying alice's change account")
+        _ <- logger.info("Querying alice's change account")
         queryRes <- queryAccountGroupTokens("self", "default", None, secure).run(
           aliceContext
         )
@@ -75,7 +76,7 @@ trait MintingFunctions extends PolicyTemplates {
   } yield res
 
   def mintSeries(secure: Boolean = false) = for {
-    _ <- IO.println("Crate a series minting policy")
+    _ <- logger.info("Crate a series minting policy")
     ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
       .currentaddress("self", "default", None)
     utxos <- genusQueryAlgebra
@@ -84,7 +85,7 @@ trait MintingFunctions extends PolicyTemplates {
       )
       .map(_.filter(_.transactionOutput.value.value.isLvl))
     lvlUtxos = utxos.filter(_.transactionOutput.value.value.isLvl)
-    _ <- IO.println(s"Alice's address is $ALICE_CURRENT_ADDRESS")
+    _ <- logger.info(s"Alice's address is $ALICE_CURRENT_ADDRESS")
     aliceUtxoAddress = Encoding.encodeToBase58(
       lvlUtxos.head.outputAddress.id.value.toByteArray
     ) + "#" + lvlUtxos.head.outputAddress.index.toString
@@ -119,12 +120,12 @@ trait MintingFunctions extends PolicyTemplates {
       broadcastSimpleTx(ALICE_FIRST_SERIES_MINTING_TX_PROVED, secure),
       ExitCode.Success
     )
-    _ <- IO.println(
+    _ <- logger.info(
       "Check change  account for from alice's wallet, expected group and series tokens"
     )
     res <- IO.asyncForIO.timeout(
       (for {
-        _ <- IO.println("Querying alice's change account")
+        _ <- logger.info("Querying alice's change account")
         queryRes <- queryAccountSeriesTokens("self", "default", None, secure).run(
           aliceContext
         )
@@ -136,7 +137,7 @@ trait MintingFunctions extends PolicyTemplates {
   } yield res
 
   def mintAsset(secure: Boolean = false) = for {
-    _ <- IO.println("Crate an asset minting statement")
+    _ <- logger.info("Crate an asset minting statement")
     ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
       .currentaddress("self", "default", None)
     utxos <- genusQueryAlgebra
@@ -144,12 +145,12 @@ trait MintingFunctions extends PolicyTemplates {
         decodeAddress(ALICE_CURRENT_ADDRESS.get).toOption.get
       )
     groupTokenUtxo = utxos.filter(_.transactionOutput.value.value.isGroup)
-    _ <- IO.println(s"Alice's address is $ALICE_CURRENT_ADDRESS")
+    _ <- logger.info(s"Alice's address is $ALICE_CURRENT_ADDRESS")
     groupTokenUtxoAddress = Encoding.encodeToBase58(
       groupTokenUtxo.head.outputAddress.id.value.toByteArray
     ) + "#" + groupTokenUtxo.head.outputAddress.index.toString
     seriesTokenUtxo = utxos.filter(_.transactionOutput.value.value.isSeries)
-    _ <- IO.println(s"Alice's address is $ALICE_CURRENT_ADDRESS")
+    _ <- logger.info(s"Alice's address is $ALICE_CURRENT_ADDRESS")
     seriesTokenUtxoAddress = Encoding.encodeToBase58(
       seriesTokenUtxo.head.outputAddress.id.value.toByteArray
     ) + "#" + seriesTokenUtxo.head.outputAddress.index.toString
@@ -189,12 +190,12 @@ trait MintingFunctions extends PolicyTemplates {
       broadcastSimpleTx(ALICE_FIRST_ASSET_MINTING_TX_PROVED, secure),
       ExitCode.Success
     )
-    _ <- IO.println(
+    _ <- logger.info(
       "Check change  account for from alice's wallet, expected a new asset"
     )
     res <- IO.asyncForIO.timeout(
       (for {
-        _ <- IO.println("Querying alice's change account")
+        _ <- logger.info("Querying alice's change account")
         queryRes <- queryAccountAssetTokens("self", "default", None, secure).run(
           aliceContext
         )

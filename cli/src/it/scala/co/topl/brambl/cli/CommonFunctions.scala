@@ -11,6 +11,7 @@ import java.nio.file.Paths
 trait CommonFunctions extends PolicyTemplates {
 
   self: CatsEffectSuite
+    with TestLogging
     with CommonTxOperations
     with AliceConstants
     with BobConstants =>
@@ -34,7 +35,7 @@ trait CommonFunctions extends PolicyTemplates {
       _ <- createWallet().run(aliceContext)
       _ <- IO.asyncForIO.timeout(
         (for {
-          _ <- IO.println("Querying genesis to start")
+          _ <- logger.info("Querying genesis to start")
           queryRes <- queryAccount("nofellowship", "genesis", Some(1), secure)
             .run(aliceContext)
           _ <- IO.sleep(5.seconds)
@@ -43,8 +44,8 @@ trait CommonFunctions extends PolicyTemplates {
         240.seconds
       )
       ALICE_TO_ADDRESS <- walletController(ALICE_WALLET).currentaddress("self", "default", None)
-      _ <- IO.println(s"Alice's address is $ALICE_TO_ADDRESS")
-      _ <- IO.println("Moving funds from genesis to alice")
+      _ <- logger.info(s"Alice's address is $ALICE_TO_ADDRESS")
+      _ <- logger.info("Moving funds from genesis to alice")
       _ <- assertIO(
         createSimpleTransactionToAddress(
           "nofellowship",
@@ -75,7 +76,7 @@ trait CommonFunctions extends PolicyTemplates {
         broadcastSimpleTx(ALICE_FIRST_TX_PROVED, secure),
         ExitCode.Success
       )
-      _ <- IO.println("Check alice's address (is contained in the change)")
+      _ <- logger.info("Check alice's address (is contained in the change)")
       res <- IO.asyncForIO.timeout(
         (for {
           queryRes <- queryAccount("self", "default", None, secure).run(aliceContext)

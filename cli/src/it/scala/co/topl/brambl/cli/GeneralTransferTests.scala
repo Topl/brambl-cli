@@ -9,6 +9,7 @@ import scala.concurrent.duration.Duration
 
 class GeneralTransferTests
     extends CatsEffectSuite
+    with TestLogging
     with CommonFunctions
     with MintingFunctions
     with CommonTxOperations
@@ -33,13 +34,13 @@ class GeneralTransferTests
     import scala.concurrent.duration._
     assertIO(
       for {
-        _ <- IO.println("Create a wallet for bob")
+        _ <- logger.info("Create a wallet for bob")
         _ <- assertIO(createWallet().run(bobContext), ExitCode.Success)
         ALICE_CURRENT_ADDRESS <- walletController(ALICE_WALLET)
           .currentaddress("self", "default", None)
         BOB_CURRENT_ADDRESS <- walletController(BOB_WALLET)
           .currentaddress("self", "default", None)
-        _ <- IO.println("Bob's current address: " + BOB_CURRENT_ADDRESS)
+        _ <- logger.info("Bob's current address: " + BOB_CURRENT_ADDRESS)
         utxos <- genusQueryAlgebra
           .queryUtxo(
             decodeAddress(ALICE_CURRENT_ADDRESS.get).toOption.get
@@ -75,12 +76,12 @@ class GeneralTransferTests
           broadcastSimpleTx(ALICE_TRANSFER_GROUP_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.println(
+        _ <- logger.info(
           "Check change  account for from bob's wallet, group tokens"
         )
         res <- IO.asyncForIO.timeout(
           (for {
-            _ <- IO.println("Querying bob's account")
+            _ <- logger.info("Querying bob's account")
             queryRes <- queryAccountGroupTokens("self", "default").run(
               bobContext
             )
@@ -137,12 +138,12 @@ class GeneralTransferTests
           broadcastSimpleTx(ALICE_TRANSFER_SERIES_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.println(
+        _ <- logger.info(
           "Check change  account for from bob's wallet, series tokens"
         )
         res <- IO.asyncForIO.timeout(
           (for {
-            _ <- IO.println("Querying bob's account")
+            _ <- logger.info("Querying bob's account")
             queryRes <- queryAccountSeriesTokens("self", "default").run(
               bobContext
             )
@@ -200,12 +201,12 @@ class GeneralTransferTests
           broadcastSimpleTx(ALICE_TRANSFER_ASSET_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.println(
+        _ <- logger.info(
           "Check change  account for from bob's wallet, asset tokens"
         )
         res <- IO.asyncForIO.timeout(
           (for {
-            _ <- IO.println("Querying bob's account")
+            _ <- logger.info("Querying bob's account")
             queryRes <- queryAccountAssetTokens("self", "default").run(
               bobContext
             )

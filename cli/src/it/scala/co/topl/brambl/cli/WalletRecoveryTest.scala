@@ -12,6 +12,7 @@ import java.io.FileInputStream
 
 class WalletRecoveryTest
     extends CatsEffectSuite
+    with TestLogging
     with WalletConstants
     with CommonTxOperations {
 
@@ -36,7 +37,7 @@ class WalletRecoveryTest
         _ <- createWallet().run(walletContext)
         _ <- IO.asyncForIO.timeout(
           (for {
-            _ <- IO.println("Querying genesis to start")
+            _ <- logger.info("Querying genesis to start")
             queryRes <- queryAccount("nofellowship", "genesis", Some(1))
               .run(walletContext)
             _ <- IO.sleep(5.seconds)
@@ -45,8 +46,8 @@ class WalletRecoveryTest
           240.seconds
         )
         next_address <- walletController(WALLET).currentaddress("self", "default", None)
-        _ <- IO.println(s"Next address is $next_address")
-        _ <- IO.println("Moving funds from genesis")
+        _ <- logger.info(s"Next address is $next_address")
+        _ <- logger.info("Moving funds from genesis")
         _ <- assertIO(
           createSimpleTransactionToAddress(
             "nofellowship",
@@ -76,7 +77,7 @@ class WalletRecoveryTest
           broadcastSimpleTx(WALLET_FIRST_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.println("Query Account")
+        _ <- logger.info("Query Account")
         res <- IO.asyncForIO.timeout(
           (for {
             queryRes <- queryAccount("self", "default").run(walletContext)
@@ -105,7 +106,7 @@ class WalletRecoveryTest
     import scala.concurrent.duration._
     assertIO(
       for {
-        _ <- IO.println("Recover wallet key")
+        _ <- logger.info("Recover wallet key")
         mnemonic <- extractMnemonic(WALLET_MNEMONIC)
         _ <- IO(Files.deleteIfExists(Paths.get(WALLET)))
         _ <- assertIO(
@@ -115,8 +116,8 @@ class WalletRecoveryTest
           ExitCode.Success
         )
         next_address <- walletController(WALLET).currentaddress("self", "default", None)
-        _ <- IO.println(s"Next address is $next_address")
-        _ <- IO.println("Spend funds (500 LVLs) using new key")
+        _ <- logger.info(s"Next address is $next_address")
+        _ <- logger.info("Spend funds (500 LVLs) using new key")
         _ <- assertIO(
           createSimpleTransactionToAddress(
             "self",
@@ -146,7 +147,7 @@ class WalletRecoveryTest
           broadcastSimpleTx(WALLET_SECOND_TX_PROVED),
           ExitCode.Success
         )
-        _ <- IO.println("Query account")
+        _ <- logger.info("Query account")
         res <- IO.asyncForIO.timeout(
           (for {
             queryRes <- queryAccount("self", "default").run(
