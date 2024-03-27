@@ -141,6 +141,7 @@ object BramblCliParamsParserModule {
     )
     .action((x, c) => c.copy(templateName = x))
     .text("Name of the template. (mandatory)")
+    .required()
 
   val networkArg = opt[NetworkIdentifiers]('n', "network")
     .action((x, c) => c.copy(network = x))
@@ -155,6 +156,7 @@ object BramblCliParamsParserModule {
       else success
     )
     .text("Password for the encrypted key. (mandatory)")
+    .required()
 
   val fellowshipNameArg = opt[String]("fellowship-name")
     .validate(x =>
@@ -163,6 +165,7 @@ object BramblCliParamsParserModule {
     )
     .action((x, c) => c.copy(fellowshipName = x))
     .text("Name of the fellowship. (mandatory)")
+    .required()
 
   val secretArg = opt[String]("secret")
     .validate(x =>
@@ -390,6 +393,7 @@ object BramblCliParamsParserModule {
         failure(s"Key file $x does not exist")
       else success
     )
+    .required()
 
   val keyfileAndPassword = {
     Seq(
@@ -436,6 +440,7 @@ object BramblCliParamsParserModule {
             )
             .action((x, c) => c.copy(lockTemplate = x))
             .text("Template template. (mandatory)")
+            .required()
         )
     )
 
