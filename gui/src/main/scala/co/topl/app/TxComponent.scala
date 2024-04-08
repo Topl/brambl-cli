@@ -17,6 +17,10 @@ class TxComponent(networkVar: Var[String]) {
 
   lazy val fromTemplate = Var("")
 
+  lazy val availableAssets: Var[List[(Option[String], Option[String])]] = Var(List())
+
+  lazy val currentAsset: Var[String] = Var("LVL")
+
   lazy val addressVar = Var("")
 
   lazy val fromInteractionVar = Var("")
@@ -69,7 +73,8 @@ class TxComponent(networkVar: Var[String]) {
           currentSection,
           fromFellowship,
           fromTemplate,
-          fromInteractionVar
+          fromInteractionVar,
+          availableAssets
         ).component,
         ToSectionComponent(
           currentSection,
@@ -77,7 +82,9 @@ class TxComponent(networkVar: Var[String]) {
           addressVar,
           amountVar,
           feeVar,
-          txStatusVar
+          txStatusVar,
+          currentAsset,
+          availableAssets
         ).component,
         SendTxComponent(
           currentSection,
@@ -88,6 +95,7 @@ class TxComponent(networkVar: Var[String]) {
           addressVar,
           amountVar,
           feeVar,
+          currentAsset,
           txStatusVar
         ).component
       ),

@@ -11,6 +11,7 @@ import co.topl.brambl.wallet.WalletApi
 import com.google.protobuf.ByteString
 import io.circe.Json
 import co.topl.genus.services.Txo
+import co.topl.genus.services.TokenServiceFs2Grpc
 
 trait SimpleMintingAlgebra[F[_]] {
   def createSimpleGroupMintingTransactionFromParams(
@@ -87,9 +88,9 @@ object SimpleMintingAlgebra {
     ) = for {
       keyPair <-
         walletManagementUtils
-          .loadKeys(
-            keyfile,
-            password
+        .loadKeys(
+          keyfile,
+          password
           )
       someCurrentIndices <- getCurrentIndices(
         fromFellowship,

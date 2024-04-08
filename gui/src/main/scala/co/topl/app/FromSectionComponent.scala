@@ -14,7 +14,8 @@ case class FromSectionComponent(
     currentSection: Var[TxSection],
     fromFellowship: Var[String],
     fromTemplate: Var[String],
-    fromInteraction: Var[String]
+    fromInteraction: Var[String],
+    availableAssets: Var[List[(Option[String], Option[String])]]
 ) {
 
   private val fellowshipOptions: Var[Seq[Node]] = Var(
@@ -33,6 +34,13 @@ case class FromSectionComponent(
       )
     )
   )
+
+  private val assetBalance: Var[Seq[Node]] = Var(
+    Seq(
+      tr(td(colSpan := 2, "No assets or LVLs available"))
+    )
+  )
+
   private val lvlBalance: Var[Either[String, String]] = Var(Right("0"))
 
   private lazy val fetchTemplates = FetchStream
@@ -248,6 +256,23 @@ case class FromSectionComponent(
               ifEmpty = emptyNode
             )
         ),
+        label(forId := "templates", cls := "form-label", "Balance"),
+        table(
+          cls := "table",
+          thead(
+            tr(
+              th(
+                "Amount"
+              ),
+              th(
+                "Asset"
+              )
+            )
+          ),
+          tbody(
+            children <-- assetBalance
+          )
+        ),
         div(
           cls := "alert",
           cls <-- lvlBalance.signal.map { x =>
@@ -258,7 +283,7 @@ case class FromSectionComponent(
           child.text <-- lvlBalance.signal.map(x =>
             x match {
               case Left(error) => error
-              case Right(x)    => s"Current balance is $x"
+              case Right(_)    => s"Successfully obtained balance."
             }
           )
         ),
@@ -308,7 +333,37 @@ case class FromSectionComponent(
             import io.circe.parser.parse
             parse(text).toOption
               .map(_.as[BalanceResponseDTO].toOption match {
-                case Some(x) => lvlBalance.update(_ => Right(x.lvlBalance))
+                case Some(x) =>
+                  availableAssets.update(_ =>
+                    (None, None) :: (x.groupBalances
+                      .map(y => (Some(y.id), None)) ++ x.seriesBalances
+                      .map(y => (None, Some(y.id))) ++ x.assetBalances
+                      .map(y => (Some(y.group), Some(y.series))))
+                  )
+
+                  assetBalance.update(_ =>
+                    tr(td(x.lvlBalance), td("LVL")) ::
+                      x.groupBalances.map(y =>
+                        tr(
+                          td(y.balance),
+                          td("Group Token [" + y.id + "]")
+                        )
+                      ) ++ x.seriesBalances.map(y =>
+                        tr(
+                          td(y.balance),
+                          td("Series Token [" + y.id + "]")
+                        )
+                      ) ++
+                      x.assetBalances.map(y =>
+                        tr(
+                          td(y.balance),
+                          td(
+                            "Asset [" + y.group + ":" + y.series + " " + "]"
+                          )
+                        )
+                      )
+                  )
+                  lvlBalance.update(_ => Right(x.lvlBalance))
                 case None =>
                   lvlBalance.update(_ => Left("Error decoding JSON!"))
 
