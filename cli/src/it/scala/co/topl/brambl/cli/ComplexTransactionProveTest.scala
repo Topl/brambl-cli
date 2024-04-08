@@ -50,7 +50,7 @@ class ComplexTransactionProveTest
         _ <- assertIO(
           addTemplateToWallet(
             "or_sign",
-            "threshold(1, sign(1) or sign(0))"
+            "threshold(1, sign(0) or sign(1))"
           ).run(bobContext),
           ExitCode.Success
         )
@@ -63,15 +63,15 @@ class ComplexTransactionProveTest
         _ <- assertIO(
           exportVk("alice_bob_0", "or_sign", BOB_VK).run(bobContext),
           ExitCode.Success
-        )
+          )
         _ <- IO.println("Importing VK to alice's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "or_sign", ALICE_VK).run(bobContext),
+          importVk("alice_bob_0", "or_sign", ALICE_VK, BOB_VK).run(bobContext),
           ExitCode.Success
         )
         _ <- IO.println("Importing VK to bob's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "or_sign", BOB_VK).run(aliceContext),
+          importVk("alice_bob_0", "or_sign", ALICE_VK, BOB_VK).run(aliceContext),
           ExitCode.Success
         )
         _ <- IO.println("Moving funds (500 LVLs) from alice to shared account")
@@ -138,7 +138,7 @@ class ComplexTransactionProveTest
         _ <- assertIO(
           addTemplateToWallet(
             "and_sign",
-            "threshold(1, sign(1) and sign(0))"
+            "threshold(1, sign(0) and sign(1))"
           ).run(bobContext),
           ExitCode.Success
         )
@@ -154,12 +154,12 @@ class ComplexTransactionProveTest
         )
         _ <- IO.println("Importing VK to alice's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "and_sign", ALICE_VK_AND).run(bobContext),
+          importVk("alice_bob_0", "and_sign", ALICE_VK_AND, BOB_VK_AND).run(bobContext),
           ExitCode.Success
         )
         _ <- IO.println("Importing VK to bob's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "and_sign", BOB_VK_AND).run(aliceContext),
+          importVk("alice_bob_0", "and_sign", ALICE_VK_AND, BOB_VK_AND).run(aliceContext),
           ExitCode.Success
         )
         _ <- IO.println(

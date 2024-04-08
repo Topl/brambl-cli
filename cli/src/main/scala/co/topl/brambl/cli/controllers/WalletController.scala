@@ -172,6 +172,16 @@ class WalletController[F[_]: Sync](
         fellowshipName,
         templateName
       )
+      keypair <- walletManagementUtils.loadKeys(keyfile, password)
+      deriveChildKey <- walletApi.deriveChildKeys(keypair, indices.get)
+      deriveChildKeyBase <- walletApi.deriveChildKeysPartial(
+        keypair,
+        indices.get.x,
+        indices.get.y
+      )
+      deriveChildKeyString = Encoding.encodeToBase58(
+        deriveChildKeyBase.vk.toByteArray
+      )
       errorOrLock <- lockTempl.build(
         keyAndEncodedKeys.toList.map(x => x._1)
       )
@@ -186,7 +196,7 @@ class WalletController[F[_]: Sync](
         ), // lockPredicate
         lockAddress.toBase58(), // lockAddress
         Some("ExtendedEd25519"),
-        keyAndEncodedKeys.headOption.map(x => x._2),
+        Some(Encoding.encodeToBase58(deriveChildKey.vk.toByteArray)),
         indices.get
       )
       _ <- walletStateAlgebra.addEntityVks(
