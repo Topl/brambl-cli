@@ -21,59 +21,59 @@ object FullTxOps
     with SimpleTransactionModeModule
     with TxModeModule {
 
-  private def selectToken(token: String) = 
+  private def selectToken(token: String) =
     if (token == "LVL")
-            TokenType.lvl
-          else if (token.startsWith(":"))
-            TokenType.series
-          else if (token.endsWith(":"))
-            TokenType.group
-          else
-            TokenType.asset
-            
-  private def selectGroupId(token: String): Option[GroupId] =
-          if (token.endsWith(":"))
-            Some(
-              GroupId(
-                ByteString.copyFrom(
-                  Encoding.decodeFromHex(token.dropRight(1)).toOption.get
-                )
-              )
-            )
-          else if (token.startsWith(":"))
-            None
-          else if (token == "LVL")
-            None
-          else
-            Some(
-              GroupId(
-                ByteString.copyFrom(
-                  Encoding.decodeFromHex(token.split(":").head).toOption.get
-                )
-              )
-            )
+      TokenType.lvl
+    else if (token.startsWith(":"))
+      TokenType.series
+    else if (token.endsWith(":"))
+      TokenType.group
+    else
+      TokenType.asset
 
-      def selectSeriesId(token: String): Option[SeriesId] =
-          if (token.startsWith(":"))
-            Some(
-              SeriesId(
-                ByteString.copyFrom(
-                  Encoding.decodeFromHex(token.drop(1)).toOption.get
-                )
-              )
-            )
-          else if (token.endsWith(":"))
-            None
-          else if (token == "LVL")
-            None
-          else
-            Some(
-              SeriesId(
-                ByteString.copyFrom(
-                  Encoding.decodeFromHex(token.split(":").last).toOption.get
-                )
-              )
-            )
+  private def selectGroupId(token: String): Option[GroupId] =
+    if (token.endsWith(":"))
+      Some(
+        GroupId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.dropRight(1)).toOption.get
+          )
+        )
+      )
+    else if (token.startsWith(":"))
+      None
+    else if (token == "LVL")
+      None
+    else
+      Some(
+        GroupId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.split(":").head).toOption.get
+          )
+        )
+      )
+
+  def selectSeriesId(token: String): Option[SeriesId] =
+    if (token.startsWith(":"))
+      Some(
+        SeriesId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.drop(1)).toOption.get
+          )
+        )
+      )
+    else if (token.endsWith(":"))
+      None
+    else if (token == "LVL")
+      None
+    else
+      Some(
+        SeriesId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.split(":").last).toOption.get
+          )
+        )
+      )
 
   def sendFunds(
       networkId: NetworkIdentifiers,
