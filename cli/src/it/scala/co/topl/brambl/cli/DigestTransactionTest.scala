@@ -43,7 +43,10 @@ class DigestTransactionTest
           ExitCode.Success
         )
         _ <- IO.println("Importing VK to bob's wallet")
-        _ <- IO(Files.createFile(Paths.get(EMPTY_VK)))
+        _ <- assertIO(
+          exportVk("bob_digest_fellowship", "digest_template", EMPTY_VK).run(bobContext),
+          ExitCode.Success
+        )
         _ <- assertIO(
           importVk("bob_digest_fellowship", "digest_template", EMPTY_VK).run(
             bobContext

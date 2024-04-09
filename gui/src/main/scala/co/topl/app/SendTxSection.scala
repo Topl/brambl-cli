@@ -16,6 +16,7 @@ case class SendTxComponent(
     addressVar: Var[String],
     amountVar: Var[String],
     feeVar: Var[String],
+    currentTokenVar: Var[String],
     txStatusVar: Var[Option[Either[String, String]]]
 ) {
 
@@ -146,6 +147,7 @@ case class SendTxComponent(
                       addressVar.now(),
                       amountVar.now(),
                       feeVar.now(),
+                      currentTokenVar.now(),
                       networkVar.now()
                     ).asJson
                   ),

@@ -70,6 +70,7 @@ trait ServerModule extends FellowshipsModeModule with WalletModeModule {
           AddressCodecs.decodeAddress(input.address).toOption,
           input.amount.toLong,
           input.fee.toLong,
+          input.token,
           Files.createTempFile("txFile", ".pbuf").toAbsolutePath().toString(),
           Files
             .createTempFile("provedTxFile", ".pbuf")

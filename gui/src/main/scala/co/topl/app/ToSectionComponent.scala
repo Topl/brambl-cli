@@ -8,7 +8,9 @@ case class ToSectionComponent(
     addressVar: Var[String],
     amountVar: Var[String],
     feeVar: Var[String],
-    txStatusVar: Var[Option[Either[String, String]]]
+    txStatusVar: Var[Option[Either[String, String]]],
+    currentAsset: Var[String],
+    availableAssets: Var[List[(Option[String], Option[String])]]
 ) {
 
   private lazy val networkAndAddressSignal =
@@ -28,12 +30,12 @@ case class ToSectionComponent(
       UIUtils.isAmount(amount)
     )
       h4(
-        s"Send ", 
+        s"Send ",
         span(cls := "badge bg-secondary", amount, "LVLs"),
         " to ",
         span(cls := "badge bg-secondary", address)
       )
-    else if ( 
+    else if (
       Validation
         .decodeAddress(address, UIUtils.hexToInt(network))
         .isRight
@@ -175,8 +177,37 @@ case class ToSectionComponent(
             div(
               idAttr := "amountHelp",
               cls := "form-text",
-              "The amount of LVLs to be sent."
+              "The amount of assets to be sent."
             )
+          ),
+          label(
+            forId := "token",
+            cls := "form-label",
+            "Token"
+          ),
+          select(
+            cls := "form-select form-select-lg mb-3",
+            onChange.mapToValue.setAsValue --> currentAsset.writer,
+            dataAttr("aria-label") := ".form-select-lg example",
+            children <-- availableAssets.signal.map { e =>
+              e.map(_ match {
+                case (None, None) =>
+                  option(
+                    value := "LVL",
+                    "LVL"
+                  )
+                case (Some(id), None) =>
+                  option(value := s"$id:", s"Group Token [$id]")
+                case (None, Some(id)) =>
+                  option(value := s":$id", s"Series Token [$id]")
+                case (Some(group), Some(series)) =>
+                  option(
+                    value := s"$group:$series",
+                    s"Asset Token [$group]:[$series]"
+                  )
+              })
+
+            }
           ),
           div(
             cls := "mb-3",

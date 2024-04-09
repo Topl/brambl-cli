@@ -52,9 +52,11 @@ class WalletController[F[_]: Sync](
       .fill(32 - secretTxt.getBytes().length)(0.toByte)
     val hashedSecret =
       if (digest == Sha256)
-        sha256Hash.hash(
+        sha256Hash
+          .hash(
             paddedSecret
-          ).value
+          )
+          .value
       else
         (new Blake2b256).hash(
           paddedSecret
@@ -181,7 +183,7 @@ class WalletController[F[_]: Sync](
         deriveChildKeyBase.vk.toByteArray
       )
       errorOrLock <- lockTempl.build(
-        deriveChildKey.vk :: keyAndEncodedKeys.toList.map(x => x._1)
+        keyAndEncodedKeys.toList.map(x => x._1)
       )
       lockAddress = LockAddress(
         networkId,
@@ -200,7 +202,7 @@ class WalletController[F[_]: Sync](
       _ <- walletStateAlgebra.addEntityVks(
         fellowshipName,
         templateName,
-        deriveChildKeyString :: keyAndEncodedKeys.toList.map(_._2)
+        keyAndEncodedKeys.toList.map(_._2)
       )
       _ <- lockTempl.build(keyAndEncodedKeys.toList.map(_._1))
     } yield Right("Successfully imported verification keys")

@@ -590,6 +590,32 @@ trait CommonTxOperations
         )
       )
     )
+  def importVk(
+      fellowshipName: String,
+      templateName: String,
+      vkFile0: String,
+      vkFile1: String
+  ) =
+    Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>
+      Main.run(
+        List(
+          "wallet",
+          "import-vks",
+          "--input-vks",
+          s"${vkFile0},${vkFile1}",
+          "--fellowship-name",
+          fellowshipName,
+          "--template-name",
+          templateName,
+          "--walletdb",
+          c.walletFile,
+          "--keyfile",
+          c.keyFile,
+          "-w",
+          c.password
+        )
+      )
+    )
 
   def addFellowshipToWallet(fellowshipName: String) =
     Kleisli[IO, WalletKeyConfig, ExitCode]((c: WalletKeyConfig) =>

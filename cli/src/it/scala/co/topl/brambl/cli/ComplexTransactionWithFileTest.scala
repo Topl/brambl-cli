@@ -2,6 +2,7 @@ package co.topl.brambl.cli
 
 import cats.effect.ExitCode
 import cats.effect.IO
+import cats.effect.kernel.Resource
 import co.topl.brambl.codecs.AddressCodecs.decodeAddress
 import co.topl.brambl.utils.Encoding
 import munit.CatsEffectSuite
@@ -10,7 +11,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import scala.concurrent.duration.Duration
-import cats.effect.kernel.Resource
 import scala.io.Source
 
 class ComplexTransactionWithFileTest
@@ -153,14 +153,14 @@ class ComplexTransactionWithFileTest
         _ <- assertIO(
           addTemplateToWallet(
             "or_sign",
-            "threshold(1, sign(1) or sign(0))"
+            "threshold(1, sign(0) or sign(1))"
           ).run(bobContext),
           ExitCode.Success
         )
         _ <- assertIO(
           addTemplateToWallet(
             "and_sign",
-            "threshold(1, sign(1) and sign(0))"
+            "threshold(1, sign(0) and sign(1))"
           ).run(bobContext),
           ExitCode.Success
         )
@@ -178,14 +178,14 @@ class ComplexTransactionWithFileTest
         )
         _ <- IO.println("Importing or VK to bob's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR).run(
+          importVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR, BOB_COMPLEX_VK_OR).run(
             bobContext
           ),
           ExitCode.Success
         )
         _ <- IO.println("Importing or VK to alice's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "or_sign", BOB_COMPLEX_VK_OR).run(
+          importVk("alice_bob_0", "or_sign", ALICE_COMPLEX_VK_OR, BOB_COMPLEX_VK_OR).run(
             aliceContext
           ),
           ExitCode.Success
@@ -206,14 +206,14 @@ class ComplexTransactionWithFileTest
         )
         _ <- IO.println("Importing and VK to bob's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND).run(
+          importVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND, BOB_COMPLEX_VK_AND).run(
             bobContext
           ),
           ExitCode.Success
         )
         _ <- IO.println("Importing VK to alice's wallet")
         _ <- assertIO(
-          importVk("alice_bob_0", "and_sign", BOB_COMPLEX_VK_AND).run(
+          importVk("alice_bob_0", "and_sign", ALICE_COMPLEX_VK_AND, BOB_COMPLEX_VK_AND).run(
             aliceContext
           ),
           ExitCode.Success

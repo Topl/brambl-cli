@@ -11,11 +11,69 @@ import co.topl.brambl.cli.modules.TxModeModule
 import co.topl.brambl.cli.modules.WalletModeModule
 import co.topl.brambl.constants.NetworkConstants
 import co.topl.brambl.models.LockAddress
+import co.topl.brambl.models.GroupId
+import co.topl.brambl.utils.Encoding
+import com.google.protobuf.ByteString
+import co.topl.brambl.models.SeriesId
 
 object FullTxOps
     extends WalletModeModule
     with SimpleTransactionModeModule
     with TxModeModule {
+
+  private def selectToken(token: String) =
+    if (token == "LVL")
+      TokenType.lvl
+    else if (token.startsWith(":"))
+      TokenType.series
+    else if (token.endsWith(":"))
+      TokenType.group
+    else
+      TokenType.asset
+
+  private def selectGroupId(token: String): Option[GroupId] =
+    if (token.endsWith(":"))
+      Some(
+        GroupId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.dropRight(1)).toOption.get
+          )
+        )
+      )
+    else if (token.startsWith(":"))
+      None
+    else if (token == "LVL")
+      None
+    else
+      Some(
+        GroupId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.split(":").head).toOption.get
+          )
+        )
+      )
+
+  def selectSeriesId(token: String): Option[SeriesId] =
+    if (token.startsWith(":"))
+      Some(
+        SeriesId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.drop(1)).toOption.get
+          )
+        )
+      )
+    else if (token.endsWith(":"))
+      None
+    else if (token == "LVL")
+      None
+    else
+      Some(
+        SeriesId(
+          ByteString.copyFrom(
+            Encoding.decodeFromHex(token.split(":").last).toOption.get
+          )
+        )
+      )
 
   def sendFunds(
       networkId: NetworkIdentifiers,
@@ -31,6 +89,7 @@ object FullTxOps
       toAddress: Option[LockAddress],
       amount: Long,
       fee: Long,
+      token: String,
       txFile: String,
       provedTxFile: String,
       host: String,
@@ -84,9 +143,9 @@ object FullTxOps
           amount,
           fee,
           txFile,
-          TokenType.lvl,
-          None,
-          None
+          selectToken(token),
+          selectGroupId(token),
+          selectSeriesId(token)
         )
       )
       _ <- EitherT(
@@ -103,7 +162,7 @@ object FullTxOps
         )
       )
     } yield "Transaction id: " + res).value.map {
-      case Left(err)  => 
+      case Left(err) =>
         println(err)
         Left(err)
       case Right(res) => Right(res)

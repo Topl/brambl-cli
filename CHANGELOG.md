@@ -24,7 +24,8 @@ digest instead of the base64 representation.
 - The `import-vks` command now supports empty files for the verification key when
 the fellowship is a `nofellowship`.
 - Migrated the `BravlSc` dependency to `2.0.0-beta3`.
-- Migrated the `Bifrost` dependency to `2.0.0-beta2`.
+- Migrated the `Bifrost` dependency to `2.0.0-beta3`.
+- Added support for multiple assets to the GUI.
 
 ## [v2.0.0-beta3] - 2024-01-10
 

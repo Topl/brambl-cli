@@ -7,6 +7,7 @@ case class TxRequest(
     address: String,
     amount: String,
     fee: String,
+    token: String,
     network: String
 )
 
