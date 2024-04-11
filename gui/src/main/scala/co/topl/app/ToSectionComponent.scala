@@ -22,6 +22,19 @@ case class ToSectionComponent(
   private lazy val networdAddressAndAmountAndCurrentSectionSignal =
     networkAddressAndAmountSignal.combineWith(currentSection.signal)
 
+  def assetLabel(asset: String) =
+    asset match {
+      case "LVL" => "LVL"
+      case _ =>
+        val Array(group, series) = asset.split(":")
+        if (group.isEmpty)
+          s"Series Token [${series.take(5)}...]"
+        else if (series.isEmpty)
+          s"Group Token [${group.take(5)}...]"
+        else
+          s"Asset Token [${group.take(5)}...]:[${series.take(5)}...]"
+    }
+
   private def getHeader(address: String, network: String, amount: String) =
     if (
       Validation
@@ -31,7 +44,7 @@ case class ToSectionComponent(
     )
       h4(
         s"Send ",
-        span(cls := "badge bg-secondary", amount, "LVLs"),
+        span(cls := "badge bg-secondary", amount, " ", assetLabel(currentAsset.now())),
         " to ",
         span(cls := "badge bg-secondary", address)
       )
