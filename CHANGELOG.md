@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v2.0.0-beta5] - 2024-mm-dd (this date should be changed on release)
+## [v2.0.0-beta6] - 2024-mm-dd (this date should be changed on release)
 
 ### Added
 
@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed label in transfer GUI.
 
 ### Removed
+
+## [v2.0.0-beta5] - 2024-04-11
+
+### Changed
+
+- Fixed label in transfer GUI.
 
 ## [v2.0.0-beta4] - 2024-04-10
 ### Added
