@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'brambl-cli',
   tagline: 'The Swiss Army Knife of the Apparatus Blockchain',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/apparatus-favicon.png',
 
   // Set the production url of your site here
   url: 'https://topl.github.io/',
@@ -63,7 +63,7 @@ const config = {
         title: '',
         logo: {
           alt: 'Brambll CLI Logo',
-          src: 'img/logo.svg',
+          src: 'img/apparatus-logo.svg',
         },
         items: [
           {to: '/docs/current/intro', label: 'Getting Started', position: 'left'},

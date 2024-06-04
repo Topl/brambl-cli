@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Fixed label in transfer GUI.
+- Updated documentation: replaced instances of "Topl" with "Apparatus".
 
 ### Removed
 
