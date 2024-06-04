@@ -9,7 +9,7 @@ const FeatureList = [
     description: (
       <>
         brambl-cli was designed from the ground up to be easily installed and
-        used to get you using the Topl Blockchain in no time.
+        used to get you using the Apparatus Blockchain in no time.
       </>
     ),
   },
@@ -19,16 +19,16 @@ const FeatureList = [
     description: (
       <>
         brambl-cli lets use use the most advanced functionality available
-        in the Topl Blockchain, without needing to code.
+        in the Apparatus Blockchain, without needing to code.
       </>
     ),
   },
   {
-    title: 'Powered by the Topl Blockchain',
+    title: 'Powered by the Apparatus Blockchain',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Get to use the full power of the Topl Blockchain with brambl-cli.
+        Get to use the full power of the Apparatus Blockchain with brambl-cli.
       </>
     ),
   },
