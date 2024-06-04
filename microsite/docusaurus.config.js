@@ -7,8 +7,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'brambl-cli',
-  tagline: 'The Swiss Army Knife of the Topl Blockchain',
-  favicon: 'img/favicon.ico',
+  tagline: 'The Swiss Army Knife of the Apparatus Blockchain',
+  favicon: 'img/apparatus-favicon.png',
 
   // Set the production url of your site here
   url: 'https://topl.github.io/',
@@ -63,7 +63,7 @@ const config = {
         title: '',
         logo: {
           alt: 'Brambll CLI Logo',
-          src: 'img/logo.svg',
+          src: 'img/apparatus-logo.svg',
         },
         items: [
           {to: '/docs/current/intro', label: 'Getting Started', position: 'left'},
@@ -129,7 +129,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Topl, LLC. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Apparatus, LLC. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,

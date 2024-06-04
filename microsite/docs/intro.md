@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 # Getting Started
 
-The Brambl CLI is a command line interface to the Topl platform. It is a simple tool to interact with the Topl platform.
+The Brambl CLI is a command line interface to the Apparatus platform. It is a simple tool to interact with the platform.
 
 ## System Requirements
 
