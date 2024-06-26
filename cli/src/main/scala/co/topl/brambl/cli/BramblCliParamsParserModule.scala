@@ -497,6 +497,20 @@ object BramblCliParamsParserModule {
     .action((_, c) => c.copy(mode = BramblCliMode.bifrostquery))
     .text("Bifrost query mode")
     .children(
+      cmd("mint-block")
+        .action((_, c) => c.copy(subcmd = BramblCliSubCmd.mintblock))
+        .text("Mint given number of blocks")
+        .children(
+          (hostPort ++ Seq(
+            opt[Int]("nb-blocks")
+              .action((x, c) => c.copy(nbOfBlocks = x))
+              .text("The number of blocks to mint. (mandatory")
+              .validate(x =>
+                if (x >= 0) success
+                else failure("Number of blocks must be bigger or equal to 1")
+              )
+          )): _*
+        ),
       cmd("block-by-height")
         .action((_, c) => c.copy(subcmd = BramblCliSubCmd.blockbyheight))
         .text("Get the block at a given height")

@@ -22,7 +22,7 @@ object BramblCliSubCmd extends Enumeration {
   val invalid, init, recoverkeys, utxobyaddress, blockbyheight, blockbyid,
       transactionbyid, create, prove, broadcast, currentaddress, list, add,
       inspect, exportvk, addsecret, getpreimage, importvks, sync, setinteraction,
-      listinteraction, balance = Value
+      listinteraction, balance, mintblock = Value
 }
 
 sealed abstract class NetworkIdentifiers(
@@ -112,6 +112,7 @@ final case class BramblCliParams(
     fromFellowship: String = "self",
     fromTemplate: String = "default",
     fromAddress: Option[String] = None,
+    nbOfBlocks: Int = -1,
     height: Long = -1,
     blockId: String = "",
     transactionId: String = "",
