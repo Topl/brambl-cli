@@ -6,8 +6,14 @@ import co.topl.brambl.models.transaction.IoTransaction
 import co.topl.consensus.models.BlockId
 import co.topl.node.models.BlockBody
 import co.topl.consensus.models.BlockHeader
+import co.topl.node.services.SynchronizationTraversalRes
 
 abstract class BaseBifrostQueryAlgebra[F[_]] extends BifrostQueryAlgebra[F] {
+
+  override def synchronizationTraversal()
+      : F[Iterator[SynchronizationTraversalRes]] = ???
+
+  override def makeBlock(nbOfBlocks: Int): F[Unit] = ???
 
   override def blockByHeight(
       height: Long
