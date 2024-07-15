@@ -8,7 +8,7 @@ import co.topl.brambl.cli.BramblCliParams
 import scopt.OParser
 import co.topl.brambl.cli.BramblCliParamsParserModule
 
-trait BifrostQueryModeModule extends RpcChannelResource  {
+trait BifrostQueryModeModule extends RpcChannelResource {
 
   def bifrostQuerySubcmd(
       validateParams: BramblCliParams
@@ -29,6 +29,11 @@ trait BifrostQueryModeModule extends RpcChannelResource  {
             ) + "\nA subcommand needs to be specified"
           )
         )
+      case BramblCliSubCmd.mintblock =>
+        new BifrostQueryController(bifrostQueryAlgebra)
+          .makeBlock(
+            validateParams.nbOfBlocks
+          )
       case BramblCliSubCmd.blockbyheight =>
         new BifrostQueryController(
           bifrostQueryAlgebra

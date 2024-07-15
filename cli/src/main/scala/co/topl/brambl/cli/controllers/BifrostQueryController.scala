@@ -12,6 +12,16 @@ import com.google.protobuf.ByteString
 class BifrostQueryController[F[_]: Sync](
     bifrostQueryAlgebra: BifrostQueryAlgebra[F]
 ) {
+
+  def makeBlock(
+      nbOfBlocks: Int
+  ): F[Either[String, String]] = {
+    import cats.implicits._
+    bifrostQueryAlgebra.makeBlock(nbOfBlocks).map { _ =>
+      "Block(s) created successfully".asRight[String]
+    }
+  }
+
   def blockByHeight(
       height: Long
   ): F[Either[String, String]] = {
@@ -31,7 +41,7 @@ class BifrostQueryController[F[_]: Sync](
       .attempt
       .map {
         _ match {
-          case Left(e)     => 
+          case Left(e) =>
             e.printStackTrace()
             Left("Problem contacting the network.")
           case Right(txos) => txos

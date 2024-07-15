@@ -8,10 +8,9 @@ import co.topl.brambl.dataApi.WalletStateAlgebra
 import co.topl.brambl.models.Event
 import co.topl.brambl.models.box.AssetMintingStatement
 import co.topl.brambl.wallet.WalletApi
+import co.topl.genus.services.Txo
 import com.google.protobuf.ByteString
 import io.circe.Json
-import co.topl.genus.services.Txo
-import co.topl.genus.services.TokenServiceFs2Grpc
 
 trait SimpleMintingAlgebra[F[_]] {
   def createSimpleGroupMintingTransactionFromParams(
